@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏳ 时间胶囊 - 我们的恋爱纪念册</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #ff6b9d;
+            --primary-light: #ffc2d4;
+            --bg-pink: #fff5f7;
+            --text-dark: #5a4a4a;
+            --text-muted: #a08080;
+            --locked: #c0c0c0;
+            --unlocked: #ffd700;
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe4e9 50%, #fff0f5 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+        
+        /* 背景星星 */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .star {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 2s ease-in-out infinite;
+        }
+        
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+        
+        /* 顶部导航 */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(212, 165, 165, 0.2);
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 107, 157, 0.2);
+            transform: translateX(-3px);
+        }
+        
+        .page-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .nav-placeholder { width: 80px; }
+        
+        /* 主容器 */
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 30px 20px 100px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 引导语 */
+        .intro-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 40px 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px rgba(212, 165, 165, 0.15);
+            text-align: center;
+        }
+        
+        .intro-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        .intro-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 2rem;
+            color: var(--primary);
+            margin-bottom: 15px;
+        }
+        
+        .intro-text {
+            color: var(--text-muted);
+            font-size: 1rem;
+            line-height: 1.8;
+        }
+        
+        /* 时间轴 */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+        
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 8px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--primary-light), var(--primary));
+            border-radius: 2px;
+        }
+        
+        /* 胶囊卡片 */
+        .capsule-item {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        
+        .capsule-item::before {
+            content: '';
+            position: absolute;
+            left: -26px;
+            top: 25px;
+            width: 14px;
+            height: 14px;
+            background: var(--primary);
+            border: 3px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(255, 107, 157, 0.3);
+        }
+        
+        .capsule-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(212, 165, 165, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .capsule-card:hover {
+            transform: translateX(5px);
+            box-shadow: 0 8px 30px rgba(212, 165, 165, 0.2);
+        }
+        
+        .capsule-card.locked {
+            opacity: 0.75;
+        }
+        
+        .capsule-card.locked::before {
+            background: var(--locked);
+        }
+        
+        .capsule-card.unlocked::before {
+            background: var(--unlocked);
+        }
+        
+        .capsule-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .capsule-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .capsule-status {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .capsule-status.locked {
+            background: rgba(192, 192, 192, 0.2);
+            color: #888;
+        }
+        
+        .capsule-status.unlocked {
+            background: rgba(255, 215, 0, 0.2);
+            color: #b8860b;
+        }
+        
+        .capsule-dates {
+            display: flex;
+            gap: 20px;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        
+        .capsule-date-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .capsule-countdown {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: rgba(192, 192, 192, 0.15);
+            border-radius: 12px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+        
+        .countdown-number {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .capsule-content {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(212, 165, 165, 0.3);
+        }
+        
+        .capsule-content.show {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .capsule-content-text {
+            font-size: 0.95rem;
+            line-height: 1.8;
+            color: var(--text-dark);
+            white-space: pre-wrap;
+        }
+        
+        .capsule-expand {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            padding: 6px 14px;
+            background: rgba(255, 107, 157, 0.1);
+            border: none;
+            border-radius: 15px;
+            color: var(--primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .capsule-expand:hover {
+            background: rgba(255, 107, 157, 0.2);
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-muted);
+        }
+        
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+        
+        /* 悬浮添加按钮 */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #ff8fab);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+            transition: all 0.3s ease;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
+        }
+        
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.6rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .form-input, .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(212, 165, 165, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+        
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .date-presets {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        
+        .date-preset {
+            padding: 6px 14px;
+            border-radius: 15px;
+            border: 1px solid rgba(212, 165, 165, 0.4);
+            background: white;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .date-preset:hover, .date-preset.selected {
+            background: var(--primary-light);
+            border-color: var(--primary);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn.cancel {
+            background: rgba(212, 165, 165, 0.2);
+            color: var(--text-dark);
+        }
+        
+        .modal-btn.submit {
+            background: linear-gradient(135deg, var(--primary), #ff8fab);
+            color: white;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* 提示 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(90, 74, 74, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            z-index: 3000;
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .top-bar {
+                padding: 12px 15px;
+            }
+            
+            .page-title {
+                font-size: 1.2rem;
+            }
+            
+            .intro-card {
+                padding: 30px 20px;
+            }
+            
+            .intro-title {
+                font-size: 1.6rem;
+            }
+            
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景星星 -->
+    <div class="stars" id="starsContainer"></div>
+    
+    <!-- 顶部导航 -->
+    <div class="top-bar">
+        <a href="index.html" class="back-btn">← 返回首页</a>
+        <h1 class="page-title">⏳ 时间胶囊</h1>
+        <a href="writings.html" class="back-btn" style="background: rgba(255,107,157,0.1);">💌</a>
+    </div>
+    
+    <!-- 主内容 -->
+    <div class="container">
+        <!-- 引导语 -->
+        <div class="intro-card">
+            <div class="intro-icon">⏳</div>
+            <h2 class="intro-title">写给未来的我们</h2>
+            <p class="intro-text">
+                把现在的思念和祝福封存，等待未来的某个时刻再打开。<br>
+                这是一封跨越时空的情书，送给未来的我们 💕
+            </p>
+        </div>
+        
+        <!-- 时间轴 -->
+        <div class="timeline" id="timeline"></div>
+    </div>
+    
+    <!-- 悬浮添加按钮 -->
+    <button class="fab" id="addBtn">+</button>
+    
+    <!-- 添加胶囊模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h3 class="modal-title">📝 埋下时间胶囊</h3>
+            <div class="form-group">
+                <label class="form-label">胶囊标题</label>
+                <input type="text" class="form-input" id="capsuleTitle" placeholder="给胶囊起个名字..." maxlength="30">
+            </div>
+            <div class="form-group">
+                <label class="form-label">想说的话</label>
+                <textarea class="form-textarea" id="capsuleContent" placeholder="写给未来的自己和TA..."></textarea>
+            </div>
+            <div class="form-group">
+                <label class="form-label">打开日期</label>
+                <input type="date" class="form-input" id="openDate">
+                <div class="date-presets">
+                    <div class="date-preset" data-days="30">30天后</div>
+                    <div class="date-preset" data-days="100">100天后</div>
+                    <div class="date-preset" data-days="365">1年后</div>
+                    <div class="date-preset" data-days="730">2年后</div>
+                    <div class="date-preset" data-days="1825">5年后</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancelBtn">取消</button>
+                <button class="modal-btn submit" id="submitBtn">埋下胶囊 💕</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 数据
+        let capsulesData = [];
+        
+        // 初始化胶囊数据（添加一些示例）
+        const defaultCapsules = [
+            {
+                id: 'c1',
+                title: '给结婚那天的我们',
+                content: '亲爱的志浩和祎宝：\n\n如果你们打开了这封信，说明我们已经结婚了 💍\n\n不管现在的我们是否在紧张、是否在忙碌、是否激动得睡不着觉，我想说：走到今天，我们真的超级棒！\n\n从相遇、相知、相爱，到决定携手一生，这中间有太多太多的故事。每一个加班到深夜的想念，每一次吵架后的和解，每一个平凡日子里的甜蜜，都是我们爱情的一部分。\n\n未来的日子，可能会有柴米油盐的琐碎，可能会有育儿的辛苦，可能会有各种各样的挑战。但我相信，只要我们手牵着手，就没有什么过不去的。\n\n我们结婚了！这三个字，值得我们骄傲一辈子！\n\n永远爱你们的\n2025年的志浩和祎宝',
+                createdAt: '2025-05-17',
+                openAt: '2026-05-17',
+                isOpened: false
+            },
+            {
+                id: 'c2',
+                title: '一周年纪念日的期待',
+                content: '致一周年纪念日的我们：\n\n亲爱的宝贝们～\n\n一转眼我们已经在一起一年啦！在这一年里，我们一起经历了那么多：\n\n• 一起看过最美的风景\n• 一起吃过最好吃的美食\n• 一起吵过架也和好过\n• 一起度过了无数个平凡又珍贵的日夜\n\n一周年快乐！🎉\n\n希望那一天的我们，依然像现在这样相爱，依然会为对方的小惊喜而感动，依然愿意为对方做任何事情。\n\n不管未来如何，此刻的我们，是最幸福的 💕',
+                createdAt: '2025-05-17',
+                openAt: '2026-05-17',
+                isOpened: true
+            },
+            {
+                id: 'c3',
+                title: '给十年后的我们',
+                content: '致2035年的我们：\n\n嘿，十年后的志浩和祎宝，你们好呀！\n\n我是2025年的你们。这封信封存的时候，我们刚在一起不久，满脑子都是对未来的憧憬。\n\n我猜十年后的你们应该已经：\n• 有了自己的小家\n• 可能有了可爱的宝宝\n• 事业也都稳定发展\n• 依然每天腻在一起\n\n不管生活变成了什么样，我都希望你们记得：\n最初的我们，是多么珍惜彼此。\n\n希望你们依然牵手散步，依然为对方准备惊喜，依然会在深夜聊天聊到舍不得睡。\n\n永远年轻的你们 💕',
+                createdAt: '2025-05-17',
+                openAt: '2035-05-17',
+                isOpened: false
+            }
+        ];
+        
+        // 加载数据
+        function loadCapsules() {
+            const stored = localStorage.getItem('timeCapsules');
+            if (stored) {
+                capsulesData = JSON.parse(stored);
+            } else {
+                capsulesData = defaultCapsules;
+                saveCapsules();
+            }
+            renderCapsules();
+        }
+        
+        // 保存数据
+        function saveCapsules() {
+            localStorage.setItem('timeCapsules', JSON.stringify(capsulesData));
+        }
+        
+        // 渲染胶囊
+        function renderCapsules() {
+            const timeline = document.getElementById('timeline');
+            
+            // 按打开日期排序
+            const sorted = [...capsulesData].sort((a, b) => new Date(a.openAt) - new Date(b.openAt));
+            
+            if (sorted.length === 0) {
+                timeline.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">⏳</div>
+                        <p>还没有时间胶囊哦～</p>
+                        <p>点击下方按钮埋下第一个胶囊吧！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            
+            timeline.innerHTML = sorted.map(capsule => {
+                const openDate = new Date(capsule.openAt);
+                openDate.setHours(0, 0, 0, 0);
+                const isUnlocked = today >= openDate;
+                
+                const daysDiff = Math.ceil((openDate - today) / (1000 * 60 * 60 * 24));
+                
+                return `
+                    <div class="capsule-item">
+                        <div class="capsule-card ${isUnlocked ? 'unlocked' : 'locked'}" data-id="${capsule.id}">
+                            <div class="capsule-header">
+                                <span class="capsule-title">${isUnlocked ? '🔓' : '🔒'} ${capsule.title}</span>
+                                <span class="capsule-status ${isUnlocked ? 'unlocked' : 'locked'}">
+                                    ${isUnlocked ? '已解锁' : '锁定中'}
+                                </span>
+                            </div>
+                            <div class="capsule-dates">
+                                <span class="capsule-date-item">
+                                    📅 ${formatDate(capsule.createdAt)}
+                                </span>
+                                <span class="capsule-date-item">
+                                    🎯 ${formatDate(capsule.openAt)}
+                                </span>
+                            </div>
+                            ${!isUnlocked ? `
+                                <div class="capsule-countdown">
+                                    <span>⏰ 距离打开还有</span>
+                                    <span class="countdown-number">${daysDiff}</span>
+                                    <span>天</span>
+                                </div>
+                            ` : ''}
+                            ${capsule.content ? `
+                                <button class="capsule-expand" onclick="toggleContent('${capsule.id}')">
+                                    <span class="expand-text">${capsule.isOpened ? '收起' : '展开内容'}</span>
+                                    <span>▼</span>
+                                </button>
+                                <div class="capsule-content ${capsule.isOpened ? 'show' : ''}" id="content-${capsule.id}">
+                                    <p class="capsule-content-text">${capsule.content}</p>
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+        
+        // 展开/收起内容
+        function toggleContent(id) {
+            const capsule = capsulesData.find(c => c.id === id);
+            if (capsule) {
+                capsule.isOpened = !capsule.isOpened;
+                saveCapsules();
+                
+                const contentEl = document.getElementById(`content-${id}`);
+                const expandBtn = document.querySelector(`[data-id="${id}"] .capsule-expand`);
+                
+                if (contentEl) {
+                    contentEl.classList.toggle('show');
+                }
+                if (expandBtn) {
+                    expandBtn.querySelector('.expand-text').textContent = capsule.isOpened ? '收起' : '展开内容';
+                }
+            }
+        }
+        
+        // 格式化日期
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+        }
+        
+        // 创建星星背景
+        function createStars() {
+            const container = document.getElementById('starsContainer');
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.left = `${Math.random() * 100}%`;
+                star.style.top = `${Math.random() * 100}%`;
+                star.style.animationDelay = `${Math.random() * 2}s`;
+                star.style.width = `${2 + Math.random() * 2}px`;
+                star.style.height = star.style.width;
+                container.appendChild(star);
+            }
+        }
+        
+        // 显示提示
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            createStars();
+            loadCapsules();
+            
+            // 添加按钮
+            document.getElementById('addBtn').addEventListener('click', () => {
+                document.getElementById('modalOverlay').classList.add('active');
+                document.getElementById('capsuleTitle').focus();
+                
+                // 设置默认日期为1年后
+                const oneYearLater = new Date();
+                oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+                document.getElementById('openDate').value = oneYearLater.toISOString().split('T')[0];
+            });
+            
+            // 取消按钮
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                document.getElementById('modalOverlay').classList.remove('active');
+            });
+            
+            // 点击遮罩关闭
+            document.getElementById('modalOverlay').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('modalOverlay')) {
+                    document.getElementById('modalOverlay').classList.remove('active');
+                }
+            });
+            
+            // 日期预设
+            document.querySelectorAll('.date-preset').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.date-preset').forEach(b => b.classList.remove('selected'));
+                    btn.classList.add('selected');
+                    
+                    const days = parseInt(btn.dataset.days);
+                    const targetDate = new Date();
+                    targetDate.setDate(targetDate.getDate() + days);
+                    document.getElementById('openDate').value = targetDate.toISOString().split('T')[0];
+                });
+            });
+            
+            // 提交按钮
+            document.getElementById('submitBtn').addEventListener('click', () => {
+                const title = document.getElementById('capsuleTitle').value.trim();
+                const content = document.getElementById('capsuleContent').value.trim();
+                const openAt = document.getElementById('openDate').value;
+                
+                if (!title) {
+                    showToast('请输入胶囊标题~');
+                    return;
+                }
+                if (!content) {
+                    showToast('请输入想说的话~');
+                    return;
+                }
+                if (!openAt) {
+                    showToast('请选择打开日期~');
+                    return;
+                }
+                
+                const newCapsule = {
+                    id: 'c' + Date.now(),
+                    title: title,
+                    content: content,
+                    createdAt: new Date().toISOString().split('T')[0],
+                    openAt: openAt,
+                    isOpened: false
+                };
+                
+                capsulesData.push(newCapsule);
+                saveCapsules();
+                renderCapsules();
+                
+                document.getElementById('modalOverlay').classList.remove('active');
+                document.getElementById('capsuleTitle').value = '';
+                document.getElementById('capsuleContent').value = '';
+                
+                showToast('⏳ 时间胶囊已埋下~');
+            });
+        });
+    </script>
+
+    <!-- 跨页面音乐播放器 -->
+    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+</body>
+</html>

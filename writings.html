@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#fff0f5">
+    <title>情书博物馆 - 方志浩 & 张祎</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #fff0f5 100%); background-attachment: fixed; position: relative; }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+        .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .heart { position: absolute; top: -50px; color: rgba(255, 182, 193, 0.5); font-size: 16px; animation: fall linear infinite; opacity: 0; will-change: transform, opacity; }
+        @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.5; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+
+        .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: #5a4a4a; text-decoration: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; }
+        .back-btn:active { transform: scale(0.95); }
+        @media (hover: hover) { .back-btn:hover { background: #d4a5a5; color: white; } }
+        .page-title { font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; font-weight: 700; text-align: center; flex: 1; min-width: 200px; }
+
+        /* 生成电子书按钮 */
+        .generate-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; border: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255,107,157,0.4); white-space: nowrap; }
+        .generate-btn:active { transform: scale(0.95); }
+        @media (hover: hover) { .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,157,0.5); } }
+
+        .filter-section { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .year-filters { display: flex; gap: 10px; flex-wrap: wrap; }
+        .year-btn { padding: 10px 18px; background: rgba(255,255,255,0.7); border: 1px solid rgba(212,165,165,0.3); border-radius: 20px; font-size: 0.9rem; color: #5a4a4a; cursor: pointer; transition: all 0.3s ease; touch-action: manipulation; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
+        .year-btn:active { transform: scale(0.95); }
+        .year-btn.active { background: linear-gradient(135deg, #d4a5a5, #ffb6c1); color: white; border-color: transparent; }
+        @media (hover: hover) { .year-btn:hover:not(.active) { background: rgba(212,165,165,0.3); } }
+        .search-box { flex: 1; min-width: 200px; max-width: 350px; position: relative; }
+        .search-input { width: 100%; padding: 12px 20px 12px 45px; border: 1px solid rgba(212,165,165,0.3); border-radius: 25px; font-size: 0.95rem; background: rgba(255,255,255,0.8); color: #5a4a4a; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); outline: none; transition: all 0.3s ease; }
+        .search-input::placeholder { color: #a08080; }
+        .search-input:focus { border-color: #d4a5a5; box-shadow: 0 0 0 3px rgba(212,165,165,0.2); }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #d4a5a5; font-size: 1.1rem; pointer-events: none; }
+
+        .desktop-layout { display: flex; gap: 25px; min-height: 600px; }
+        .letters-sidebar { width: 320px; flex-shrink: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px rgba(212,165,165,0.15); border: 1px solid rgba(255,255,255,0.5); max-height: 70vh; overflow-y: auto; }
+        .letters-sidebar::-webkit-scrollbar { width: 6px; }
+        .letters-sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.3); border-radius: 3px; }
+        .letters-sidebar::-webkit-scrollbar-thumb { background: #d4a5a5; border-radius: 3px; }
+        .sidebar-title { font-size: 1rem; color: #d4a5a5; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(212,165,165,0.3); font-weight: 500; }
+
+        .letter-list-item { padding: 15px 12px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 8px; border: 1px solid transparent; }
+        .letter-list-item:active { transform: scale(0.98); }
+        .letter-list-item:hover { background: rgba(255,255,255,0.5); }
+        .letter-list-item.active { background: linear-gradient(135deg, rgba(212,165,165,0.2), rgba(255,182,193,0.2)); border-color: rgba(212,165,165,0.4); }
+        .letter-list-date { font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: #d4a5a5; margin-bottom: 5px; }
+        .letter-list-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.1rem; color: #5a4a4a; line-height: 1.4; }
+
+        .reading-area { flex: 1; background: linear-gradient(135deg, #fdf8f0 0%, #faf5eb 50%, #fdf8f0 100%); border-radius: 24px; padding: 40px 35px; box-shadow: 0 12px 48px rgba(212,165,165,0.15); position: relative; overflow: hidden; }
+        .reading-area::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(90deg, transparent 79px, rgba(212,165,165,0.1) 79px, rgba(212,165,165,0.1) 80px, transparent 80px), linear-gradient(rgba(212,165,165,0.05) 1px, transparent 1px); background-size: 100% 28px; pointer-events: none; }
+        .reading-header { position: relative; z-index: 1; text-align: center; margin-bottom: 30px; padding-bottom: 25px; border-bottom: 2px dashed rgba(212,165,165,0.3); }
+        .reading-date { font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: #d4a5a5; margin-bottom: 12px; }
+        .reading-title { font-family: 'Ma Shan Zheng', cursive; font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; line-height: 1.5; margin-bottom: 15px; }
+        .reading-number { font-family: 'Dancing Script', cursive; font-size: 1.1rem; color: #d4a5a5; }
+        .reading-content { position: relative; z-index: 1; font-size: clamp(1rem,2.5vw,1.15rem); color: #5a4a4a; line-height: 2; text-align: justify; padding: 0 10px; white-space: pre-wrap; }
+        .reading-footer { position: relative; z-index: 1; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(212,165,165,0.2); text-align: center; }
+        .reading-stats { font-size: 0.95rem; color: #a08080; font-family: 'Poppins', sans-serif; }
+        .reading-stats span { color: #d4a5a5; font-weight: 600; }
+
+        .paper-corner { position: absolute; width: 60px; height: 60px; opacity: 0.15; }
+        .paper-corner.top-left { top: 15px; left: 15px; border-top: 3px solid #d4a5a5; border-left: 3px solid #d4a5a5; }
+        .paper-corner.top-right { top: 15px; right: 15px; border-top: 3px solid #d4a5a5; border-right: 3px solid #d4a5a5; }
+        .paper-corner.bottom-left { bottom: 15px; left: 15px; border-bottom: 3px solid #d4a5a5; border-left: 3px solid #d4a5a5; }
+        .paper-corner.bottom-right { bottom: 15px; right: 15px; border-bottom: 3px solid #d4a5a5; border-right: 3px solid #d4a5a5; }
+
+        .mobile-layout { display: none; }
+        .mobile-selector { width: 100%; padding: 15px 20px; border: 1px solid rgba(212,165,165,0.3); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.8); color: #5a4a4a; font-family: 'Noto Sans SC', sans-serif; cursor: pointer; outline: none; margin-bottom: 20px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4a5a5' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 15px center; }
+        .mobile-reading-area { background: linear-gradient(135deg, #fdf8f0 0%, #faf5eb 50%, #fdf8f0 100%); border-radius: 20px; padding: 25px 20px; min-height: 400px; position: relative; }
+        .mobile-reading-area::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(90deg, transparent 79px, rgba(212,165,165,0.1) 79px, rgba(212,165,165,0.1) 80px, transparent 80px), linear-gradient(rgba(212,165,165,0.05) 1px, transparent 1px); background-size: 100% 28px; pointer-events: none; border-radius: 20px; }
+
+        .empty-state { text-align: center; padding: 60px 20px; color: #a08080; }
+        .empty-state-icon { font-size: 3rem; margin-bottom: 15px; }
+        .empty-state-text { font-size: 1.1rem; }
+
+        /* ========== 模态框通用样式 ========== */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-content { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 24px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-overlay.active .modal-content { transform: scale(1); }
+        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 25px; border-bottom: 1px solid rgba(212,165,165,0.2); }
+        .modal-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.5rem; color: #5a4a4a; }
+        .modal-close { width: 40px; height: 40px; border-radius: 50%; background: rgba(212,165,165,0.2); border: none; font-size: 1.5rem; cursor: pointer; color: #5a4a4a; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+        .modal-close:active { transform: scale(0.9); }
+        @media (hover: hover) { .modal-close:hover { background: rgba(212,165,165,0.4); } }
+        .modal-body { padding: 25px; }
+
+        /* 年份选择器样式 */
+        .year-selector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
+        .year-card { background: rgba(255,255,255,0.8); border: 2px solid rgba(212,165,165,0.3); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
+        .year-card:active { transform: scale(0.95); }
+        @media (hover: hover) { .year-card:hover:not(.disabled) { border-color: #ff6b9d; background: rgba(255,107,157,0.1); transform: translateY(-3px); } }
+        .year-card.disabled { opacity: 0.4; cursor: not-allowed; }
+        .year-card.selected { border-color: #ff6b9d; background: linear-gradient(135deg, rgba(255,107,157,0.2), rgba(196,69,105,0.1)); }
+        .year-card-number { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; color: #5a4a4a; }
+        .year-card-count { font-size: 0.85rem; color: #d4a5a5; margin-top: 5px; }
+
+        /* 电子书定制界面样式 */
+        .ebook-builder { display: flex; gap: 25px; }
+        .preview-area { flex: 1; background: #f5f5f5; border-radius: 16px; padding: 20px; min-height: 400px; }
+        .preview-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
+        .preview-tab { padding: 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.8); border: 1px solid rgba(212,165,165,0.3); font-size: 0.9rem; color: #5a4a4a; cursor: pointer; transition: all 0.3s; }
+        .preview-tab.active { background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; border-color: transparent; }
+        .preview-container { background: white; border-radius: 12px; min-height: 350px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+
+        /* 封面预览 */
+        .book-cover { padding: 40px; text-align: center; background: linear-gradient(135deg, var(--cover-bg-start, #fff0f5), var(--cover-bg-end, #ffe4e1)); min-height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        .book-cover-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; opacity: 0.3; }
+        .cover-title { font-family: 'Ma Shan Zheng', cursive; font-size: 2.5rem; color: var(--cover-title-color, #5a4a4a); margin-bottom: 15px; position: relative; z-index: 1; }
+        .cover-subtitle { font-size: 1rem; color: var(--cover-subtitle-color, #a08080); margin-bottom: 30px; position: relative; z-index: 1; }
+        .cover-image { width: 150px; height: 150px; border-radius: 16px; object-fit: cover; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: relative; z-index: 1; }
+        .cover-names { font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--cover-title-color, #5a4a4a); }
+        .cover-year { position: absolute; bottom: 20px; right: 25px; font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: rgba(0,0,0,0.1); }
+
+        /* 内页预览 */
+        .book-page { padding: 30px; background: #fff; }
+        .page-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .page-date { font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #d4a5a5; }
+        .page-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.5rem; color: #5a4a4a; margin-top: 8px; }
+        .page-content { font-size: 1rem; color: #5a4a4a; line-height: 1.8; }
+        .page-footer { margin-top: 30px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); text-align: center; font-size: 0.8rem; color: #a08080; }
+
+        /* 定制选项区 */
+        .options-area { width: 350px; flex-shrink: 0; }
+        .option-group { margin-bottom: 20px; }
+        .option-label { font-size: 0.9rem; color: #5a4a4a; font-weight: 600; margin-bottom: 8px; display: block; }
+        .option-input { width: 100%; padding: 12px 15px; border: 1px solid rgba(212,165,165,0.3); border-radius: 12px; font-size: 0.95rem; font-family: 'Noto Sans SC', sans-serif; background: rgba(255,255,255,0.8); color: #5a4a4a; outline: none; transition: all 0.3s; }
+        .option-input:focus { border-color: #d4a5a5; box-shadow: 0 0 0 3px rgba(212,165,165,0.2); }
+        textarea.option-input { resize: vertical; min-height: 80px; }
+
+        /* 配色方案 */
+        .color-options { display: flex; gap: 10px; flex-wrap: wrap; }
+        .color-option { width: 50px; height: 50px; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; }
+        .color-option.selected { border-color: #5a4a4a; transform: scale(1.1); }
+        .color-option:active { transform: scale(0.95); }
+
+        /* 字体选择 */
+        .font-options { display: flex; gap: 10px; }
+        .font-option { flex: 1; padding: 12px; border: 2px solid rgba(212,165,165,0.3); border-radius: 12px; background: rgba(255,255,255,0.8); cursor: pointer; text-align: center; transition: all 0.3s; }
+        .font-option:active { transform: scale(0.95); }
+        @media (hover: hover) { .font-option:hover { border-color: #ff6b9d; } }
+        .font-option.selected { border-color: #ff6b9d; background: rgba(255,107,157,0.1); }
+        .font-option-name { font-size: 0.9rem; color: #5a4a4a; margin-bottom: 5px; }
+        .font-option-sample { font-size: 0.8rem; color: #a08080; }
+
+        /* 上传区域 */
+        .upload-area { border: 2px dashed rgba(212,165,165,0.4); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
+        .upload-area:active { transform: scale(0.98); }
+        @media (hover: hover) { .upload-area:hover { border-color: #ff6b9d; background: rgba(255,107,157,0.05); } }
+        .upload-icon { font-size: 2rem; margin-bottom: 10px; }
+        .upload-text { font-size: 0.9rem; color: #a08080; }
+        .upload-preview { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; margin-top: 10px; }
+
+        /* 操作按钮 */
+        .action-buttons { display: flex; gap: 12px; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(212,165,165,0.2); }
+        .action-btn { flex: 1; padding: 14px 20px; border: none; border-radius: 12px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .action-btn:active { transform: scale(0.95); }
+        .btn-primary { background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; }
+        .btn-secondary { background: rgba(212,165,165,0.3); color: #5a4a4a; }
+        @media (hover: hover) { .action-btn:hover { transform: translateY(-2px); } .btn-primary:hover { box-shadow: 0 5px 15px rgba(255,107,157,0.4); } }
+
+        /* 加载动画 */
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 10001; flex-direction: column; }
+        .loading-overlay.active { display: flex; }
+        .loading-spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .loading-text { color: white; margin-top: 15px; font-size: 1rem; }
+
+        /* 打印样式 - 电子书专业排版 */
+        @media print {
+            @page {
+                size: A4;
+                margin: 2.5cm 2cm;
+            }
+
+            body {
+                background: white !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            /* 隐藏所有非打印元素 */
+            .hearts-container, .container, .top-bar, .filter-section,
+            .desktop-layout, .mobile-layout, .modal-overlay, .loading-overlay,
+            .generate-btn, .ebook-builder, .nav-links, .musicIframe, iframe,
+            .back-btn, .page-title, .action-buttons, .reading-area {
+                display: none !important;
+            }
+
+            /* 打印书籍容器 */
+            .print-book {
+                display: block !important;
+                width: 100%;
+                max-width: none;
+                background: white;
+            }
+
+            /* 每页基础样式 - 强制分页 */
+            .print-page {
+                page-break-after: always;
+                page-break-inside: avoid;
+                padding: 0;
+                min-height: 100vh;
+                box-sizing: border-box;
+                background: #FFF8F8;
+                position: relative;
+            }
+            .print-page:last-child {
+                page-break-after: auto;
+            }
+
+            /* ========== 封面页 ========== */
+            .print-cover {
+                page-break-after: always;
+                page-break-inside: avoid;
+                text-align: center;
+                padding: 6cm 2cm 2cm;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: linear-gradient(135deg, #FFF8F8 0%, #FFE4E1 100%);
+                position: relative;
+            }
+
+            .print-cover::before {
+                content: '♡';
+                position: absolute;
+                top: 30px;
+                right: 40px;
+                font-size: 1.5rem;
+                color: #F0D0D0;
+            }
+
+            .print-cover::after {
+                content: '♡';
+                position: absolute;
+                bottom: 30px;
+                left: 40px;
+                font-size: 1.5rem;
+                color: #F0D0D0;
+            }
+
+            .print-cover-image {
+                width: 180px;
+                height: 180px;
+                border-radius: 20px;
+                object-fit: cover;
+                margin-bottom: 50px;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            }
+
+            .print-cover-title {
+                font-size: 2.8rem;
+                font-family: 'Ma Shan Zheng', 'YouYuan', cursive;
+                color: #C85A5A;
+                margin-bottom: 20px;
+                letter-spacing: 0.1em;
+            }
+
+            .print-cover-subtitle {
+                font-size: 1.3rem;
+                color: #B0A0A0;
+                margin-bottom: 60px;
+                font-style: italic;
+            }
+
+            .print-cover-names {
+                font-size: 1.6rem;
+                font-family: 'Dancing Script', cursive;
+                color: #D46B6B;
+            }
+
+            .print-cover-year {
+                position: absolute;
+                bottom: 2cm;
+                right: 2cm;
+                font-size: 5rem;
+                font-family: 'Poppins', sans-serif;
+                font-weight: 700;
+                color: rgba(200,90,90,0.08);
+            }
+
+            /* ========== 目录页 ========== */
+            .print-toc {
+                padding: 3cm 2cm;
+                background: white;
+            }
+
+            .print-toc-title {
+                font-size: 2rem;
+                font-family: 'Ma Shan Zheng', cursive;
+                text-align: center;
+                margin-bottom: 50px;
+                color: #C85A5A;
+                letter-spacing: 0.2em;
+            }
+
+            .print-toc-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: baseline;
+                padding: 14px 0;
+                border-bottom: 1px solid #F0D0D0;
+                font-size: 1rem;
+                color: #4A4A4A;
+            }
+
+            .print-toc-item span:first-child {
+                flex: 1;
+                text-align: left;
+                padding-right: 20px;
+            }
+
+            .print-toc-item span:last-child {
+                text-align: right;
+                color: #B0A0A0;
+                font-size: 0.9rem;
+                min-width: 60px;
+            }
+
+            /* ========== 内页 - 每篇小作文 ========== */
+            .print-letter-page {
+                page-break-before: always;
+                page-break-inside: avoid;
+                padding: 2.5cm 2cm 2cm;
+                min-height: calc(100vh - 5cm);
+                background: white;
+                position: relative;
+            }
+
+            .print-letter-page:first-of-type {
+                page-break-before: auto;
+            }
+
+            .print-letter-date {
+                font-family: 'Poppins', sans-serif;
+                font-size: 0.85rem;
+                color: #B0A0A0;
+                text-align: center;
+                margin-bottom: 1em;
+                letter-spacing: 0.1em;
+            }
+
+            .print-letter-title {
+                font-family: 'Ma Shan Zheng', cursive;
+                font-size: 1.6rem;
+                color: #C85A5A;
+                text-align: center;
+                margin-bottom: 1em;
+                padding-bottom: 1em;
+                border-bottom: 1px solid #F0D0D0;
+                position: relative;
+            }
+
+            .print-letter-title::after {
+                content: '';
+                display: block;
+                width: 60px;
+                height: 2px;
+                background: #F0D0D0;
+                margin: 1em auto 0;
+            }
+
+            .print-letter-content {
+                font-size: 1.05rem;
+                line-height: 1.9;
+                color: #4A4A4A;
+                text-align: justify;
+                font-family: 'YouYuan', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+                white-space: pre-wrap;
+                word-break: break-word;
+                margin-bottom: 2em;
+            }
+
+            .print-letter-content p {
+                margin-bottom: 0.8em;
+                text-indent: 2em;
+            }
+
+            .print-letter-footer {
+                display: none; /* 移除页脚的品牌信息 */
+            }
+
+            /* ========== 封底页 ========== */
+            .print-back-cover {
+                page-break-before: always;
+                page-break-inside: avoid;
+                text-align: center;
+                padding: 6cm 2cm 2cm;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                background: linear-gradient(135deg, #FFE4E1 0%, #FFF8F8 100%);
+                position: relative;
+            }
+
+            .print-back-cover::before {
+                content: '♡';
+                position: absolute;
+                top: 30px;
+                left: 40px;
+                font-size: 1.5rem;
+                color: #F0D0D0;
+            }
+
+            .print-back-cover::after {
+                content: '♡';
+                position: absolute;
+                bottom: 30px;
+                right: 40px;
+                font-size: 1.5rem;
+                color: #F0D0D0;
+            }
+
+            .print-back-text {
+                font-size: 2rem;
+                font-family: 'Dancing Script', cursive;
+                color: #C85A5A;
+                margin-bottom: 40px;
+            }
+
+            .print-brand {
+                font-size: 0.9rem;
+                color: #B0A0A0;
+            }
+        }
+
+        .print-book {
+            display: none;
+        }
+
+        @media (max-width: 900px) {
+            .desktop-layout { display: none; }
+            .mobile-layout { display: block; }
+            .ebook-builder { flex-direction: column; }
+            .options-area { width: 100%; }
+            .year-selector-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .top-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .back-btn { align-self: flex-start; }
+            .page-title { text-align: left; min-width: auto; }
+            .filter-section { flex-direction: column; align-items: stretch; }
+            .year-filters { justify-content: flex-start; }
+            .search-box { max-width: none; }
+            .mobile-reading-area { padding: 20px 15px; }
+            .reading-header { margin-bottom: 20px; padding-bottom: 15px; }
+            .reading-content { line-height: 1.9; }
+            .modal-content { max-height: 95vh; }
+            .action-buttons { flex-direction: column; }
+        }
+        @media (max-width: 480px) {
+            .page-title { font-size: 1.3rem; }
+            .year-btn { padding: 10px 14px; font-size: 0.9rem; min-height: 44px; min-width: 44px; }
+            .mobile-selector { padding: 14px 15px; font-size: 0.95rem; min-height: 48px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-container" id="heartsContainer"></div>
+
+    <div class="container">
+        <div class="top-bar">
+            <a href="index.html" class="back-btn">← 返回首页</a>
+            <h1 class="page-title">💌 我们的情书博物馆</h1>
+            <div class="nav-links">
+                <a href="travels.html" class="back-btn" style="padding: 6px 10px; font-size: 0.8rem;">🌍</a>
+                <a href="wishes.html" class="back-btn" style="padding: 6px 10px; font-size: 0.8rem;">✨</a>
+                <a href="time-capsule.html" class="back-btn" style="padding: 6px 10px; font-size: 0.8rem;">⏳</a>
+            </div>
+        </div>
+
+        <div class="top-bar" style="margin-top: -10px; padding-top: 5px;">
+            <div></div>
+            <button class="generate-btn" id="generateBtn" style="font-size: 0.9rem;">
+                📖 生成年度情书
+            </button>
+            <div></div>
+        </div>
+
+        <div class="filter-section">
+            <div class="year-filters" id="yearFilters">
+                <button class="year-btn active" data-year="all">全部</button>
+            </div>
+            <div class="search-box">
+                <span class="search-icon">🔍</span>
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索情书标题或内容...">
+            </div>
+        </div>
+
+        <div class="desktop-layout" id="desktopLayout">
+            <div class="letters-sidebar">
+                <div class="sidebar-title">📜 情书列表（共 <span id="listCount">0</span> 封）</div>
+                <div id="lettersList"></div>
+            </div>
+            <div class="reading-area" id="readingArea">
+                <div class="paper-corner top-left"></div>
+                <div class="paper-corner top-right"></div>
+                <div class="paper-corner bottom-left"></div>
+                <div class="paper-corner bottom-right"></div>
+                <div class="reading-header">
+                    <div class="reading-date" id="readingDate"></div>
+                    <h2 class="reading-title" id="readingTitle"></h2>
+                    <div class="reading-number" id="readingNumber"></div>
+                </div>
+                <div class="reading-content" id="readingContent"></div>
+                <div class="reading-footer">
+                    <div class="reading-stats">共计 <span id="totalLetters">0</span> 封情书</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mobile-layout" id="mobileLayout">
+            <select class="mobile-selector" id="mobileSelector">
+                <option value="">请选择一封情书阅读...</option>
+            </select>
+            <div class="mobile-reading-area">
+                <div class="paper-corner top-left"></div>
+                <div class="paper-corner top-right"></div>
+                <div class="paper-corner bottom-left"></div>
+                <div class="paper-corner bottom-right"></div>
+                <div class="reading-header">
+                    <div class="reading-date" id="mobileReadingDate"></div>
+                    <h2 class="reading-title" id="mobileReadingTitle"></h2>
+                    <div class="reading-number" id="mobileReadingNumber"></div>
+                </div>
+                <div class="reading-content" id="mobileReadingContent"></div>
+                <div class="reading-footer">
+                    <div class="reading-stats">共计 <span id="mobileTotalLetters">0</span> 封情书</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 年份选择器模态框 -->
+    <div class="modal-overlay" id="yearModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">📖 选择年份</h2>
+                <button class="modal-close" id="yearModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <p style="color: #a08080; margin-bottom: 20px; font-size: 0.95rem;">请选择要生成电子书的年份</p>
+                <div class="year-selector-grid" id="yearSelectorGrid">
+                    <!-- 动态生成年份卡片 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 电子书定制模态框 -->
+    <div class="modal-overlay" id="ebookModal">
+        <div class="modal-content" style="max-width: 1100px;">
+            <div class="modal-header">
+                <h2 class="modal-title">📖 电子书预览与定制</h2>
+                <button class="modal-close" id="ebookModalClose">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="ebook-builder">
+                    <!-- 预览区 -->
+                    <div class="preview-area">
+                        <div class="preview-tabs">
+                            <button class="preview-tab active" data-tab="cover">封面</button>
+                            <button class="preview-tab" data-tab="page">内页</button>
+                        </div>
+                        <div class="preview-container" id="previewContainer">
+                            <!-- 动态渲染预览 -->
+                        </div>
+                    </div>
+
+                    <!-- 定制选项区 -->
+                    <div class="options-area">
+                        <div class="option-group">
+                            <label class="option-label">📌 封面标题</label>
+                            <input type="text" class="option-input" id="coverTitle" value="我们的 2024 年">
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label">💕 封面副标题</label>
+                            <input type="text" class="option-input" id="coverSubtitle" value="这一年，我们写下的所有温柔">
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label">🖼️ 封面照片</label>
+                            <div class="upload-area" id="coverUpload">
+                                <div class="upload-icon">📷</div>
+                                <div class="upload-text">点击上传封面图片</div>
+                                <img class="upload-preview" id="coverPreview" style="display:none;">
+                                <input type="file" id="coverFileInput" accept="image/*" style="display:none;">
+                            </div>
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label">🎨 主题配色</label>
+                            <div class="color-options">
+                                <div class="color-option selected" data-colors="#fff0f5,#ffe4e1,#ff6b9d,#5a4a4a" style="background: linear-gradient(135deg, #fff0f5, #ff6b9d);" title="粉白浪漫"></div>
+                                <div class="color-option" data-colors="#f0f5f0,#d4e4d4,#4a8a5a,#2d4a2d" style="background: linear-gradient(135deg, #f0f5f0, #4a8a5a);" title="森系墨绿"></div>
+                                <div class="color-option" data-colors="#faf6f0,#e8ddd0,#8a6a4a,#4a3a2a" style="background: linear-gradient(135deg, #faf6f0, #8a6a4a);" title="简约米棕"></div>
+                                <div class="color-option" data-colors="#f0f4f8,#d0e4f0,#4a7aa0,#2a4a6a" style="background: linear-gradient(135deg, #f0f4f8, #4a7aa0);" title="静谧蓝灰"></div>
+                            </div>
+                        </div>
+
+                        <div class="option-group">
+                            <label class="option-label">✍️ 字体风格</label>
+                            <div class="font-options">
+                                <div class="font-option selected" data-font="Ma Shan Zheng" data-sample="💌 亲启">
+                                    <div class="font-option-name">手写体</div>
+                                    <div class="font-option-sample">亲启</div>
+                                </div>
+                                <div class="font-option" data-font="Noto Serif SC" data-sample="💌 亲启">
+                                    <div class="font-option-name">宋体</div>
+                                    <div class="font-option-sample">亲启</div>
+                                </div>
+                                <div class="font-option" data-font="Noto Sans SC" data-sample="💌 亲启">
+                                    <div class="font-option-name">圆体</div>
+                                    <div class="font-option-sample">亲启</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons">
+                            <button class="action-btn btn-primary" id="downloadPdf">
+                                📥 下载 PDF
+                            </button>
+                            <button class="action-btn btn-secondary" id="printBtn">
+                                🖨️ 打印
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载动画 -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在生成电子书...</div>
+    </div>
+
+    <!-- 打印内容（隐藏） -->
+    <div class="print-book" id="printBookContent">
+        <!-- 动态生成打印内容 -->
+    </div>
+
+    <script>
+        let diariesData = [];
+        let filteredLetters = [];
+        let availableYears = [];
+        let currentFilter = 'all';
+        let currentSearch = '';
+        let selectedYear = null;
+        let yearLetters = [];
+
+        // 电子书配置
+        let ebookConfig = {
+            title: '我们的 2024 年',
+            subtitle: '这一年，我们写下的所有温柔',
+            coverImage: null,
+            colors: ['#fff0f5', '#ffe4e1', '#ff6b9d', '#5a4a4a'],
+            font: 'Ma Shan Zheng',
+            names: '方志浩 & 张祎'
+        };
+
+        async function loadDiaries() {
+            try {
+                const resp = await fetch('diaries.json?t=' + Date.now());
+                if (resp.ok) {
+                    const json = await resp.json();
+                    if (Array.isArray(json) && json.length > 0) {
+                        diariesData = json;
+                        return;
+                    }
+                }
+            } catch {}
+            diariesData = [
+                { id: 'demo-1', date: '2025-05-17', title: '【2025】因缘际会在一起', content: '抱着还人情的心态吃完了一顿饭，原本以为会各回各家，相忘于江湖...\n\n也许是对亲密关系本能的恐惧，也许是意料之外的好感，亦或者只是从未正式思考过继续往下走的可能性。', tag: '💌' },
+                { id: 'demo-2', date: '2025-06-09', title: '【2025】我们要开始记录了', content: '喜欢跟志浩在一起的每一天，希望能开始认真记录每一份酸甜苦辣～谢谢志浩愿意陪我一起记录✌️', tag: '💌' },
+            ];
+        }
+
+        function initYearFilters() {
+            const yearFilters = document.getElementById('yearFilters');
+            yearFilters.querySelectorAll('.year-btn:not([data-year="all"])').forEach(b => b.remove());
+            availableYears.forEach(year => {
+                const btn = document.createElement('button');
+                btn.className = 'year-btn';
+                btn.dataset.year = year;
+                btn.textContent = year;
+                btn.addEventListener('click', () => filterByYear(year));
+                yearFilters.appendChild(btn);
+            });
+        }
+
+        function filterByYear(year) {
+            currentFilter = year;
+            document.querySelectorAll('.year-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.year === year || (year === 'all' && btn.dataset.year === 'all'));
+            });
+            applyFilters();
+        }
+
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            currentSearch = e.target.value.toLowerCase();
+            applyFilters();
+        });
+
+        function applyFilters() {
+            filteredLetters = diariesData.filter(letter => {
+                const letterYear = letter.date ? letter.date.split('-')[0] : '2025';
+                const matchYear = currentFilter === 'all' || letterYear === currentFilter;
+                const matchSearch = currentSearch === '' ||
+                    (letter.title && letter.title.toLowerCase().includes(currentSearch)) ||
+                    (letter.content && letter.content.toLowerCase().includes(currentSearch));
+                return matchYear && matchSearch;
+            });
+            renderLettersList();
+            updateStats();
+        }
+
+        function renderLettersList() {
+            const listContainer = document.getElementById('lettersList');
+            const mobileSelector = document.getElementById('mobileSelector');
+            listContainer.innerHTML = '';
+            mobileSelector.innerHTML = '<option value="">请选择一封情书阅读...</option>';
+
+            if (filteredLetters.length === 0) {
+                listContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">没有找到符合条件的情书</div></div>';
+                return;
+            }
+
+            filteredLetters.forEach((letter, index) => {
+                const item = document.createElement('div');
+                item.className = 'letter-list-item';
+                item.innerHTML = `<div class="letter-list-date">${letter.date || '未知日期'}</div><div class="letter-list-title">${letter.title || '无标题'}</div>`;
+                item.addEventListener('click', () => selectLetter(letter, index));
+                listContainer.appendChild(item);
+
+                const option = document.createElement('option');
+                option.value = index;
+                option.textContent = `${letter.date || '未知日期'} - ${letter.title || '无标题'}`;
+                mobileSelector.appendChild(option);
+            });
+
+            if (filteredLetters.length > 0) {
+                selectLetter(filteredLetters[0], 0);
+                mobileSelector.value = '0';
+            }
+        }
+
+        function selectLetter(letter, index) {
+            const globalIndex = diariesData.indexOf(letter);
+            document.querySelectorAll('.letter-list-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+            const letterNumber = globalIndex >= 0 ? globalIndex + 1 : index + 1;
+            document.getElementById('readingDate').textContent = letter.date || '未知日期';
+            document.getElementById('readingTitle').textContent = letter.title || '无标题';
+            document.getElementById('readingNumber').textContent = `第 ${letterNumber} 封情书`;
+            document.getElementById('readingContent').textContent = letter.content || '';
+            document.getElementById('mobileReadingDate').textContent = letter.date || '未知日期';
+            document.getElementById('mobileReadingTitle').textContent = letter.title || '无标题';
+            document.getElementById('mobileReadingNumber').textContent = `第 ${letterNumber} 封情书`;
+            document.getElementById('mobileReadingContent').textContent = letter.content || '';
+        }
+
+        document.getElementById('mobileSelector').addEventListener('change', (e) => {
+            const index = parseInt(e.target.value);
+            if (!isNaN(index) && filteredLetters[index]) {
+                selectLetter(filteredLetters[index], index);
+            }
+        });
+
+        function updateStats() {
+            document.getElementById('totalLetters').textContent = filteredLetters.length;
+            document.getElementById('listCount').textContent = filteredLetters.length;
+            document.getElementById('mobileTotalLetters').textContent = filteredLetters.length;
+        }
+
+        function createHeart() {
+            const container = document.getElementById('heartsContainer');
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '💕';
+            const isMobileScreen = window.innerWidth <= 768;
+            heart.style.fontSize = (isMobileScreen ? Math.random() * 10 + 8 : Math.random() * 15 + 10) + 'px';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.animationDuration = (isMobileScreen ? Math.random() * 5 + 6 : Math.random() * 7 + 8) + 's';
+            heart.style.animationDelay = Math.random() * 3 + 's';
+            container.appendChild(heart);
+            setTimeout(() => heart.remove(), 15000);
+        }
+
+        // ========== 电子书功能 ==========
+
+        // 打开年份选择器
+        document.getElementById('generateBtn').addEventListener('click', () => {
+            renderYearSelector();
+            document.getElementById('yearModal').classList.add('active');
+        });
+
+        // 关闭年份选择器
+        document.getElementById('yearModalClose').addEventListener('click', () => {
+            document.getElementById('yearModal').classList.remove('active');
+        });
+
+        // 点击模态框背景关闭
+        document.getElementById('yearModal').addEventListener('click', (e) => {
+            if (e.target.id === 'yearModal') {
+                document.getElementById('yearModal').classList.remove('active');
+            }
+        });
+
+        // 关闭电子书模态框
+        document.getElementById('ebookModalClose').addEventListener('click', () => {
+            document.getElementById('ebookModal').classList.remove('active');
+        });
+
+        document.getElementById('ebookModal').addEventListener('click', (e) => {
+            if (e.target.id === 'ebookModal') {
+                document.getElementById('ebookModal').classList.remove('active');
+            }
+        });
+
+        // 渲染年份选择器
+        function renderYearSelector() {
+            const grid = document.getElementById('yearSelectorGrid');
+            grid.innerHTML = '';
+
+            availableYears.forEach(year => {
+                const lettersInYear = diariesData.filter(l => l.date && l.date.startsWith(year));
+                const card = document.createElement('div');
+                card.className = 'year-card';
+                card.innerHTML = `
+                    <div class="year-card-number">${year}</div>
+                    <div class="year-card-count">${lettersInYear.length} 封情书</div>
+                `;
+                card.addEventListener('click', () => {
+                    if (lettersInYear.length > 0) {
+                        selectYearAndOpenBuilder(year);
+                    }
+                });
+                grid.appendChild(card);
+            });
+        }
+
+        // 选择年份并打开定制界面
+        function selectYearAndOpenBuilder(year) {
+            selectedYear = year;
+            yearLetters = diariesData
+                .filter(l => l.date && l.date.startsWith(year))
+                .sort((a, b) => new Date(a.date) - new Date(b.date));
+
+            ebookConfig.title = `我们的 ${year} 年`;
+
+            document.getElementById('yearModal').classList.remove('active');
+            document.getElementById('ebookModal').classList.add('active');
+            document.getElementById('coverTitle').value = ebookConfig.title;
+            document.getElementById('coverSubtitle').value = ebookConfig.subtitle;
+
+            renderPreview('cover');
+        }
+
+        // 渲染预览
+        function renderPreview(tab) {
+            const container = document.getElementById('previewContainer');
+
+            if (tab === 'cover') {
+                const [bgStart, bgEnd, , textColor] = ebookConfig.colors;
+                container.innerHTML = `
+                    <div class="book-cover" style="--cover-bg-start: ${bgStart}; --cover-bg-end: ${bgEnd}; --cover-title-color: ${textColor}; --cover-subtitle-color: ${textColor}">
+                        ${ebookConfig.coverImage ? `<img class="cover-image" src="${ebookConfig.coverImage}" style="background: ${bgStart};">` : `<div class="cover-image" style="background: ${bgStart}; display:flex;align-items:center;justify-content:center;font-size:3rem;">💕</div>`}
+                        <div class="cover-title" style="font-family: '${ebookConfig.font}', cursive;">${ebookConfig.title}</div>
+                        <div class="cover-subtitle">${ebookConfig.subtitle}</div>
+                        <div class="cover-names">${ebookConfig.names}</div>
+                        <div class="cover-year">${selectedYear}</div>
+                    </div>
+                `;
+            } else {
+                const firstLetter = yearLetters[0] || { date: '2024-01-01', title: '示例标题', content: '这是情书内容的预览区域，展示了电子书的排版效果。正文采用舒适的行距和精美的字体，适合阅读和打印。' };
+                container.innerHTML = `
+                    <div class="book-page">
+                        <div class="page-header">
+                            <div class="page-date">${firstLetter.date}</div>
+                            <h3 class="page-title" style="font-family: '${ebookConfig.font}', cursive;">${firstLetter.title}</h3>
+                        </div>
+                        <div class="page-content">${(firstLetter.content || '').substring(0, 200)}...</div>
+                        <div class="page-footer">💕 第 1 页 · 共 ${yearLetters.length + 3} 页</div>
+                    </div>
+                `;
+            }
+
+            // 更新tab状态
+            document.querySelectorAll('.preview-tab').forEach(t => {
+                t.classList.toggle('active', t.dataset.tab === tab);
+            });
+        }
+
+        // 预览tab切换
+        document.querySelectorAll('.preview-tab').forEach(tab => {
+            tab.addEventListener('click', () => renderPreview(tab.dataset.tab));
+        });
+
+        // 封面标题/副标题同步
+        document.getElementById('coverTitle').addEventListener('input', (e) => {
+            ebookConfig.title = e.target.value;
+            renderPreview('cover');
+        });
+
+        document.getElementById('coverSubtitle').addEventListener('input', (e) => {
+            ebookConfig.subtitle = e.target.value;
+            renderPreview('cover');
+        });
+
+        // 上传封面图片
+        document.getElementById('coverUpload').addEventListener('click', () => {
+            document.getElementById('coverFileInput').click();
+        });
+
+        document.getElementById('coverFileInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    ebookConfig.coverImage = e.target.result;
+                    const preview = document.getElementById('coverPreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    document.querySelector('.upload-text').textContent = '点击更换图片';
+                    renderPreview('cover');
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // 配色选择
+        document.querySelectorAll('.color-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                ebookConfig.colors = opt.dataset.colors.split(',');
+                renderPreview('cover');
+            });
+        });
+
+        // 字体选择
+        document.querySelectorAll('.font-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                document.querySelectorAll('.font-option').forEach(o => o.classList.remove('selected'));
+                opt.classList.add('selected');
+                ebookConfig.font = opt.dataset.font;
+                renderPreview('cover');
+            });
+        });
+
+        // 下载PDF（使用打印功能）
+        document.getElementById('downloadPdf').addEventListener('click', () => {
+            generatePrintContent();
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                window.print();
+            }, 500);
+        });
+
+        // 打印
+        document.getElementById('printBtn').addEventListener('click', () => {
+            generatePrintContent();
+            showLoading();
+            setTimeout(() => {
+                hideLoading();
+                window.print();
+            }, 500);
+        });
+
+        // 生成打印内容
+        function generatePrintContent() {
+            const [bgStart, bgEnd, accent, textColor] = ebookConfig.colors;
+            const printBook = document.getElementById('printBookContent');
+            let html = '';
+
+            // 封面
+            html += `
+                <div class="print-page">
+                    <div class="print-cover" style="background: linear-gradient(135deg, ${bgStart}, ${bgEnd});">
+                        ${ebookConfig.coverImage
+                            ? `<img class="print-cover-image" src="${ebookConfig.coverImage}" alt="封面">`
+                            : `<div style="width:180px;height:180px;border-radius:20px;background:${bgStart};display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 10px 30px rgba(0,0,0,0.1);">💕</div>`
+                        }
+                        <div class="print-cover-title">${ebookConfig.title}</div>
+                        <div class="print-cover-subtitle">${ebookConfig.subtitle}</div>
+                        <div class="print-cover-names">${ebookConfig.names}</div>
+                        <div class="print-cover-year">${selectedYear}</div>
+                    </div>
+                </div>
+            `;
+
+            // 目录页
+            html += `
+                <div class="print-page">
+                    <div class="print-toc">
+                        <div class="print-toc-title">📖 目录</div>
+                        ${yearLetters.map((letter, i) => `
+                            <div class="print-toc-item">
+                                <span>${letter.title}</span>
+                                <span>${i + 1}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+
+            // 内页 - 每篇小作文
+            yearLetters.forEach((letter) => {
+                // 转换换行为段落
+                const paragraphs = (letter.content || '')
+                    .split('\n')
+                    .filter(p => p.trim())
+                    .map(p => `<p>${p}</p>`)
+                    .join('');
+
+                html += `
+                    <div class="print-page">
+                        <div class="print-letter-page">
+                            <div class="print-letter-date">${formatDate(letter.date)}</div>
+                            <div class="print-letter-title">${letter.title}</div>
+                            <div class="print-letter-content">${paragraphs}</div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // 封底
+            html += `
+                <div class="print-page">
+                    <div class="print-back-cover" style="background: linear-gradient(135deg, ${bgEnd}, ${bgStart});">
+                        <div class="print-back-text">故事还在继续，每一天都是新的篇章 ❤️</div>
+                    </div>
+                </div>
+            `;
+
+            printBook.innerHTML = html;
+        }
+
+        // 格式化日期为 YYYY.MM.DD
+        function formatDate(dateStr) {
+            if (!dateStr) return '';
+            const parts = dateStr.split('-');
+            if (parts.length >= 3) {
+                return `${parts[0]}.${parts[1]}.${parts[2]}`;
+            }
+            return dateStr;
+        }
+
+        function showLoading() {
+            document.getElementById('loadingOverlay').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').classList.remove('active');
+        }
+
+        // 初始化
+        (async () => {
+            await loadDiaries();
+            availableYears = [...new Set(diariesData.map(l => l.date ? l.date.split('-')[0] : '2025'))].sort().reverse();
+            initYearFilters();
+            applyFilters();
+
+            const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            for (let i = 0; i < (isMobileDevice ? 10 : 15); i++) setTimeout(createHeart, i * 600);
+            setInterval(createHeart, isMobileDevice ? 4000 : 2500);
+
+            window.addEventListener('resize', () => {
+                const nowMobile = window.innerWidth <= 900;
+                document.getElementById('desktopLayout').style.display = nowMobile ? 'none' : 'flex';
+                document.getElementById('mobileLayout').style.display = nowMobile ? 'block' : 'none';
+            });
+        })();
+    </script>
+
+    <!-- 跨页面音乐播放器 -->
+    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+</body>
+</html>

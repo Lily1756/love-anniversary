@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>✨ 愿望清单 - 我们的恋爱纪念册</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #ff6b9d;
+            --primary-light: #ffc2d4;
+            --bg-pink: #fff5f7;
+            --text-dark: #5a4a4a;
+            --text-muted: #a08080;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
+        }
+        
+        body {
+            font-family: 'Noto Serif SC', serif;
+            background: linear-gradient(135deg, #fff5f7 0%, #ffe4e9 50%, #fff0f5 100%);
+            min-height: 100vh;
+            color: var(--text-dark);
+        }
+        
+        /* 浮动爱心背景 */
+        .floating-hearts {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 0;
+        }
+        
+        .heart {
+            position: absolute;
+            font-size: 20px;
+            opacity: 0.3;
+            animation: floatUp 8s ease-in-out infinite;
+        }
+        
+        @keyframes floatUp {
+            0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-20px) rotate(360deg); opacity: 0; }
+        }
+        
+        /* 顶部导航 */
+        .top-bar {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(212, 165, 165, 0.2);
+        }
+        
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 107, 157, 0.1);
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            border-radius: 20px;
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 107, 157, 0.2);
+            transform: translateX(-3px);
+        }
+        
+        .page-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .nav-placeholder { width: 80px; }
+        
+        /* 主容器 */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px 20px 100px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 进度卡片 */
+        .progress-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 8px 32px rgba(212, 165, 165, 0.15);
+            text-align: center;
+        }
+        
+        .progress-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+        }
+        
+        .progress-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        
+        .progress-bar-container {
+            background: rgba(212, 165, 165, 0.2);
+            border-radius: 15px;
+            height: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .progress-bar {
+            background: linear-gradient(90deg, var(--primary-light), var(--primary));
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            position: relative;
+        }
+        
+        .progress-bar::after {
+            content: '💕';
+            position: absolute;
+            right: -5px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem;
+        }
+        
+        .progress-text {
+            margin-top: 12px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+        }
+        
+        /* 筛选标签 */
+        .filter-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .filter-btn {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: 1px solid rgba(212, 165, 165, 0.4);
+            background: rgba(255, 255, 255, 0.6);
+            color: var(--text-dark);
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        /* 愿望网格 */
+        .wishes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .wish-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            box-shadow: 0 4px 20px rgba(212, 165, 165, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .wish-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 30px rgba(212, 165, 165, 0.2);
+        }
+        
+        .wish-card.completed {
+            opacity: 0.7;
+            background: rgba(255, 255, 255, 0.5);
+        }
+        
+        .wish-card.completed .wish-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+        
+        .wish-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+        
+        .wish-checkbox {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid var(--primary);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        
+        .wish-checkbox:hover {
+            background: var(--primary-light);
+        }
+        
+        .wish-card.completed .wish-checkbox {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+        
+        .wish-card.completed .wish-checkbox::after {
+            content: '✓';
+            color: white;
+            font-size: 14px;
+        }
+        
+        .wish-content {
+            flex: 1;
+        }
+        
+        .wish-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+        
+        .wish-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .wish-category {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        .wish-category.旅行 { background: rgba(116, 203, 209, 0.2); color: #3d9ea5; }
+        .wish-category.美食 { background: rgba(255, 159, 128, 0.2); color: #e07850; }
+        .wish-category.生活 { background: rgba(196, 156, 219, 0.2); color: #9b5dc8; }
+        .wish-category.其他 { background: rgba(212, 165, 165, 0.2); color: #b88080; }
+        
+        .wish-date {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+        
+        .wish-delete {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: rgba(255, 100, 100, 0.1);
+            border: none;
+            color: #ff6b6b;
+            cursor: pointer;
+            opacity: 0;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .wish-card:hover .wish-delete {
+            opacity: 1;
+        }
+        
+        .wish-delete:hover {
+            background: rgba(255, 100, 100, 0.2);
+        }
+        
+        /* 悬浮添加按钮 */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), #ff8fab);
+            color: white;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4);
+            transition: all 0.3s ease;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(255, 107, 157, 0.5);
+        }
+        
+        .fab:active {
+            transform: scale(0.95);
+        }
+        
+        /* 模态框 */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(5px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        .modal-overlay.active {
+            display: flex;
+        }
+        
+        .modal {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .modal-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.6rem;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid rgba(212, 165, 165, 0.3);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: rgba(255, 255, 255, 0.8);
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+        }
+        
+        .category-select {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .category-option {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 2px solid rgba(212, 165, 165, 0.3);
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        
+        .category-option:hover,
+        .category-option.selected {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: 12px;
+            border: none;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .modal-btn.cancel {
+            background: rgba(212, 165, 165, 0.2);
+            color: var(--text-dark);
+        }
+        
+        .modal-btn.submit {
+            background: linear-gradient(135deg, var(--primary), #ff8fab);
+            color: white;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        /* 提示 */
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(90, 74, 74, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            z-index: 3000;
+            animation: fadeInUp 0.3s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translate(-50%, 20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+        
+        /* 响应式 */
+        @media (max-width: 600px) {
+            .top-bar {
+                padding: 12px 15px;
+            }
+            
+            .page-title {
+                font-size: 1.2rem;
+            }
+            
+            .progress-stats {
+                gap: 25px;
+            }
+            
+            .stat-number {
+                font-size: 2rem;
+            }
+            
+            .wishes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .fab {
+                bottom: 20px;
+                right: 20px;
+                width: 55px;
+                height: 55px;
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 浮动爱心 -->
+    <div class="floating-hearts" id="heartsContainer"></div>
+    
+    <!-- 顶部导航 -->
+    <div class="top-bar">
+        <a href="index.html" class="back-btn">← 返回首页</a>
+        <h1 class="page-title">✨ 愿望清单</h1>
+        <a href="writings.html" class="back-btn" style="background: rgba(255,107,157,0.1);">💌</a>
+    </div>
+    
+    <!-- 主内容 -->
+    <div class="container">
+        <!-- 进度卡片 -->
+        <div class="progress-card">
+            <h2 class="progress-title">我们的愿望进度</h2>
+            <div class="progress-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="completedCount">0</div>
+                    <div class="stat-label">已完成</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="totalCount">0</div>
+                    <div class="stat-label">总愿望</div>
+                </div>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progressBar" style="width: 0%"></div>
+            </div>
+            <p class="progress-text" id="progressText">Loading...</p>
+        </div>
+        
+        <!-- 筛选标签 -->
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="全部">全部</button>
+            <button class="filter-btn" data-filter="旅行">✈️ 旅行</button>
+            <button class="filter-btn" data-filter="美食">🍜 美食</button>
+            <button class="filter-btn" data-filter="生活">🌸 生活</button>
+            <button class="filter-btn" data-filter="其他">💫 其他</button>
+            <button class="filter-btn" data-filter="已完成">✓ 已完成</button>
+        </div>
+        
+        <!-- 愿望网格 -->
+        <div class="wishes-grid" id="wishesGrid"></div>
+    </div>
+    
+    <!-- 悬浮添加按钮 -->
+    <button class="fab" id="addBtn">+</button>
+    
+    <!-- 添加愿望模态框 -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h3 class="modal-title">🌱 种下新愿望</h3>
+            <div class="form-group">
+                <label class="form-label">愿望内容</label>
+                <input type="text" class="form-input" id="wishTitle" placeholder="例如：一起去看极光" maxlength="50">
+            </div>
+            <div class="form-group">
+                <label class="form-label">分类</label>
+                <div class="category-select">
+                    <div class="category-option selected" data-category="生活">🌸 生活</div>
+                    <div class="category-option" data-category="旅行">✈️ 旅行</div>
+                    <div class="category-option" data-category="美食">🍜 美食</div>
+                    <div class="category-option" data-category="其他">💫 其他</div>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel" id="cancelBtn">取消</button>
+                <button class="modal-btn submit" id="submitBtn">种下愿望 💕</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 数据
+        let wishesData = [];
+        let currentFilter = '全部';
+        let selectedCategory = '生活';
+        
+        // 加载数据
+        async function loadWishes() {
+            try {
+                const response = await fetch('data/wishes.json');
+                wishesData = await response.json();
+                renderWishes();
+                updateProgress();
+            } catch (error) {
+                console.error('加载愿望失败:', error);
+                wishesData = [];
+                renderWishes();
+                updateProgress();
+            }
+        }
+        
+        // 渲染愿望列表
+        function renderWishes() {
+            const grid = document.getElementById('wishesGrid');
+            
+            let filtered = wishesData;
+            
+            if (currentFilter === '已完成') {
+                filtered = wishesData.filter(w => w.completed);
+            } else if (currentFilter !== '全部') {
+                filtered = wishesData.filter(w => w.category === currentFilter);
+            }
+            
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 60px 20px; color: var(--text-muted);">
+                        <div style="font-size: 3rem; margin-bottom: 15px;">🌱</div>
+                        <p>还没有愿望哦～点击下方 + 种下第一个愿望吧！</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            grid.innerHTML = filtered.map(wish => `
+                <div class="wish-card ${wish.completed ? 'completed' : ''}" data-id="${wish.id}">
+                    <button class="wish-delete" onclick="deleteWish('${wish.id}')">×</button>
+                    <div class="wish-header">
+                        <div class="wish-checkbox" onclick="toggleWish('${wish.id}')"></div>
+                        <div class="wish-content">
+                            <div class="wish-title">${wish.title}</div>
+                            <div class="wish-meta">
+                                <span class="wish-category ${wish.category}">${getCategoryIcon(wish.category)} ${wish.category}</span>
+                                <span class="wish-date">${formatDate(wish.createdAt)}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // 获取分类图标
+        function getCategoryIcon(category) {
+            const icons = { '旅行': '✈️', '美食': '🍜', '生活': '🌸', '其他': '💫' };
+            return icons[category] || '💫';
+        }
+        
+        // 格式化日期
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return `${date.getMonth() + 1}月${date.getDate()}日`;
+        }
+        
+        // 更新进度
+        function updateProgress() {
+            const completed = wishesData.filter(w => w.completed).length;
+            const total = wishesData.length;
+            const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+            
+            document.getElementById('completedCount').textContent = completed;
+            document.getElementById('totalCount').textContent = total;
+            document.getElementById('progressBar').style.width = `${percent}%`;
+            
+            const remaining = total - completed;
+            const messages = [
+                '每一个愿望都是爱的种子 💕',
+                `还有 ${remaining} 个愿望等待实现~`,
+                `完成度 ${percent}% 继续加油！`,
+                '愿望在生根发芽中... ✨'
+            ];
+            document.getElementById('progressText').textContent = 
+                remaining > 0 ? messages[Math.floor(Math.random() * messages.length)] : '🎉 所有愿望都已实现！你们是最棒的！';
+        }
+        
+        // 切换愿望状态
+        function toggleWish(id) {
+            const wish = wishesData.find(w => w.id === id);
+            if (wish) {
+                wish.completed = !wish.completed;
+                saveWishes();
+                renderWishes();
+                updateProgress();
+                showToast(wish.completed ? '🎉 愿望已实现！' : '🌱 愿望重新种下~');
+            }
+        }
+        
+        // 删除愿望
+        function deleteWish(id) {
+            if (confirm('确定要删除这个愿望吗？')) {
+                wishesData = wishesData.filter(w => w.id !== id);
+                saveWishes();
+                renderWishes();
+                updateProgress();
+                showToast('愿望已删除');
+            }
+        }
+        
+        // 保存数据到 localStorage
+        function saveWishes() {
+            localStorage.setItem('wishes', JSON.stringify(wishesData));
+        }
+        
+        // 显示提示
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+        
+        // 创建浮动爱心
+        function createHearts() {
+            const container = document.getElementById('heartsContainer');
+            const hearts = ['💕', '💗', '💖', '💝', '❤️'];
+            
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.animationDelay = `${Math.random() * 8}s`;
+                heart.style.fontSize = `${15 + Math.random() * 15}px`;
+                container.appendChild(heart);
+            }
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            createHearts();
+            loadWishes();
+            
+            // 筛选按钮
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentFilter = btn.dataset.filter;
+                    renderWishes();
+                });
+            });
+            
+            // 分类选择
+            document.querySelectorAll('.category-option').forEach(opt => {
+                opt.addEventListener('click', () => {
+                    document.querySelectorAll('.category-option').forEach(o => o.classList.remove('selected'));
+                    opt.classList.add('selected');
+                    selectedCategory = opt.dataset.category;
+                });
+            });
+            
+            // 添加按钮
+            document.getElementById('addBtn').addEventListener('click', () => {
+                document.getElementById('modalOverlay').classList.add('active');
+                document.getElementById('wishTitle').focus();
+            });
+            
+            // 取消按钮
+            document.getElementById('cancelBtn').addEventListener('click', () => {
+                document.getElementById('modalOverlay').classList.remove('active');
+            });
+            
+            // 点击遮罩关闭
+            document.getElementById('modalOverlay').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('modalOverlay')) {
+                    document.getElementById('modalOverlay').classList.remove('active');
+                }
+            });
+            
+            // 提交按钮
+            document.getElementById('submitBtn').addEventListener('click', () => {
+                const title = document.getElementById('wishTitle').value.trim();
+                if (!title) {
+                    showToast('请输入愿望内容~');
+                    return;
+                }
+                
+                const newWish = {
+                    id: 'w' + Date.now(),
+                    title: title,
+                    category: selectedCategory,
+                    completed: false,
+                    createdAt: new Date().toISOString().split('T')[0]
+                };
+                
+                wishesData.unshift(newWish);
+                saveWishes();
+                renderWishes();
+                updateProgress();
+                
+                document.getElementById('modalOverlay').classList.remove('active');
+                document.getElementById('wishTitle').value = '';
+                showToast('🌱 愿望已种下~');
+            });
+        });
+    </script>
+
+    <!-- 跨页面音乐播放器 -->
+    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+</body>
+</html>

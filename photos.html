@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#fff0f5">
+    <title>照片墙 - 方志浩 & 张祎</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #fff0f5 100%); background-attachment: fixed; position: relative; }
+        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
+
+        .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
+        .heart { position: absolute; top: -50px; color: rgba(255, 182, 193, 0.5); font-size: 16px; animation: fall linear infinite; opacity: 0; will-change: transform, opacity; }
+        @keyframes fall { 0% { transform: translateY(-50px) rotate(0deg); opacity: 0; } 10% { opacity: 0.7; } 90% { opacity: 0.5; } 100% { transform: translateY(100vh) rotate(360deg); opacity: 0; } }
+
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; padding-bottom: 60px; }
+
+        .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: #5a4a4a; text-decoration: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; }
+        .back-btn:active { transform: scale(0.95); }
+        @media (hover: hover) { .back-btn:hover { background: #d4a5a5; color: white; } }
+        .page-title { font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; font-weight: 700; text-align: center; flex: 1; min-width: 200px; }
+
+        .photo-stats { display: flex; justify-content: center; gap: 25px; margin-bottom: 25px; font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: #a08080; }
+        .stats-item { display: flex; align-items: center; gap: 6px; }
+        .stats-number { color: #d4a5a5; font-weight: 600; font-size: 1.1rem; }
+
+        .photo-grid { column-count: 4; column-gap: 20px; }
+        .photo-card { break-inside: avoid; margin-bottom: 20px; background: white; border-radius: 16px; padding: 10px; box-shadow: 0 6px 24px rgba(212,165,165,0.15); cursor: pointer; transition: all 0.3s ease; position: relative; overflow: hidden; min-height: 44px; }
+        .photo-card:active { transform: scale(0.98); }
+        @media (hover: hover) { .photo-card:hover { transform: translateY(-5px); box-shadow: 0 12px 40px rgba(212,165,165,0.3); } .photo-card:hover .photo-overlay { opacity: 1; } .photo-card:hover .photo-image { transform: scale(1.05); } }
+
+        .photo-wrapper { position: relative; overflow: hidden; border-radius: 10px; }
+        .photo-image { width: 100%; display: block; transition: transform 0.4s ease; }
+        .photo-overlay { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 15px 15px; background: linear-gradient(transparent, rgba(90,74,74,0.85)); opacity: 0; transition: opacity 0.3s ease; }
+        .photo-overlay-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.1rem; color: white; margin-bottom: 5px; }
+        .photo-overlay-date { font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: rgba(255,255,255,0.8); }
+
+        .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        .lightbox.active { display: flex; opacity: 1; }
+        .lightbox-content { max-width: 90vw; max-height: 85vh; position: relative; animation: scaleIn 0.3s ease; }
+        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .lightbox-image { max-width: 100%; max-height: 75vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+        .lightbox-info { text-align: center; padding: 20px; color: white; }
+        .lightbox-title { font-family: 'Ma Shan Zheng', cursive; font-size: clamp(1.3rem,4vw,1.8rem); margin-bottom: 8px; }
+        .lightbox-date { font-family: 'Poppins', sans-serif; font-size: 0.95rem; color: rgba(255,255,255,0.7); }
+        .lightbox-close { position: absolute; top: 20px; right: 20px; width: 44px; height: 44px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: white; font-size: 1.5rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .lightbox-close:active { transform: scale(0.9); background: rgba(255,255,255,0.3); }
+        @media (hover: hover) { .lightbox-close:hover { background: rgba(255,255,255,0.3); } }
+        .lightbox-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 50px; height: 50px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; color: white; font-size: 1.5rem; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .lightbox-nav:active { transform: translateY(-50%) scale(0.9); background: rgba(255,255,255,0.3); }
+        @media (hover: hover) { .lightbox-nav:hover { background: rgba(255,255,255,0.3); } }
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
+        .lightbox-counter { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: rgba(255,255,255,0.6); }
+
+        @media (max-width: 1100px) { .photo-grid { column-count: 3; } }
+        @media (max-width: 768px) {
+            .container { padding: 15px; }
+            .top-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .back-btn { align-self: flex-start; }
+            .page-title { text-align: left; min-width: auto; }
+            .photo-stats { flex-wrap: wrap; justify-content: center; }
+            .photo-grid { column-count: 2; column-gap: 15px; }
+            .photo-card { margin-bottom: 15px; }
+            .lightbox-nav { width: 40px; height: 40px; font-size: 1.2rem; }
+            .lightbox-prev { left: 10px; }
+            .lightbox-next { right: 10px; }
+        }
+        @media (max-width: 480px) {
+            .page-title { font-size: 1.3rem; }
+            .photo-grid { column-count: 2; column-gap: 12px; }
+            .photo-card { padding: 8px; margin-bottom: 12px; border-radius: 12px; }
+            .photo-overlay { padding: 30px 10px 10px; }
+            .photo-overlay-title { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="hearts-container" id="heartsContainer"></div>
+
+    <div class="container">
+        <div class="top-bar">
+            <a href="index.html" class="back-btn">← 返回首页</a>
+            <h1 class="page-title">📸 我们的回忆胶片</h1>
+            <div class="nav-links">
+                <a href="writings.html" class="back-btn" style="padding: 6px 10px; font-size: 0.8rem;">💌</a>
+                <a href="travels.html" class="back-btn" style="padding: 6px 10px; font-size: 0.8rem;">🌍</a>
+                <a href="wishes.html" class="back-btn" style="padding: 6px 10px; font-size: 0.8rem;">✨</a>
+            </div>
+        </div>
+
+        <div class="photo-stats">
+            <div class="stats-item"><span class="stats-number" id="totalPhotos">6</span> 张照片</div>
+            <a href="travels.html" style="color: #ff6b9d; text-decoration: none; font-size: 0.9rem;">🗺️ 足迹地图</a>
+        </div>
+
+        <div class="photo-grid" id="photoGrid"></div>
+    </div>
+
+    <div class="lightbox" id="lightbox">
+        <button class="lightbox-close" id="lightboxClose">✕</button>
+        <button class="lightbox-nav lightbox-prev" id="lightboxPrev">‹</button>
+        <button class="lightbox-nav lightbox-next" id="lightboxNext">›</button>
+        <div class="lightbox-content">
+            <img class="lightbox-image" id="lightboxImage" src="" alt="">
+            <div class="lightbox-info">
+                <div class="lightbox-title" id="lightboxTitle"></div>
+                <div class="lightbox-date" id="lightboxDate"></div>
+            </div>
+        </div>
+        <div class="lightbox-counter" id="lightboxCounter"></div>
+    </div>
+
+    <script>
+        const photosData = [
+            { id: 1, src: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80', title: '在一起的每一天', date: '2025' },
+            { id: 2, src: 'https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80', title: '第一次约会', date: '2025' },
+            { id: 3, src: 'https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80', title: '一起看日落', date: '2025' },
+            { id: 4, src: 'https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?w=600&q=80', title: '日常的甜蜜', date: '2025' },
+            { id: 5, src: 'https://images.unsplash.com/photo-1515023115689-589c33041d3c?w=600&q=80', title: '生日惊喜', date: '2025' },
+            { id: 6, src: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80', title: '温暖陪伴', date: '2025' },
+        ];
+
+        let currentLightboxIndex = 0;
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+        function renderPhotos() {
+            const grid = document.getElementById('photoGrid');
+            grid.innerHTML = '';
+            const isMobileScreen = window.innerWidth <= 768;
+
+            photosData.forEach((photo, index) => {
+                const card = document.createElement('div');
+                card.className = 'photo-card';
+                const src = isMobileScreen ? photo.src.replace('w=600', 'w=400') : photo.src;
+                card.innerHTML = `
+                    <div class="photo-wrapper">
+                        <img class="photo-image" src="${src}" alt="${photo.title}" loading="lazy" decoding="async">
+                        <div class="photo-overlay">
+                            <div class="photo-overlay-title">${photo.title}</div>
+                            <div class="photo-overlay-date">${photo.date}</div>
+                        </div>
+                    </div>`;
+                card.addEventListener('click', () => openLightbox(index));
+                grid.appendChild(card);
+            });
+
+            document.getElementById('totalPhotos').textContent = photosData.length;
+        }
+
+        function openLightbox(index) {
+            currentLightboxIndex = index;
+            const photo = photosData[index];
+            document.getElementById('lightboxImage').src = photo.src;
+            document.getElementById('lightboxTitle').textContent = photo.title;
+            document.getElementById('lightboxDate').textContent = photo.date;
+            document.getElementById('lightboxCounter').textContent = `${index + 1} / ${photosData.length}`;
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function navigateLightbox(direction) {
+            currentLightboxIndex += direction;
+            if (currentLightboxIndex < 0) currentLightboxIndex = photosData.length - 1;
+            if (currentLightboxIndex >= photosData.length) currentLightboxIndex = 0;
+            openLightbox(currentLightboxIndex);
+        }
+
+        document.getElementById('lightboxClose').addEventListener('click', closeLightbox);
+        document.getElementById('lightboxPrev').addEventListener('click', () => navigateLightbox(-1));
+        document.getElementById('lightboxNext').addEventListener('click', () => navigateLightbox(1));
+        document.getElementById('lightbox').addEventListener('click', (e) => { if (e.target.id === 'lightbox') closeLightbox(); });
+
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('lightbox').classList.contains('active')) return;
+            if (e.key === 'Escape') closeLightbox();
+            if (e.key === 'ArrowLeft') navigateLightbox(-1);
+            if (e.key === 'ArrowRight') navigateLightbox(1);
+        });
+
+        let touchStartX = 0;
+        document.getElementById('lightbox').addEventListener('touchstart', (e) => { touchStartX = e.changedTouches[0].screenX; }, { passive: true });
+        document.getElementById('lightbox').addEventListener('touchend', (e) => {
+            const diff = touchStartX - e.changedTouches[0].screenX;
+            if (Math.abs(diff) > 50) navigateLightbox(diff > 0 ? 1 : -1);
+        }, { passive: true });
+
+        function createHeart() {
+            const container = document.getElementById('heartsContainer');
+            const heart = document.createElement('div');
+            heart.className = 'heart';
+            heart.innerHTML = '💕';
+            const isMobileScreen = window.innerWidth <= 768;
+            heart.style.fontSize = (isMobileScreen ? Math.random() * 10 + 8 : Math.random() * 15 + 10) + 'px';
+            heart.style.left = Math.random() * 100 + '%';
+            heart.style.animationDuration = (isMobileScreen ? Math.random() * 5 + 6 : Math.random() * 7 + 8) + 's';
+            heart.style.animationDelay = Math.random() * 3 + 's';
+            container.appendChild(heart);
+            setTimeout(() => heart.remove(), 15000);
+        }
+
+        (() => {
+            renderPhotos();
+            for (let i = 0; i < (isMobileDevice ? 10 : 15); i++) setTimeout(createHeart, i * 600);
+            setInterval(createHeart, isMobileDevice ? 4000 : 2500);
+        })();
+    </script>
+
+    <!-- 跨页面音乐播放器 -->
+    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+</body>
+</html>
