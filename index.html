@@ -2262,7 +2262,7 @@
         // 密码验证
         function checkPassword() {
             const password = document.getElementById('lockInput').value.trim();
-            const correctPassword = appData.password || defaultData.password;
+            const correctPassword = (appData && appData.password) || defaultData.password;
             if (password === correctPassword) {
                 appData.unlocked = true;
                 saveData(appData);
