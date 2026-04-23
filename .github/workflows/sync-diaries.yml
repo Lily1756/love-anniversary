@@ -1,0 +1,43 @@
+name: 自动同步滴答清单小作文
+
+on:
+  # 每天北京时间 08:00 自动同步（UTC 00:00）
+  schedule:
+    - cron: '0 0 * * *'
+
+  # 也可以在 GitHub 网页上手动点击触发
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          # 使用 PAT 以便后续 push
+          token: ${{ secrets.GH_PAT }}
+
+      - name: 设置 Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 安装依赖
+        run: pip install requests
+
+      - name: 运行同步脚本
+        env:
+          DIDA_TOKEN: ${{ secrets.DIDA_TOKEN }}
+          DIDA_PROJECT_ID: ${{ secrets.DIDA_PROJECT_ID }}
+        run: python3 sync_diaries.py --no-push
+
+      - name: 提交并推送更新
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add diaries.json
+          # 没有变更时不报错
+          git diff --cached --quiet || git commit -m "chore: 自动同步滴答清单小作文 [$(date '+%Y-%m-%d %H:%M')]"
+          git push

@@ -9,6 +9,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* 【强制移动端适配】全局防溢出规则 */
+        html { max-width: 100vw; overflow-x: hidden; }
+        body { max-width: 100vw; overflow-x: hidden; font-size: 14px; }
+        *, *::before, *::after { max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
+        img { max-width: 100%; height: auto; display: block; }
+        div, section, article, aside, header, footer, nav, main { max-width: 100vw; overflow-x: hidden; }
+        .top-bar, .wish-list, .filter-tabs, .tab-content, .wish-actions, .modal-content { flex-wrap: wrap; }
         
         :root {
             --primary: #ff6b9d;
@@ -25,6 +33,8 @@
             background: linear-gradient(135deg, #fff5f7 0%, #ffe4e9 50%, #fff0f5 100%);
             min-height: 100vh;
             color: var(--text-dark);
+            /* 移动端基础字体不小于14px */
+            font-size: 14px;
         }
         
         /* 浮动爱心背景 */
@@ -80,6 +90,10 @@
             text-decoration: none;
             font-size: 0.9rem;
             transition: all 0.3s ease;
+            /* 移动端最小点击区域 */
+            min-height: 44px;
+            min-width: 44px;
+            touch-action: manipulation;
         }
         
         .back-btn:hover {
@@ -514,35 +528,199 @@
             from { opacity: 0; transform: translate(-50%, 20px); }
             to { opacity: 1; transform: translate(-50%, 0); }
         }
-        
+
         /* 响应式 */
         @media (max-width: 600px) {
             .top-bar {
                 padding: 12px 15px;
             }
-            
+
             .page-title {
                 font-size: 1.2rem;
             }
-            
+
             .progress-stats {
                 gap: 25px;
             }
-            
+
             .stat-number {
                 font-size: 2rem;
             }
-            
+
             .wishes-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .fab {
                 bottom: 20px;
                 right: 20px;
                 width: 55px;
                 height: 55px;
                 font-size: 24px;
+            }
+        }
+
+        /* =============================================
+           【强制移动端适配】iPhone SE (375px) 专项修复
+           ============================================= */
+        @media (max-width: 480px) {
+            /* 全局重置 - 强制防溢出 */
+            * {
+                max-width: 100vw !important;
+                overflow-x: hidden !important;
+                box-sizing: border-box;
+            }
+
+            html, body {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+            }
+
+            /* 顶部导航优化 */
+            .top-bar {
+                padding: 10px 12px !important;
+                gap: 8px !important;
+            }
+
+            .back-btn {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 8px 12px !important;
+                font-size: 14px !important;
+            }
+
+            .page-title {
+                font-size: 1.1rem !important;
+            }
+
+            /* 主容器 */
+            .container {
+                padding: 12px !important;
+                padding-bottom: 100px !important;
+            }
+
+            /* 进度卡片 */
+            .progress-card {
+                padding: 15px !important;
+                margin-bottom: 15px !important;
+            }
+
+            .progress-title {
+                font-size: 1rem !important;
+                margin-bottom: 10px !important;
+            }
+
+            .progress-stats {
+                gap: 15px !important;
+            }
+
+            .stat-number {
+                font-size: 1.8rem !important;
+            }
+
+            .stat-label {
+                font-size: 0.8rem !important;
+            }
+
+            /* 筛选标签 */
+            .filter-tabs {
+                gap: 6px !important;
+                overflow-x: auto !important;
+                flex-wrap: nowrap !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding-bottom: 5px !important;
+            }
+
+            .tab-btn {
+                flex-shrink: 0 !important;
+                min-height: 36px !important;
+                padding: 6px 12px !important;
+                font-size: 13px !important;
+            }
+
+            /* 愿望卡片 */
+            .wishes-grid {
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+            }
+
+            .wish-card {
+                padding: 12px !important;
+            }
+
+            .wish-category {
+                font-size: 0.75rem !important;
+                padding: 4px 8px !important;
+            }
+
+            .wish-content {
+                font-size: 0.95rem !important;
+                line-height: 1.5 !important;
+            }
+
+            .wish-actions {
+                gap: 8px !important;
+            }
+
+            .wish-btn {
+                min-height: 36px !important;
+                min-width: 36px !important;
+                padding: 6px 10px !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* 浮窗按钮 */
+            .fab {
+                bottom: 80px !important;
+                right: 15px !important;
+                width: 50px !important;
+                height: 50px !important;
+                font-size: 22px !important;
+            }
+
+            /* 模态框 */
+            .modal {
+                padding: 10px !important;
+            }
+
+            .modal-content {
+                padding: 15px !important;
+                border-radius: 16px !important;
+            }
+
+            .modal-title {
+                font-size: 1.1rem !important;
+                margin-bottom: 12px !important;
+            }
+
+            .modal-actions {
+                gap: 10px !important;
+            }
+
+            /* 表单 */
+            input, textarea, select {
+                font-size: 16px !important;
+                min-height: 44px !important;
+                padding: 10px !important;
+            }
+
+            textarea {
+                min-height: 100px !important;
+            }
+
+            /* 音乐播放器位置 */
+            iframe#musicIframe {
+                bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+                left: 15px !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            /* 所有按钮最小点击区域 */
+            button, .back-btn, .wish-btn, .fab, .tab-btn, .modal-btn {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                touch-action: manipulation !important;
             }
         }
     </style>
@@ -834,9 +1012,23 @@
                 showToast('🌱 愿望已种下~');
             });
         });
+
+        // 监听 localStorage 变化，同步音乐状态
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
+                const iframe = document.getElementById('musicIframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'syncMusic',
+                        isPlaying: localStorage.getItem('musicPlaying') === 'true',
+                        currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
+                    }, '*');
+                }
+            }
+        });
     </script>
 
     <!-- 跨页面音乐播放器 -->
-    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+    <iframe src="music-player.html" style="position: fixed; bottom: 25px; left: 25px; width: 44px; height: 44px; border: none; z-index: 9998; background: transparent;" allow="autoplay" id="musicIframe" title="音乐播放器"></iframe>
 </body>
 </html>

@@ -4,9 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>我们的足迹 💕</title>
-    <link href="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/mapbox-gl@3.3.0/dist/mapbox-gl.js"></script>
+    
+    <!-- 高德地图 JS API v2.0 - 使用2D地图，加载更快更稳定 -->
+    <script type="text/javascript">
+        window._AMapSecurityConfig = {
+            securityJsCode: 'd52254856752846d31c64c4c5b5b3f0e', // 高德地图安全密钥
+        }
+    </script>
+    <script src="https://webapi.amap.com/maps?v=2.0&key=0d7320794fc3e21c8aab5fe3b0e0c4c2&plugin=AMap.InfoWindow"></script>
+    
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    
     <style>
         * {
             margin: 0;
@@ -18,12 +26,12 @@
             --primary: #ff6b9d;
             --primary-light: #ffa4c4;
             --secondary: #c44569;
-            --glass-bg: rgba(255, 255, 255, 0.15);
-            --glass-border: rgba(255, 255, 255, 0.3);
-            --glass-shadow: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(30, 30, 60, 0.7);
+            --glass-border: rgba(255, 107, 157, 0.3);
+            --glass-shadow: rgba(0, 0, 0, 0.3);
             --text-light: #fff;
             --text-dark: #2d3436;
-            --timeline-bg: rgba(255, 255, 255, 0.95);
+            --timeline-bg: rgba(30, 30, 60, 0.95);
         }
 
         body {
@@ -68,10 +76,10 @@
             align-items: center;
             justify-content: space-between;
             padding: 0 20px;
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--glass-border);
+            background: rgba(20, 20, 50, 0.85);
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 107, 157, 0.3);
             z-index: 1000;
         }
 
@@ -123,8 +131,8 @@
             gap: 5px;
         }
 
-        /* Map Container */
-        #map {
+        /* Map Container - 高德地图容器占满全屏 */
+        #container {
             position: fixed;
             top: 0;
             left: 0;
@@ -141,21 +149,21 @@
             bottom: 20px;
             width: 320px;
             max-width: calc(100vw - 40px);
-            background: var(--glass-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            background: rgba(25, 25, 55, 0.9);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            z-index: 100;
+            border: 1px solid rgba(255, 107, 157, 0.3);
+            z-index: 500;
             display: flex;
             flex-direction: column;
             overflow: hidden;
-            box-shadow: 0 8px 32px var(--glass-shadow);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
         }
 
         .timeline-header {
             padding: 20px;
-            border-bottom: 1px solid var(--glass-border);
+            border-bottom: 1px solid rgba(255, 107, 157, 0.3);
             background: linear-gradient(135deg, rgba(255, 107, 157, 0.2), rgba(196, 69, 105, 0.1));
         }
 
@@ -194,7 +202,7 @@
             gap: 15px;
             padding: 15px;
             margin-bottom: 10px;
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(255, 255, 255, 0.08);
             border-radius: 12px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -202,14 +210,14 @@
         }
 
         .timeline-item:hover {
-            background: rgba(255, 107, 157, 0.2);
-            border-color: var(--primary);
+            background: rgba(255, 107, 157, 0.25);
+            border-color: rgba(255, 107, 157, 0.5);
             transform: translateX(5px);
         }
 
         .timeline-item.active {
-            background: linear-gradient(135deg, rgba(255, 107, 157, 0.3), rgba(196, 69, 105, 0.2));
-            border-color: var(--primary);
+            background: linear-gradient(135deg, rgba(255, 107, 157, 0.4), rgba(196, 69, 105, 0.3));
+            border-color: rgba(255, 107, 157, 0.6);
         }
 
         .timeline-date {
@@ -256,91 +264,98 @@
             overflow: hidden;
         }
 
-        /* Heart Marker */
+        /* Custom Heart Marker - SVG样式 */
+        .amap-marker {
+            pointer-events: auto !important;
+        }
+
         .heart-marker {
             width: 40px;
             height: 40px;
             cursor: pointer;
             transition: transform 0.3s ease;
+            filter: drop-shadow(0 0 8px rgba(255, 107, 157, 0.5));
         }
 
         .heart-marker:hover {
-            transform: scale(1.2);
+            transform: scale(1.3);
         }
 
-        .heart-marker svg {
-            width: 100%;
-            height: 100%;
-            filter: drop-shadow(0 0 10px rgba(255, 107, 157, 0.8));
+        .heart-marker.active {
+            filter: drop-shadow(0 0 12px rgba(255, 107, 157, 0.7));
+            animation: heartbeat 0.6s ease-in-out infinite;
         }
 
-        .heart-marker.pulse::after {
-            content: '';
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            background: rgba(255, 107, 157, 0.4);
-            animation: pulse 2s infinite;
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(2); opacity: 0; }
-        }
-
-        /* Popup Card */
-        .mapboxgl-popup {
-            max-width: 320px !important;
-            z-index: 200;
-        }
-
-        .mapboxgl-popup-content {
-            background: rgba(255, 255, 255, 0.95) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px !important;
-            border: 1px solid rgba(255, 107, 157, 0.3);
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        /* InfoWindow Customization - 粉白温柔风 */
+        .amap-info-content {
             padding: 0 !important;
+        }
+
+        .amap-info-sharp {
+            display: none !important;
+        }
+
+        .amap-info-contentContainer {
+            background: transparent !important;
+        }
+
+        .custom-info-window {
+            width: 280px;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(255, 248, 250, 0.95));
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            border: 2px solid rgba(255, 107, 157, 0.3);
+            box-shadow: 0 10px 40px rgba(255, 107, 157, 0.2), 0 4px 15px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
 
-        .mapboxgl-popup-tip {
-            border-top-color: rgba(255, 255, 255, 0.95) !important;
+        .custom-info-window .close-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 107, 157, 0.2);
+            border: none;
+            border-radius: 50%;
+            color: var(--secondary);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
         }
 
-        .mapboxgl-popup-close-button {
-            color: var(--secondary) !important;
-            font-size: 20px;
-            padding: 10px;
-            right: 5px;
-            top: 5px;
+        .custom-info-window .close-btn:hover {
+            background: var(--primary);
+            color: white;
         }
 
-        .popup-card {
-            width: 280px;
-        }
-
-        .popup-photo {
+        .custom-info-window .photo {
             width: 100%;
             height: 150px;
             object-fit: cover;
-            border-radius: 20px 20px 0 0;
+            border-radius: 18px 18px 0 0;
         }
 
-        .popup-body {
+        .custom-info-window .body {
             padding: 15px;
         }
 
-        .popup-place {
+        .custom-info-window .place {
             font-family: 'ZCOOL XiaoWei', serif;
             font-size: 18px;
             color: var(--secondary);
             margin-bottom: 5px;
         }
 
-        .popup-date {
+        .custom-info-window .date {
             font-size: 12px;
             color: var(--primary);
             margin-bottom: 10px;
@@ -349,7 +364,7 @@
             gap: 5px;
         }
 
-        .popup-memory {
+        .custom-info-window .memory {
             font-size: 13px;
             color: var(--text-dark);
             line-height: 1.6;
@@ -370,7 +385,7 @@
             font-size: 14px;
             font-weight: 600;
             cursor: pointer;
-            z-index: 150;
+            z-index: 600;
             box-shadow: 0 5px 20px rgba(255, 107, 157, 0.4);
             transition: all 0.3s ease;
         }
@@ -390,6 +405,7 @@
                 max-height: 60vh;
                 border-radius: 20px 20px 0 0;
                 transition: bottom 0.4s ease;
+                z-index: 600;
             }
 
             .timeline.open {
@@ -439,7 +455,7 @@
         .loading-heart svg {
             width: 100%;
             height: 100%;
-            fill: var(--primary);
+            fill: #ff8fab;
         }
 
         @keyframes heartbeat {
@@ -453,25 +469,42 @@
             color: rgba(255, 255, 255, 0.7);
         }
 
-        /* Controls */
-        .mapboxgl-ctrl-group {
-            background: var(--glass-bg) !important;
+        /* 高德地图控件样式调整 */
+        .amap-zoomcontrol {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 248, 250, 0.9)) !important;
             backdrop-filter: blur(10px) !important;
-            border-radius: 10px !important;
-            border: 1px solid var(--glass-border) !important;
+            border: 1px solid rgba(255, 107, 157, 0.3) !important;
+            border-radius: 12px !important;
+            overflow: hidden;
         }
 
-        .mapboxgl-ctrl-group button {
+        .amap-zoomcontrol .amap-zoom-btn {
+            width: 36px !important;
+            height: 36px !important;
+            line-height: 36px !important;
+            font-size: 18px !important;
+            color: var(--secondary) !important;
             background: transparent !important;
-            border-color: var(--glass-border) !important;
+            border-bottom: 1px solid rgba(255, 107, 157, 0.2) !important;
         }
 
-        .mapboxgl-ctrl-group button:hover {
-            background: rgba(255, 107, 157, 0.2) !important;
+        .amap-zoomcontrol .amap-zoom-btn:last-child {
+            border-bottom: none !important;
         }
 
-        .mapboxgl-ctrl-icon {
-            filter: invert(1);
+        .amap-zoomcontrol .amap-zoom-btn:hover {
+            background: linear-gradient(135deg, var(--primary), var(--secondary)) !important;
+            color: white !important;
+        }
+
+        .amap-controlbar {
+            display: none !important;
+        }
+
+        /* Ensure music player iframe is clickable */
+        iframe#musicIframe {
+            pointer-events: auto !important;
+            opacity: 1 !important;
         }
     </style>
 </head>
@@ -486,7 +519,7 @@
                 <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
             </svg>
         </div>
-        <div class="loading-text">正在飞向我们的足迹 ✈️</div>
+        <div class="loading-text">正在加载我们的足迹 ✈️</div>
     </div>
 
     <!-- Navigation -->
@@ -509,8 +542,8 @@
         </div>
     </nav>
 
-    <!-- Map Container -->
-    <div id="map"></div>
+    <!-- Map Container - 高德地图容器占满全屏 -->
+    <div id="container"></div>
 
     <!-- Timeline Sidebar -->
     <aside class="timeline" id="timeline">
@@ -539,26 +572,25 @@
     </button>
 
     <script>
+        /* =============================================
+           【彻底重建】足迹页面 - 使用高德地图 JS API
+           ============================================= */
+        
         // ========================================
-        // Mapbox Configuration
+        // Global State - 全局状态管理
         // ========================================
-        // IMPORTANT: Please replace with your own Mapbox token
-        // Get one for free at: https://account.mapbox.com/
-        const MAPBOX_TOKEN = 'pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw';
-
+        let map = null;                    // 高德地图实例
+        let travelsData = [];              // 足迹数据
+        let markers = [];                  // 标记数组
+        let infoWindow = null;             // 信息窗体实例
+        let currentMarkerId = null;        // 当前选中的标记ID
+        
         // ========================================
-        // Global State
-        // ========================================
-        let map;
-        let travelsData = [];
-        let activeMarker = null;
-
-        // ========================================
-        // Initialize Stars Background
+        // 初始化星空背景
         // ========================================
         function createStars() {
             const starsContainer = document.getElementById('stars');
-            const starCount = 200;
+            const starCount = 150;
 
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
@@ -571,114 +603,104 @@
                 starsContainer.appendChild(star);
             }
         }
-
+        
         // ========================================
-        // Load Travels Data
+        // 加载足迹数据
         // ========================================
         async function loadTravelsData() {
             try {
-                const response = await fetch('data/travels.json');
+                const response = await fetch('data/travels.json?t=' + Date.now());
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
                 travelsData = await response.json();
+                console.log('Travels data loaded:', travelsData.length, 'items');
                 return travelsData;
             } catch (error) {
                 console.error('Failed to load travels data:', error);
                 return [];
             }
         }
-
+        
         // ========================================
-        // Initialize Map
+        // 【核心重建】初始化高德地图
+        // 中心点设为 [116.397128, 39.916527] (北京)
+        // 缩放级别为 5
         // ========================================
-        async function initMap() {
-            mapboxgl.accessToken = MAPBOX_TOKEN;
-
-            map = new mapboxgl.Map({
-                container: 'map',
-                style: {
-                    version: 8,
-                    sources: {
-                        'carto-dark': {
-                            type: 'raster',
-                            tiles: [
-                                'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-                                'https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png',
-                                'https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png'
-                            ],
-                            tileSize: 256,
-                            attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
-                        },
-                        // 高德地图瓦片（卫星图）- 作为备用
-                        'amap-satellite': {
-                            type: 'raster',
-                            tiles: [
-                                'https://webst0{s}.is.autonavi.com/appstudioxe/v3/map/st Satellite/{z}/{x}/{y}?fm=127&ak=your_amap_ak'
-                            ],
-                            tileSize: 256,
-                            bounds: [72.0, 18.0, 135.0, 54.0],
-                            attribution: '&copy; 高德地图'
-                        }
-                    },
-                    layers: [
-                        {
-                            id: 'carto-dark-layer',
-                            type: 'raster',
-                            source: 'carto-dark',
-                            minzoom: 0,
-                            maxzoom: 22
-                        }
-                    ]
-                },
-                center: [105.0, 35.0], // China center
-                zoom: 3,
-                minZoom: 1.5,
-                maxZoom: 18,
-                projection: 'globe',
-                maxBounds: [[-180, -85], [180, 85]]
+        function initMap() {
+            return new Promise((resolve, reject) => {
+                // 确保AMap已加载
+                if (typeof AMap === 'undefined') {
+                    console.error('高德地图API未加载');
+                    reject(new Error('AMap not loaded'));
+                    return;
+                }
+                
+                try {
+                    // 创建地图实例 - 2D地图，加载更快更稳定
+                    map = new AMap.Map('container', {
+                        zoom: 5,                              // 初始缩放级别为5
+                        center: [116.397128, 39.916527],      // 中心点：北京 [经度, 纬度]
+                        viewMode: '2D',                       // 使用2D视图
+                        mapStyle: 'amap://styles/whitesmoke', // 浅色地图风格
+                        resizeEnable: true,                   // 监控地图容器尺寸变化
+                        showIndoorMap: false,                 // 不显示室内地图
+                        touchZoom: true,                      // 开启触摸缩放
+                        dragEnable: true,                     // 允许拖拽
+                        zoomEnable: true,                     // 允许缩放
+                        doubleClickZoom: true,                // 允许双击放大
+                        keyboardEnable: true,                 // 允许键盘控制
+                    });
+                    
+                    // 地图加载完成事件
+                    map.on('complete', function() {
+                        console.log('高德地图加载完成');
+                        resolve(map);
+                    });
+                    
+                    // 监听缩放结束事件，用于更新标记动画
+                    map.on('zoomchange', function() {
+                        updateMarkerAnimation();
+                    });
+                    
+                } catch (error) {
+                    console.error('Map initialization error:', error);
+                    reject(error);
+                }
             });
-
-            // Set atmosphere and fog for 3D globe effect
-            map.on('style.load', () => {
-                map.setFog({
-                    range: [-1, 2],
-                    'horizon-blend': 0.1,
-                    color: 'rgb(10, 10, 30)',
-                    'high-color': 'rgb(30, 30, 80)',
-                    'space-color': 'rgb(5, 5, 15)',
-                    'star-intensity': 0.8
-                });
-            });
-
-            // Wait for map to load
-            await new Promise(resolve => map.on('load', resolve));
-
-            return map;
         }
-
+        
         // ========================================
-        // Create Heart Marker
+        // 创建自定义爱心标记
         // ========================================
-        function createHeartMarker() {
-            const el = document.createElement('div');
-            el.className = 'heart-marker';
-            el.innerHTML = `
-                <svg viewBox="0 0 24 24" fill="#ff6b9d">
+        function createHeartMarkerIcon(isActive = false) {
+            const size = 40;
+            const svgContent = `
+                <svg viewBox="0 0 24 24" fill="#ff6b9d" class="heart-marker ${isActive ? 'active' : ''}">
                     <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                 </svg>
             `;
-            return el;
+            
+            return new AMap.DivIcon({
+                html: svgContent,
+                size: new AMap.Pixel(size, size),
+                imageSize: new AMap.Pixel(size, size),
+                className: 'amap-marker'
+            });
         }
-
+        
         // ========================================
-        // Create Popup Content
+        // 创建信息窗体内容
         // ========================================
-        function createPopupContent(travel) {
+        function createInfoWindowContent(travel) {
             const photo = travel.photo || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600';
             return `
-                <div class="popup-card">
-                    <img src="${photo}" alt="${travel.name}" class="popup-photo" onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600'">
-                    <div class="popup-body">
-                        <div class="popup-place">${travel.name}</div>
-                        <div class="popup-date">
+                <div class="custom-info-window">
+                    <button class="close-btn" onclick="closeInfoWindow()">✕</button>
+                    <img src="${photo}" alt="${travel.name}" class="photo" onerror="this.src='https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600'">
+                    <div class="body">
+                        <div class="place">💕 ${travel.name}</div>
+                        <div class="date">
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
                                 <line x1="16" y1="2" x2="16" y2="6"/>
@@ -687,76 +709,160 @@
                             </svg>
                             ${travel.date}
                         </div>
-                        <div class="popup-memory">${travel.memory}</div>
+                        <div class="memory">${travel.memory}</div>
                     </div>
                 </div>
             `;
         }
-
+        
         // ========================================
-        // Add Markers to Map
+        // 关闭信息窗体
+        // ========================================
+        function closeInfoWindow() {
+            if (infoWindow) {
+                infoWindow.close();
+            }
+            // 移除所有标记的active状态
+            document.querySelectorAll('.heart-marker').forEach(el => {
+                el.classList.remove('active');
+            });
+            currentMarkerId = null;
+        }
+        
+        // ========================================
+        // 添加足迹标记到地图
         // ========================================
         function addMarkers() {
-            travelsData.forEach(travel => {
-                const el = createHeartMarker();
-
-                // Create marker
-                const marker = new mapboxgl.Marker({
-                    element: el,
-                    anchor: 'center'
-                })
-                .setLngLat(travel.location)
-                .setPopup(
-                    new mapboxgl.Popup({ offset: 25, closeButton: true })
-                    .setHTML(createPopupContent(travel))
-                )
-                .addTo(map);
-
-                // Add click event to timeline item
-                el.addEventListener('click', () => {
-                    flyToLocation(travel);
+            if (!map || travelsData.length === 0) return;
+            
+            // 创建信息窗体实例
+            infoWindow = new AMap.InfoWindow({
+                isCustom: true,
+                autoMove: true,
+                closeWhenClickMap: true,
+                offsets: [0, -20]
+            });
+            
+            travelsData.forEach((travel, index) => {
+                // 获取坐标 (travels.json中的格式是 [经度, 纬度])
+                const position = new AMap.LngLat(travel.location[0], travel.location[1]);
+                
+                // 创建标记
+                const marker = new AMap.Marker({
+                    position: position,
+                    icon: createHeartMarkerIcon(false),
+                    offset: new AMap.Pixel(-20, -20),
+                    extData: { id: travel.id, index: index }
+                });
+                
+                // 鼠标点击标记事件
+                marker.on('click', function() {
+                    const markerId = this.getExtData().id;
+                    const travelItem = travelsData.find(t => t.id === markerId);
+                    
+                    if (travelItem) {
+                        // 打开信息窗体
+                        infoWindow.setContent(createInfoWindowContent(travelItem));
+                        infoWindow.open(map, position);
+                        
+                        // 更新标记状态
+                        updateMarkerState(markerId);
+                        
+                        // 高亮时间轴项
+                        highlightTimelineItem(markerId);
+                    }
+                });
+                
+                // 标记添加到地图
+                marker.setMap(map);
+                
+                // 保存标记引用
+                markers.push({
+                    id: travel.id,
+                    marker: marker,
+                    position: position
                 });
             });
-        }
-
-        // ========================================
-        // Fly to Location
-        // ========================================
-        function flyToLocation(travel) {
-            // Close any open popup
-            if (activeMarker) {
-                activeMarker.togglePopup();
+            
+            // 如果只有一个标记，设置合适的缩放级别
+            if (travelsData.length === 1) {
+                map.setZoomAndCenter(12, markers[0].position);
+            } else if (travelsData.length > 1) {
+                // 自动调整视野以显示所有标记
+                map.setFitView(markers.map(m => m.marker), false, [80, 80, 80, 350], 12);
             }
-
-            // Find and open the marker popup
-            map.eachLayer(layer => {
-                if (layer instanceof mapboxgl.Marker && layer.getLngLat().lng === travel.location[0]) {
-                    activeMarker = layer;
-                    layer.togglePopup();
+        }
+        
+        // ========================================
+        // 更新标记状态
+        // ========================================
+        function updateMarkerState(clickedId) {
+            // 更新所有标记图标
+            markers.forEach(m => {
+                const isActive = m.id === clickedId;
+                m.marker.setIcon(createHeartMarkerIcon(isActive));
+            });
+            
+            // 更新CSS类
+            document.querySelectorAll('.heart-marker').forEach(el => {
+                if (el.closest('.amap-marker')) {
+                    // 查找对应的DOM元素
+                    const markerEl = el.closest('.amap-marker');
+                    const parent = markerEl.parentElement;
+                    if (parent && parent.classList.contains('amap-marker')) {
+                        el.classList.toggle('active', el.dataset.id === clickedId);
+                    }
                 }
             });
-
-            // Fly to location
-            map.flyTo({
-                center: travel.location,
-                zoom: 12,
-                speed: 1.2,
-                curve: 1.4,
-                essential: true
-            });
-
-            // Highlight timeline item
-            highlightTimelineItem(travel.id);
+            
+            currentMarkerId = clickedId;
         }
-
+        
         // ========================================
-        // Build Timeline
+        // 更新标记动画
+        // ========================================
+        function updateMarkerAnimation() {
+            if (currentMarkerId) {
+                updateMarkerState(currentMarkerId);
+            }
+        }
+        
+        // ========================================
+        // 【核心功能】时间轴与地图联动
+        // 点击时间轴中的地点，地图平滑移动到该地点的标记，并自动弹出信息窗体
+        // ========================================
+        function flyToLocation(travel) {
+            if (!map) return;
+            
+            // 查找对应的标记
+            const markerData = markers.find(m => m.id === travel.id);
+            
+            if (markerData) {
+                // 更新标记状态
+                updateMarkerState(travel.id);
+                
+                // 平滑移动地图到该位置
+                map.setFitView([markerData.marker], false, [80, 80, 80, 350], 14);
+                
+                // 延迟打开信息窗体，等待地图移动完成
+                setTimeout(() => {
+                    infoWindow.setContent(createInfoWindowContent(travel));
+                    infoWindow.open(map, markerData.position);
+                }, 500);
+                
+                // 高亮时间轴项
+                highlightTimelineItem(travel.id);
+            }
+        }
+        
+        // ========================================
+        // 构建时间轴
         // ========================================
         function buildTimeline() {
             const timelineList = document.getElementById('timelineList');
             const timelineCount = document.getElementById('timelineCount');
 
-            // Sort by date descending
+            // 按日期降序排序
             const sortedData = [...travelsData].sort((a, b) => new Date(b.date) - new Date(a.date));
 
             timelineCount.textContent = `共 ${sortedData.length} 个足迹`;
@@ -777,24 +883,27 @@
                         <span class="timeline-month">${month}月</span>
                     </div>
                     <div class="timeline-content">
-                        <div class="timeline-place">${travel.name}</div>
+                        <div class="timeline-place">💕 ${travel.name}</div>
                         <div class="timeline-memo">${travel.memory}</div>
                     </div>
                 `;
 
+                // 点击时间轴项事件 - 触发地图移动和信息窗体显示
                 item.addEventListener('click', () => {
-                    // Remove active class from all items
+                    // 移除所有时间轴项的active状态
                     document.querySelectorAll('.timeline-item').forEach(i => i.classList.remove('active'));
                     item.classList.add('active');
+                    
+                    // 地图移动到该位置并显示信息窗体
                     flyToLocation(travel);
                 });
 
                 timelineList.appendChild(item);
             });
         }
-
+        
         // ========================================
-        // Highlight Timeline Item
+        // 高亮时间轴项
         // ========================================
         function highlightTimelineItem(id) {
             document.querySelectorAll('.timeline-item').forEach(item => {
@@ -805,9 +914,9 @@
                 }
             });
         }
-
+        
         // ========================================
-        // Mobile Timeline Toggle
+        // 移动端时间轴切换
         // ========================================
         function initMobileTimeline() {
             const toggle = document.getElementById('timelineToggle');
@@ -817,7 +926,14 @@
                 timeline.classList.toggle('open');
             });
 
-            // Close timeline when clicking outside on mobile
+            // 在移动端，点击地图区域关闭时间轴
+            document.getElementById('container').addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    timeline.classList.remove('open');
+                }
+            });
+
+            // 点击时间轴外部关闭
             document.addEventListener('click', (e) => {
                 if (window.innerWidth <= 768 &&
                     !timeline.contains(e.target) &&
@@ -826,40 +942,64 @@
                 }
             });
         }
-
+        
         // ========================================
-        // Initialize
+        // 初始化
         // ========================================
         async function init() {
-            // Create stars background
-            createStars();
+            try {
+                // 创建星空背景
+                createStars();
 
-            // Load data
-            await loadTravelsData();
+                // 加载数据
+                await loadTravelsData();
 
-            // Build timeline
-            buildTimeline();
+                // 构建时间轴
+                buildTimeline();
 
-            // Initialize mobile timeline toggle
-            initMobileTimeline();
+                // 初始化移动端时间轴切换
+                initMobileTimeline();
 
-            // Initialize map
-            await initMap();
+                // 初始化高德地图
+                await initMap();
 
-            // Add markers
-            addMarkers();
-
-            // Hide loading overlay
-            setTimeout(() => {
-                document.getElementById('loading').classList.add('hidden');
-            }, 1500);
+                // 添加标记
+                addMarkers();
+                
+            } catch (error) {
+                console.error('Initialization error:', error);
+            } finally {
+                // 无论成功与否，1.5秒后隐藏loading
+                setTimeout(() => {
+                    const loading = document.getElementById('loading');
+                    if (loading) {
+                        loading.classList.add('hidden');
+                    }
+                }, 1500);
+            }
         }
 
-        // Start
+        // ========================================
+        // 启动应用
+        // ========================================
         init();
+
+        // 监听 localStorage 变化，同步音乐状态
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
+                const iframe = document.getElementById('musicIframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'syncMusic',
+                        isPlaying: localStorage.getItem('musicPlaying') === 'true',
+                        currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
+                    }, '*');
+                }
+            }
+        });
     </script>
 
     <!-- 跨页面音乐播放器 -->
-    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+    <iframe src="music-player.html" style="position: fixed; bottom: 25px; left: 25px; width: 44px; height: 44px; border: none; z-index: 99999; background: transparent;" allow="autoplay; fullscreen" id="musicIframe" title="音乐播放器"></iframe>
 </body>
 </html>

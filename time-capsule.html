@@ -827,9 +827,23 @@
                 showToast('⏳ 时间胶囊已埋下~');
             });
         });
+
+        // 监听 localStorage 变化，同步音乐状态
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
+                const iframe = document.getElementById('musicIframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'syncMusic',
+                        isPlaying: localStorage.getItem('musicPlaying') === 'true',
+                        currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
+                    }, '*');
+                }
+            }
+        });
     </script>
 
     <!-- 跨页面音乐播放器 -->
-    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+    <iframe src="music-player.html" style="position: fixed; bottom: 25px; left: 25px; width: 44px; height: 44px; border: none; z-index: 9998; background: transparent;" allow="autoplay" id="musicIframe" title="音乐播放器"></iframe>
 </body>
 </html>

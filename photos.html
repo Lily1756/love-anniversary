@@ -11,8 +11,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #fff0f5 100%); background-attachment: fixed; position: relative; }
+        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; /* 强制防溢出 */ max-width: 100vw; overflow-x: hidden; }
+
+        /* 【强制移动端适配】全局防溢出规则 */
+        *, *::before, *::after { max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
+        img { max-width: 100%; height: auto; display: block; }
+        div, section, article, aside, header, footer, nav, main { max-width: 100vw; overflow-x: hidden; }
+        .container, .top-bar, .photo-stats { flex-wrap: wrap; }
+        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #fff0f5 100%); background-attachment: fixed; position: relative; /* 移动端基础字体不小于14px */ font-size: 14px; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
 
         .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
@@ -22,7 +28,7 @@
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; padding-bottom: 60px; }
 
         .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: #5a4a4a; text-decoration: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: #5a4a4a; text-decoration: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; min-height: 44px; min-width: 44px; }
         .back-btn:active { transform: scale(0.95); }
         @media (hover: hover) { .back-btn:hover { background: #d4a5a5; color: white; } }
         .page-title { font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; font-weight: 700; text-align: center; flex: 1; min-width: 200px; }
@@ -42,7 +48,7 @@
         .photo-overlay-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.1rem; color: white; margin-bottom: 5px; }
         .photo-overlay-date { font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: rgba(255,255,255,0.8); }
 
-        .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; }
+        .lightbox { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); z-index: 9999; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s ease; /* 强制防溢出 */ max-width: 100vw; max-height: 100vh; overflow: hidden; }
         .lightbox.active { display: flex; opacity: 1; }
         .lightbox-content { max-width: 90vw; max-height: 85vh; position: relative; animation: scaleIn 0.3s ease; }
         @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -79,6 +85,153 @@
             .photo-card { padding: 8px; margin-bottom: 12px; border-radius: 12px; }
             .photo-overlay { padding: 30px 10px 10px; }
             .photo-overlay-title { font-size: 1rem; }
+        }
+
+        /* =============================================
+           【强制移动端适配】iPhone SE (375px) 专项修复
+           ============================================= */
+        @media (max-width: 480px) {
+            /* 全局重置 - 强制防溢出 */
+            * {
+                max-width: 100vw !important;
+                overflow-x: hidden !important;
+                box-sizing: border-box;
+            }
+
+            html, body {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+            }
+
+            /* 容器限制 */
+            .container {
+                padding: 12px !important;
+                max-width: 100vw !important;
+                padding-bottom: 80px !important;
+            }
+
+            /* 顶部导航优化 */
+            .top-bar {
+                gap: 8px !important;
+            }
+
+            .back-btn, .nav-links a {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 10px 12px !important;
+                font-size: 14px !important;
+            }
+
+            .page-title {
+                font-size: 1.2rem !important;
+                min-width: auto !important;
+                text-align: center !important;
+            }
+
+            /* 照片统计 */
+            .photo-stats {
+                gap: 15px !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* 瀑布流网格 */
+            .photo-grid {
+                column-count: 2 !important;
+                column-gap: 10px !important;
+            }
+
+            .photo-card {
+                padding: 6px !important;
+                margin-bottom: 10px !important;
+                border-radius: 10px !important;
+                min-height: unset !important;
+            }
+
+            .photo-wrapper {
+                border-radius: 8px !important;
+            }
+
+            .photo-overlay {
+                padding: 25px 8px 8px !important;
+            }
+
+            .photo-overlay-title {
+                font-size: 0.9rem !important;
+            }
+
+            .photo-overlay-date {
+                font-size: 0.75rem !important;
+            }
+
+            /* 灯箱优化 */
+            .lightbox {
+                z-index: 99999 !important;
+            }
+
+            .lightbox-content {
+                max-width: 95vw !important;
+                max-height: 90vh !important;
+            }
+
+            .lightbox-image {
+                max-width: 95vw !important;
+                max-height: 70vh !important;
+                border-radius: 8px !important;
+            }
+
+            .lightbox-close {
+                top: 15px !important;
+                right: 15px !important;
+                width: 40px !important;
+                height: 40px !important;
+                font-size: 1.2rem !important;
+            }
+
+            .lightbox-nav {
+                width: 36px !important;
+                height: 36px !important;
+                font-size: 1rem !important;
+            }
+
+            .lightbox-prev {
+                left: 10px !important;
+            }
+
+            .lightbox-next {
+                right: 10px !important;
+            }
+
+            .lightbox-info {
+                padding: 15px !important;
+            }
+
+            .lightbox-title {
+                font-size: 1.1rem !important;
+            }
+
+            .lightbox-date {
+                font-size: 0.85rem !important;
+            }
+
+            .lightbox-counter {
+                bottom: 15px !important;
+                font-size: 0.85rem !important;
+            }
+
+            /* 音乐播放器位置 */
+            iframe#musicIframe {
+                bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+                left: 15px !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            /* 所有按钮最小点击区域 */
+            button, .back-btn, .photo-card, .lightbox-close, .lightbox-nav {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                touch-action: manipulation !important;
+            }
         }
     </style>
 </head>
@@ -216,9 +369,23 @@
             for (let i = 0; i < (isMobileDevice ? 10 : 15); i++) setTimeout(createHeart, i * 600);
             setInterval(createHeart, isMobileDevice ? 4000 : 2500);
         })();
+
+        // 监听 localStorage 变化，同步音乐状态
+        window.addEventListener('storage', (e) => {
+            if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
+                const iframe = document.getElementById('musicIframe');
+                if (iframe && iframe.contentWindow) {
+                    iframe.contentWindow.postMessage({
+                        type: 'syncMusic',
+                        isPlaying: localStorage.getItem('musicPlaying') === 'true',
+                        currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
+                    }, '*');
+                }
+            }
+        });
     </script>
 
     <!-- 跨页面音乐播放器 -->
-    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+    <iframe src="music-player.html" style="position: fixed; bottom: 25px; left: 25px; width: 44px; height: 44px; border: none; z-index: 9998; background: transparent;" allow="autoplay" id="musicIframe" title="音乐播放器"></iframe>
 </body>
 </html>

@@ -11,8 +11,14 @@
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@500;600&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #fff0f5 100%); background-attachment: fixed; position: relative; }
+        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; /* 强制防溢出 */ max-width: 100vw; overflow-x: hidden; }
+
+        /* 【强制移动端适配】全局防溢出规则 */
+        *, *::before, *::after { max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
+        img { max-width: 100%; height: auto; display: block; }
+        div, section, article, aside, header, footer, nav, main { max-width: 100vw; overflow-x: hidden; }
+        .container, .top-bar, .filter-section, .year-filters, .desktop-layout, .letter-list-item { flex-wrap: wrap; }
+        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background: linear-gradient(135deg, #fff0f5 0%, #ffe4e1 50%, #fff0f5 100%); background-attachment: fixed; position: relative; /* 移动端基础字体不小于14px */ font-size: 14px; }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
 
         .hearts-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 0; }
@@ -22,13 +28,13 @@
         .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
 
         .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: #5a4a4a; text-decoration: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; }
+        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: #5a4a4a; text-decoration: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; min-height: 44px; min-width: 44px; }
         .back-btn:active { transform: scale(0.95); }
         @media (hover: hover) { .back-btn:hover { background: #d4a5a5; color: white; } }
         .page-title { font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; font-weight: 700; text-align: center; flex: 1; min-width: 200px; }
 
         /* 生成电子书按钮 */
-        .generate-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; border: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255,107,157,0.4); white-space: nowrap; }
+        .generate-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: linear-gradient(135deg, #ff6b9d, #c44569); color: white; border: none; border-radius: 25px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(255,107,157,0.4); white-space: nowrap; min-height: 44px; }
         .generate-btn:active { transform: scale(0.95); }
         @media (hover: hover) { .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255,107,157,0.5); } }
 
@@ -39,7 +45,7 @@
         .year-btn.active { background: linear-gradient(135deg, #d4a5a5, #ffb6c1); color: white; border-color: transparent; }
         @media (hover: hover) { .year-btn:hover:not(.active) { background: rgba(212,165,165,0.3); } }
         .search-box { flex: 1; min-width: 200px; max-width: 350px; position: relative; }
-        .search-input { width: 100%; padding: 12px 20px 12px 45px; border: 1px solid rgba(212,165,165,0.3); border-radius: 25px; font-size: 0.95rem; background: rgba(255,255,255,0.8); color: #5a4a4a; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); outline: none; transition: all 0.3s ease; }
+        .search-input { width: 100%; padding: 12px 20px 12px 45px; border: 1px solid rgba(212,165,165,0.3); border-radius: 25px; font-size: 16px; /* 移动端输入框字体不小于16px，防止iOS自动缩放 */ background: rgba(255,255,255,0.8); color: #5a4a4a; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); outline: none; transition: all 0.3s ease; }
         .search-input::placeholder { color: #a08080; }
         .search-input:focus { border-color: #d4a5a5; box-shadow: 0 0 0 3px rgba(212,165,165,0.2); }
         .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #d4a5a5; font-size: 1.1rem; pointer-events: none; }
@@ -469,6 +475,170 @@
             .page-title { font-size: 1.3rem; }
             .year-btn { padding: 10px 14px; font-size: 0.9rem; min-height: 44px; min-width: 44px; }
             .mobile-selector { padding: 14px 15px; font-size: 0.95rem; min-height: 48px; }
+        }
+
+        /* =============================================
+           【强制移动端适配】iPhone SE (375px) 专项修复
+           ============================================= */
+        @media (max-width: 480px) {
+            /* 全局重置 - 强制防溢出 */
+            * {
+                max-width: 100vw !important;
+                overflow-x: hidden !important;
+                box-sizing: border-box;
+            }
+
+            html, body {
+                font-size: 14px !important;
+                line-height: 1.5 !important;
+            }
+
+            /* 容器限制 */
+            .container {
+                padding: 12px !important;
+                max-width: 100vw !important;
+            }
+
+            /* 顶部导航优化 */
+            .top-bar {
+                gap: 8px !important;
+            }
+
+            .back-btn, .generate-btn {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 10px 15px !important;
+                font-size: 14px !important;
+            }
+
+            .page-title {
+                font-size: 1.2rem !important;
+                min-width: auto !important;
+                text-align: center !important;
+            }
+
+            /* 筛选器优化 */
+            .filter-section {
+                gap: 10px !important;
+            }
+
+            .year-filters {
+                gap: 6px !important;
+                overflow-x: auto !important;
+                flex-wrap: nowrap !important;
+                -webkit-overflow-scrolling: touch !important;
+                padding-bottom: 5px !important;
+            }
+
+            .year-btn {
+                flex-shrink: 0 !important;
+                min-width: 50px !important;
+                padding: 8px 12px !important;
+            }
+
+            .search-box {
+                min-width: auto !important;
+            }
+
+            /* 搜索框 */
+            .search-input {
+                font-size: 16px !important;
+                min-height: 44px !important;
+                padding: 10px 15px 10px 40px !important;
+            }
+
+            /* 阅读区域 */
+            .reading-area {
+                padding: 20px 15px !important;
+            }
+
+            .reading-header {
+                margin-bottom: 15px !important;
+                padding-bottom: 15px !important;
+            }
+
+            .reading-title {
+                font-size: 1.3rem !important;
+            }
+
+            .reading-content {
+                font-size: 14px !important;
+                line-height: 1.8 !important;
+                padding: 0 5px !important;
+            }
+
+            /* 移动端选择器 */
+            .mobile-selector {
+                font-size: 16px !important;
+                min-height: 48px !important;
+                padding: 12px 15px !important;
+            }
+
+            .mobile-reading-area {
+                padding: 15px 12px !important;
+            }
+
+            /* 侧边栏列表 */
+            .letters-sidebar {
+                width: 100% !important;
+                max-height: 200px !important;
+                padding: 15px !important;
+            }
+
+            .letter-list-item {
+                padding: 12px 10px !important;
+            }
+
+            .letter-list-title {
+                font-size: 1rem !important;
+            }
+
+            /* 模态框优化 */
+            .modal-content {
+                margin: 10px !important;
+                max-height: 90vh !important;
+                padding: 15px !important;
+            }
+
+            .modal-header {
+                padding: 15px !important;
+            }
+
+            .modal-title {
+                font-size: 1.2rem !important;
+            }
+
+            .modal-body {
+                padding: 15px !important;
+            }
+
+            .action-buttons {
+                flex-direction: column !important;
+                gap: 10px !important;
+            }
+
+            /* 音乐播放器位置 */
+            iframe#musicIframe {
+                bottom: calc(20px + env(safe-area-inset-bottom)) !important;
+                left: 15px !important;
+                width: 40px !important;
+                height: 40px !important;
+            }
+
+            /* 所有按钮最小点击区域 */
+            button, .back-btn, .generate-btn, .year-btn, .modal-close, .action-btn {
+                min-height: 44px !important;
+                min-width: 44px !important;
+                padding: 10px !important;
+                touch-action: manipulation !important;
+            }
+
+            /* 输入框优化 */
+            input, textarea, select {
+                font-size: 16px !important;
+                min-height: 44px !important;
+                padding: 12px !important;
+            }
         }
     </style>
 </head>
@@ -1092,10 +1262,24 @@
                 document.getElementById('desktopLayout').style.display = nowMobile ? 'none' : 'flex';
                 document.getElementById('mobileLayout').style.display = nowMobile ? 'block' : 'none';
             });
+
+            // 监听 localStorage 变化，同步音乐状态
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
+                    const iframe = document.getElementById('musicIframe');
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({
+                            type: 'syncMusic',
+                            isPlaying: localStorage.getItem('musicPlaying') === 'true',
+                            currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
+                        }, '*');
+                    }
+                }
+            });
         })();
     </script>
 
     <!-- 跨页面音乐播放器 -->
-    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 1000; background: transparent;" allow="autoplay" id="musicIframe"></iframe>
+    <iframe src="music-player.html" style="position: fixed; bottom: 25px; left: 25px; width: 44px; height: 44px; border: none; z-index: 9998; background: transparent;" allow="autoplay" id="musicIframe" title="音乐播放器"></iframe>
 </body>
 </html>

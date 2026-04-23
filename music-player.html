@@ -2,211 +2,203 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>音乐播放器</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            background: transparent; 
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        html, body { 
+            background: transparent !important; 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-        }
-        .music-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .music-btn {
-            width: 44px;
-            height: 44px;
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(10px);
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.6);
-            box-shadow: 0 4px 20px rgba(212,165,165,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 1.1rem;
-            color: #ff6b9d;
-        }
-        .music-btn:active { transform: scale(0.95); }
-        .music-btn.playing {
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
-            color: white;
-        }
-        .music-expanded {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(20px);
-            border-radius: 24px;
-            padding: 15px 20px;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.15);
-            display: none;
-            align-items: center;
-            gap: 12px;
-        }
-        .music-expanded.open { display: flex; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .music-info { flex: 1; min-width: 0; }
-        .music-title { font-size: 0.9rem; font-weight: 600; color: #5a4a4a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .music-artist { font-size: 0.75rem; color: #a08080; }
-        .music-controls { display: flex; align-items: center; gap: 8px; }
-        .music-play-btn {
-            width: 36px;
-            height: 36px;
-            background: linear-gradient(135deg, #ff6b9d, #ff8fab);
-            border: none;
-            border-radius: 50%;
-            color: white;
-            font-size: 0.9rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-        }
-        .music-play-btn:active { transform: scale(0.9); }
-        .music-close {
-            width: 28px;
-            height: 28px;
-            background: rgba(212,165,165,0.2);
-            border: none;
-            border-radius: 50%;
-            color: #a08080;
-            cursor: pointer;
-            font-size: 0.8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .music-close:hover { background: rgba(212,165,165,0.4); }
-        .music-progress {
-            width: 80px;
-            height: 4px;
-            background: rgba(212,165,165,0.2);
-            border-radius: 2px;
             overflow: hidden;
+            height: 50px;
+            width: 50px;
         }
-        .music-progress-bar {
-            height: 100%;
-            background: linear-gradient(90deg, #ffc2d4, #ff6b9d);
-            border-radius: 2px;
-            width: 0%;
-            transition: width 0.1s linear;
+        body {
+            background: transparent !important;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .music-time {
-            font-size: 0.7rem;
-            color: #a08080;
-            min-width: 70px;
-            text-align: center;
+        
+        /* 主播放器按钮 */
+        .music-btn {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #D4B5B5, #E2C5C5);
+            border-radius: 50%;
+            border: none;
+            box-shadow: 0 4px 20px rgba(212, 181, 181, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            color: white;
+            line-height: 1;
+            outline: none !important;
+            -webkit-tap-highlight-color: transparent;
+            position: relative;
+            z-index: 10;
+        }
+        .music-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(212, 181, 181, 0.6);
+        }
+        .music-btn:active {
+            transform: scale(0.95);
+            outline: none !important;
+            box-shadow: 0 2px 10px rgba(212, 181, 181, 0.4);
+        }
+        .music-btn.playing {
+            background: linear-gradient(135deg, #E2C5C5, #D4B5B5);
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 4px 20px rgba(212, 181, 181, 0.5); }
+            50% { box-shadow: 0 4px 30px rgba(212, 181, 181, 0.8); }
+        }
+        .music-btn::-moz-focus-inner {
+            border: 0 !important;
+            padding: 0 !important;
+        }
+        .music-btn:focus {
+            outline: none !important;
+            box-shadow: none !important;
         }
     </style>
 </head>
 <body>
-    <div class="music-container">
-        <div class="music-btn" id="musicBtn">🎵</div>
-        <div class="music-expanded" id="musicExpanded">
-            <div class="music-info">
-                <div class="music-title">一次就好</div>
-                <div class="music-artist">倪金威</div>
-            </div>
-            <div class="music-controls">
-                <button class="music-play-btn" id="musicPlayBtn">▶</button>
-            </div>
-            <div class="music-progress">
-                <div class="music-progress-bar" id="musicProgressBar"></div>
-            </div>
-            <div class="music-time" id="musicTime">0:00 / 0:00</div>
-            <button class="music-close" id="musicClose">✕</button>
-        </div>
-    </div>
+    <button class="music-btn" id="musicBtn" title="点击播放/暂停音乐">🎵</button>
 
-    <audio id="audioPlayer" preload="metadata">
+    <audio id="audioPlayer" preload="auto">
         <source src="music/once.mp3" type="audio/mpeg">
     </audio>
 
     <script>
-        // 音乐播放器状态
         let isPlaying = localStorage.getItem('musicPlaying') === 'true';
         let currentTime = parseFloat(localStorage.getItem('musicCurrentTime') || '0');
+        let audioReady = false;
         
         const musicBtn = document.getElementById('musicBtn');
-        const musicExpanded = document.getElementById('musicExpanded');
-        const musicPlayBtn = document.getElementById('musicPlayBtn');
         const audioPlayer = document.getElementById('audioPlayer');
-        const musicProgressBar = document.getElementById('musicProgressBar');
-        const musicTime = document.getElementById('musicTime');
 
-        // 初始化播放状态
-        if (isPlaying) {
-            musicBtn.classList.add('playing');
-            musicPlayBtn.textContent = '⏸';
+        // 初始化状态
+        function initState() {
+            if (isPlaying) {
+                musicBtn.classList.add('playing');
+                musicBtn.textContent = '⏸';
+            } else {
+                musicBtn.textContent = '🎵';
+            }
         }
 
-        // 点击按钮展开/收起
-        musicBtn.addEventListener('click', () => {
-            musicExpanded.classList.toggle('open');
-        });
-
-        document.getElementById('musicClose').addEventListener('click', () => {
-            musicExpanded.classList.remove('open');
-        });
-
-        // 播放/暂停
-        musicPlayBtn.addEventListener('click', () => {
+        // 播放/暂停切换
+        function togglePlay() {
+            if (!audioReady) {
+                // 音频未准备好，尝试加载
+                audioPlayer.load();
+                audioReady = true;
+                return;
+            }
+            
             if (isPlaying) {
                 audioPlayer.pause();
                 isPlaying = false;
-                musicPlayBtn.textContent = '▶';
+                musicBtn.textContent = '🎵';
                 musicBtn.classList.remove('playing');
                 localStorage.setItem('musicPlaying', 'false');
-                localStorage.setItem('musicCurrentTime', audioPlayer.currentTime);
+                localStorage.setItem('musicCurrentTime', audioPlayer.currentTime.toString());
+                broadcastState();
             } else {
                 audioPlayer.play().then(() => {
                     isPlaying = true;
-                    musicPlayBtn.textContent = '⏸';
+                    musicBtn.textContent = '⏸';
                     musicBtn.classList.add('playing');
                     localStorage.setItem('musicPlaying', 'true');
-                }).catch(e => console.log('播放失败:', e));
+                    broadcastState();
+                }).catch(e => {
+                    console.log('播放失败:', e);
+                });
+            }
+        }
+
+        // 点击按钮
+        musicBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            togglePlay();
+        });
+
+        // 广播状态
+        function broadcastState() {
+            try {
+                localStorage.setItem('musicPlaying', isPlaying.toString());
+                localStorage.setItem('musicCurrentTime', (audioPlayer.currentTime || 0).toString());
+                
+                // 尝试 postMessage
+                if (window.parent !== window) {
+                    window.parent.postMessage({
+                        type: 'musicState',
+                        isPlaying: isPlaying,
+                        currentTime: audioPlayer.currentTime
+                    }, '*');
+                }
+            } catch (e) {}
+        }
+
+        // 监听来自其他页面的消息
+        window.addEventListener('message', (e) => {
+            if (e.data && e.data.type === 'musicToggle') {
+                togglePlay();
             }
         });
 
-        // 进度条更新
-        audioPlayer.addEventListener('timeupdate', () => {
-            if (audioPlayer.duration) {
-                const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
-                musicProgressBar.style.width = percent + '%';
-                musicTime.textContent = formatTime(audioPlayer.currentTime) + ' / ' + formatTime(audioPlayer.duration);
-                localStorage.setItem('musicCurrentTime', audioPlayer.currentTime);
+        // 音频加载完成
+        audioPlayer.addEventListener('canplay', () => {
+            audioReady = true;
+            initState();
+            
+            // 恢复到之前的播放位置
+            if (currentTime > 0 && currentTime < audioPlayer.duration) {
+                audioPlayer.currentTime = currentTime;
+            }
+            
+            // 如果之前在播放，则继续播放
+            if (isPlaying) {
+                audioPlayer.play().catch(() => {
+                    // 自动播放失败，等待用户交互
+                    isPlaying = false;
+                    musicBtn.textContent = '🎵';
+                    musicBtn.classList.remove('playing');
+                    localStorage.setItem('musicPlaying', 'false');
+                });
             }
         });
 
         // 播放结束
         audioPlayer.addEventListener('ended', () => {
             isPlaying = false;
-            musicPlayBtn.textContent = '▶';
+            musicBtn.textContent = '🎵';
             musicBtn.classList.remove('playing');
             localStorage.setItem('musicPlaying', 'false');
             localStorage.setItem('musicCurrentTime', '0');
+            broadcastState();
         });
 
-        // 格式化时间
-        function formatTime(seconds) {
-            const mins = Math.floor(seconds / 60);
-            const secs = Math.floor(seconds % 60);
-            return mins + ':' + (secs < 10 ? '0' : '') + secs;
-        }
-
-        // 从上次位置继续播放
-        audioPlayer.addEventListener('loadedmetadata', () => {
-            if (currentTime > 0 && currentTime < audioPlayer.duration) {
-                audioPlayer.currentTime = currentTime;
-            }
-            if (isPlaying) {
-                audioPlayer.play().catch(() => {});
+        // 播放时间更新
+        audioPlayer.addEventListener('timeupdate', () => {
+            if (audioPlayer.duration) {
+                localStorage.setItem('musicCurrentTime', audioPlayer.currentTime.toString());
             }
         });
+
+        // 立即初始化
+        initState();
     </script>
 </body>
 </html>
