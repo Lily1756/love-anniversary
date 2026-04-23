@@ -8,11 +8,13 @@
 """
 
 import argparse
+import base64
 import json
 import os
 import subprocess
 import sys
 from datetime import datetime, timezone
+from typing import Optional
 
 try:
     import requests
@@ -21,10 +23,15 @@ except ImportError:
     import requests
 
 # ── 默认配置（可被命令行参数覆盖，也可用环境变量）──────────────────────
-DEFAULT_TOKEN      = os.environ.get("DIDA_TOKEN",      "f8d74bb2-8e63-408d-b80c-9cb4148ff87b")
-DEFAULT_PROJECT_ID = os.environ.get("DIDA_PROJECT_ID", "6845963d432211b6777fcb65")
-API_BASE           = "https://api.dida365.com/open/v1"
-DIARIES_PATH       = os.path.join(os.path.dirname(__file__), "diaries.json")
+DEFAULT_TOKEN       = os.environ.get("DIDA_TOKEN",      "f8d74bb2-8e63-408d-b80c-9cb4148ff87b")
+DEFAULT_PROJECT_ID  = os.environ.get("DIDA_PROJECT_ID", "6845963d432211b6777fcb65")
+DEFAULT_GH_TOKEN    = os.environ.get("GH_TOKEN",         "")
+GH_API_BASE         = "https://api.github.com"
+REPO_OWNER          = "Lily1756"
+REPO_NAME           = "love-anniversary"
+FILE_PATH           = "diaries.json"
+API_BASE            = "https://api.dida365.com/open/v1"
+DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "diaries.json")
 
 
 def fetch_tasks(token: str, project_id: str) -> list:
@@ -93,34 +100,49 @@ def write_diaries(entries: list) -> None:
     print(f"  ✅ 写入 {len(entries)} 条到 diaries.json")
 
 
-def git_commit_push(message: str) -> None:
-    """git add → commit → push"""
-    repo_dir = os.path.dirname(__file__)
-    cmds = [
-        ["git", "-C", repo_dir, "add", "diaries.json"],
-        ["git", "-C", repo_dir, "commit", "-m", message, "--allow-empty"],
-        ["git", "-C", repo_dir, "push"],
-    ]
-    for cmd in cmds:
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            # commit 无变更时 allow-empty 会成功；push 失败才报错
-            if "nothing to commit" in (result.stdout + result.stderr):
-                print("  ℹ️  没有变更，跳过 commit")
-                return
-            print(f"  ⚠️  命令失败: {' '.join(cmd)}")
-            print(f"     stdout: {result.stdout.strip()}")
-            print(f"     stderr: {result.stderr.strip()}")
-            raise RuntimeError(f"git 操作失败: {' '.join(cmd)}")
-    print("  ✅ git push 成功，Netlify 将自动重新部署")
+def get_github_file_sha(token: str, owner: str, repo: str, path: str) -> Optional[str]:
+    """通过 GitHub API 获取文件当前的 SHA（用于更新）"""
+    url = f"{GH_API_BASE}/repos/{owner}/{repo}/contents/{path}"
+    headers = {"Authorization": f"Bearer {token}", "Accept": "application/vnd.github+json"}
+    resp = requests.get(url, headers=headers, timeout=15)
+    if resp.status_code == 200:
+        return resp.json().get("sha")
+    return None  # 文件不存在，返回 None
+
+
+def github_api_push(token: str, owner: str, repo: str, path: str, content: str, message: str) -> None:
+    """通过 GitHub API 直接更新文件（无需 git push）"""
+    url = f"{GH_API_BASE}/repos/{owner}/{repo}/contents/{path}"
+    headers = {
+        "Authorization": f"Bearer {token}",
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    payload = {
+        "message": message,
+        "content": base64.b64encode(content.encode("utf-8")).decode("ascii"),
+    }
+    # 尝试获取现有 SHA（如果文件已存在）
+    sha = get_github_file_sha(token, owner, repo, path)
+    if sha:
+        payload["sha"] = sha
+
+    resp = requests.put(url, headers=headers, json=payload, timeout=15)
+    if resp.status_code in (200, 201):
+        print("  ✅ GitHub API 推送成功，Netlify 将自动重新部署")
+    else:
+        resp_text = resp.text
+        raise RuntimeError(f"GitHub API 推送失败: {resp.status_code} {resp_text}")
 
 
 def main():
     parser = argparse.ArgumentParser(description="同步滴答清单小作文到 diaries.json")
-    parser.add_argument("--token",      default=DEFAULT_TOKEN,      help="滴答 Access Token")
-    parser.add_argument("--project-id", default=DEFAULT_PROJECT_ID, help="滴答项目 ID")
-    parser.add_argument("--dry-run",    action="store_true",         help="只打印，不写入也不 push")
-    parser.add_argument("--no-push",    action="store_true",         help="更新文件但不 git push")
+    parser.add_argument("--token",       default=DEFAULT_TOKEN,       help="滴答 Access Token")
+    parser.add_argument("--project-id", default=DEFAULT_PROJECT_ID,  help="滴答项目 ID")
+    parser.add_argument("--gh-token",    default=DEFAULT_GH_TOKEN,   help="GitHub PAT（通过 API 推送，必填）")
+    parser.add_argument("--dry-run",     action="store_true",          help="只打印，不写入也不推送")
+    parser.add_argument("--no-push",     action="store_true",          help="只更新本地文件，不推送到 GitHub")
     args = parser.parse_args()
 
     print("\n💕 滴答清单同步开始")
@@ -147,13 +169,24 @@ def main():
         print(json.dumps(merged[:3], ensure_ascii=False, indent=2))
         return
 
-    # 4. 写入文件
+    # 4. 写入本地文件
     write_diaries(merged)
 
-    # 5. git push
+    # 5. 通过 GitHub API 推送（绕过 git push，兼容国内网络）
     if not args.no_push:
-        now = datetime.now().strftime("%Y-%m-%d %H:%M")
-        git_commit_push(f"chore: 自动同步滴答清单小作文 [{now}]")
+        if not args.gh_token:
+            print("  ⚠️  未提供 GitHub Token，跳过推送（请用 --gh-token 或设置 GH_TOKEN 环境变量）")
+        else:
+            now = datetime.now().strftime("%Y-%m-%d %H:%M")
+            json_content = json.dumps(merged, ensure_ascii=False, indent=2)
+            github_api_push(
+                token=args.gh_token,
+                owner=REPO_OWNER,
+                repo=REPO_NAME,
+                path=FILE_PATH,
+                content=json_content,
+                message=f"chore: 自动同步滴答清单小作文 [{now}]"
+            )
 
     print("\n🎉 同步完成！")
 
