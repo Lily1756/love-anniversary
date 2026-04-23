@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <!-- 两个交叠的人形曲线 -->
+  <g transform="translate(2, 0)">
+    <!-- 左人 -->
+    <path d="M8 26 Q8 6 8 5" stroke="#C4A8A2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M8 5 Q14 10 15 18 Q15.5 26 15.5 26" stroke="#C4A8A2" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 右人 -->
+    <path d="M13 27 Q13 7 13 6" stroke="#B8A09B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+    <path d="M13 6 Q19 11 20 18 Q20.5 26 20.5 26" stroke="#B8A09B" stroke-width="1.5" fill="none" stroke-linecap="round"/>
+
+    <!-- 底部小爱心 -->
+    <path d="M14 24 Q14 22 13 23 Q12 22 12 24 Q12 26 14 27 Q16 26 16 24" fill="#D4B5B0" opacity="0.5"/>
+  </g>
+</svg>

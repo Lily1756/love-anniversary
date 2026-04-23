@@ -3,40 +3,232 @@
    Premium Love Journal
    ============================================= */
 
+/* ── 图标样式 ── */
+.site-icon {
+  width: 24px;
+  height: 24px;
+  vertical-align: middle;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.site-icon-inline {
+  width: 20px;
+  height: 20px;
+  vertical-align: middle;
+  display: inline-block;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* 标题前的图标样式 */
+.title-icon {
+  width: 28px;
+  height: 28px;
+  vertical-align: middle;
+  display: inline-block;
+  margin-right: 8px;
+  flex-shrink: 0;
+}
+
+/* ── 简单编辑器样式 ── */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.edit-password-modal {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  width: 90%;
+  max-width: 340px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+}
+
+.edit-password-modal .modal-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.edit-password-modal h3 {
+  margin: 0 0 8px;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.edit-password-modal .modal-desc {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 20px;
+}
+
+.edit-password-modal input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid #eee;
+  border-radius: 12px;
+  font-size: 1rem;
+  text-align: center;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.edit-password-modal input:focus {
+  outline: none;
+  border-color: #e8b4b8;
+}
+
+.error-msg {
+  color: #e74c3c;
+  font-size: 0.85rem;
+  margin-top: 8px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.btn-cancel, .btn-confirm {
+  flex: 1;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-cancel {
+  background: #f0f0f0;
+  color: #666;
+}
+
+.btn-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-confirm {
+  background: linear-gradient(135deg, #e8b4b8, #d4a5a5);
+  color: white;
+}
+
+.btn-confirm:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* 编辑按钮 */
+.edit-btn, .delete-btn, .add-btn {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.edit-btn {
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-btn {
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  font-size: 16px;
+  font-weight: bold;
+  color: white;
+  background: #e74c3c;
+}
+
+.edit-btn:hover, .delete-btn:hover, .add-btn:hover {
+  transform: scale(1.1);
+}
+
+.add-btn {
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  margin-left: 12px;
+}
+
+/* Toast 提示 */
+.toast {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  background: #333;
+  color: white;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 0.9rem;
+  opacity: 0;
+  transition: all 0.3s;
+  z-index: 10000;
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
 /* ── CSS 变量 ── */
 :root {
-  --pink-50:  #fff0f5;
-  --pink-100: #ffe0ec;
-  --pink-200: #ffb3d1;
-  --pink-300: #ff85b3;
-  --pink-400: #ff5291;
-  --pink-500: #ff1f6e;
-  --rose-400: #fb7185;
-  --rose-500: #f43f5e;
+  --pink-50:  #FDFBF7;
+  --pink-100: #F0E6E6;
+  --pink-200: #D4B5B5;
+  --pink-300: #C4A8A2;
+  --pink-400: #B8A0A0;
+  --pink-500: #A08080;
+  --rose-400: #D4B5B5;
+  --rose-500: #C4A8A2;
 
   /* 亮色主题 */
-  --bg:          #fffaf9;
+  --bg:          #FDFBF7;
   --bg-card:     #ffffff;
   --bg-glass:    rgba(255,255,255,0.7);
   --bg-glass2:   rgba(255,255,255,0.5);
-  --border:      rgba(255,180,200,0.3);
-  --border-card: rgba(255,180,200,0.5);
-  --text-primary:   #1a0a10;
-  --text-secondary: #6b3a4e;
-  --text-muted:     #9e7080;
-  --accent:      #ff5291;
-  --accent-soft: #ffb3d1;
-  --accent-glow: rgba(255,82,145,0.25);
-  --shadow-sm:   0 2px 8px rgba(255,82,145,0.08);
-  --shadow-md:   0 8px 32px rgba(255,82,145,0.12);
-  --shadow-lg:   0 20px 60px rgba(255,82,145,0.18);
+  --border:      rgba(212,181,181,0.3);
+  --border-card: rgba(212,181,181,0.5);
+  --text-primary:   #5a4a4a;
+  --text-secondary: #8a7070;
+  --text-muted:     #a08080;
+  --accent:      #C4A8A2;
+  --accent-soft: #D4B5B5;
+  --accent-glow: rgba(196,168,162,0.25);
+  --shadow-sm:   0 2px 8px rgba(196,168,162,0.08);
+  --shadow-md:   0 8px 32px rgba(196,168,162,0.12);
+  --shadow-lg:   0 20px 60px rgba(196,168,162,0.18);
 
   --nav-bg:    rgba(255,250,249,0.85);
   --nav-blur:  blur(20px);
-  --lock-bg:   #fff0f5;
+  --lock-bg:   #F5F0EB;
 
-  --font-serif: 'Noto Serif SC', serif;
-  --font-sans:  'Noto Sans SC', sans-serif;
+  --font-serif: 'Playfair Display', 'Ma Shan Zheng', 'Noto Serif SC', serif;
+  --font-sans:  'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  --font-title: 'Ma Shan Zheng', cursive;
 
   --radius-sm: 12px;
   --radius-md: 20px;
@@ -48,23 +240,23 @@
 }
 
 [data-theme="dark"] {
-  --bg:          #110609;
-  --bg-card:     #1e0d13;
-  --bg-glass:    rgba(30,13,19,0.8);
-  --bg-glass2:   rgba(30,13,19,0.6);
-  --border:      rgba(255,82,145,0.15);
-  --border-card: rgba(255,82,145,0.2);
-  --text-primary:   #ffe0ec;
-  --text-secondary: #ffb3d1;
-  --text-muted:     #a0627a;
-  --accent:      #ff85b3;
-  --accent-soft: #5a1a2a;
-  --accent-glow: rgba(255,82,145,0.2);
+  --bg:          #1a1415;
+  --bg-card:     #2a2022;
+  --bg-glass:    rgba(42,32,34,0.8);
+  --bg-glass2:   rgba(42,32,34,0.6);
+  --border:      rgba(196,168,162,0.15);
+  --border-card: rgba(196,168,162,0.2);
+  --text-primary:   #E8DCDC;
+  --text-secondary: #D4B5B5;
+  --text-muted:     #a08080;
+  --accent:      #C4A8A2;
+  --accent-soft: #3a2a2a;
+  --accent-glow: rgba(196,168,162,0.2);
   --shadow-sm:   0 2px 8px rgba(0,0,0,0.4);
   --shadow-md:   0 8px 32px rgba(0,0,0,0.5);
   --shadow-lg:   0 20px 60px rgba(0,0,0,0.6);
-  --nav-bg:    rgba(17,6,9,0.9);
-  --lock-bg:   #1a0810;
+  --nav-bg:    rgba(26,20,21,0.9);
+  --lock-bg:   #1a1415;
 }
 
 /* ── Reset ── */
@@ -114,31 +306,31 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .blob-1 {
   width: 500px; height: 500px;
-  background: radial-gradient(circle, #ffb3d1, #ff5291);
+  background: radial-gradient(circle, #D4B5B5, #C4A8A2);
   top: -150px; left: -100px;
   animation-delay: 0s;
 }
 .blob-2 {
   width: 400px; height: 400px;
-  background: radial-gradient(circle, #ffd6e7, #fb7185);
+  background: radial-gradient(circle, #E2C5C5, #D4B5B5);
   bottom: -100px; right: -100px;
   animation-delay: -3s;
 }
 .blob-3 {
   width: 300px; height: 300px;
-  background: radial-gradient(circle, #ffe0ec, #ff85b3);
+  background: radial-gradient(circle, #F0E6E6, #D4B5B5);
   top: 50%; left: 50%; transform: translate(-50%,-50%);
   animation-delay: -6s;
 }
 .blob-a {
   width: 600px; height: 600px;
-  background: radial-gradient(circle, var(--accent-soft), transparent);
+  background: radial-gradient(circle, #D4B5B5, transparent);
   top: -200px; right: -200px;
   animation-delay: 0s;
 }
 .blob-b {
   width: 400px; height: 400px;
-  background: radial-gradient(circle, var(--accent-soft), transparent);
+  background: radial-gradient(circle, #D4B5B5, transparent);
   bottom: -100px; left: -100px;
   animation-delay: -4s;
 }
@@ -169,16 +361,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 
 .lock-heart {
   width: 64px; height: 64px;
-  background: linear-gradient(135deg, #ff85b3, #ff1f6e);
+  background: linear-gradient(135deg, #C4A8A2, #D4B5B5);
   border-radius: 50%; margin: 0 auto 24px;
   display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 24px rgba(255,82,145,0.4);
+  box-shadow: 0 8px 24px rgba(196,168,162,0.4);
   animation: heartBeat 2s ease-in-out infinite;
 }
 .lock-heart svg { width: 32px; height: 32px; color: white; }
 @keyframes heartBeat {
-  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(255,82,145,0.4); }
-  50%       { transform: scale(1.08); box-shadow: 0 12px 32px rgba(255,82,145,0.6); }
+  0%, 100% { transform: scale(1); box-shadow: 0 8px 24px rgba(196,168,162,0.4); }
+  50%       { transform: scale(1.08); box-shadow: 0 12px 32px rgba(196,168,162,0.6); }
 }
 
 .lock-title {
@@ -215,16 +407,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .lock-btn {
   display: flex; align-items: center; gap: 6px;
   padding: 14px 22px;
-  background: linear-gradient(135deg, #ff85b3, #ff1f6e);
+  background: linear-gradient(135deg, #C4A8A2, #D4B5B5);
   color: white; border-radius: var(--radius-md);
   font-size: 0.95rem; font-weight: 500;
-  box-shadow: 0 4px 16px rgba(255,82,145,0.35);
+  box-shadow: 0 4px 16px rgba(196,168,162,0.35);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s;
   white-space: nowrap;
 }
 .lock-btn:hover {
   transform: translateY(-2px) scale(1.03);
-  box-shadow: 0 8px 24px rgba(255,82,145,0.5);
+  box-shadow: 0 8px 24px rgba(196,168,162,0.5);
 }
 .lock-btn:active { transform: scale(0.97); }
 .lock-btn svg { width: 16px; height: 16px; }
@@ -405,7 +597,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   font-family: var(--font-serif);
   font-size: clamp(2.5rem, 6vw, 4rem);
   font-weight: 500;
-  background: linear-gradient(135deg, var(--accent), #ff1f6e);
+  background: linear-gradient(135deg, var(--accent-primary), #B8A0A0);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
   display: block; line-height: 1;
@@ -602,16 +794,16 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .wishes-input::placeholder { color: var(--text-muted); }
 .wishes-add-btn {
   width: 48px; height: 48px;
-  background: linear-gradient(135deg, #ff85b3, #ff1f6e);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white; border-radius: var(--radius-md);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(255,82,145,0.35);
+  box-shadow: 0 4px 12px rgba(196,168,162,0.35);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s;
 }
 .wishes-add-btn:hover {
   transform: translateY(-2px) scale(1.05);
-  box-shadow: 0 8px 20px rgba(255,82,145,0.5);
+  box-shadow: 0 8px 20px rgba(196,168,162,0.5);
 }
 
 .wishes-progress { margin-bottom: 24px; }
@@ -625,7 +817,7 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 }
 .wishes-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #ff85b3, #ff1f6e);
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
   border-radius: 3px;
   transition: width 0.5s var(--ease-spring);
   width: 0%;
@@ -658,9 +850,9 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   cursor: pointer; transition: all 0.3s var(--ease-spring);
 }
 .wish-checkbox.checked {
-  background: linear-gradient(135deg, #ff85b3, #ff1f6e);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   border-color: transparent;
-  box-shadow: 0 2px 8px rgba(255,82,145,0.4);
+  box-shadow: 0 2px 8px rgba(196,168,162,0.4);
 }
 .wish-checkbox.checked::after {
   content: '✓'; color: white; font-size: 0.7rem; font-weight: 700;
@@ -790,15 +982,15 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
 .settings-hint a { color: var(--accent); }
 .settings-save-btn {
   width: 100%; padding: 14px;
-  background: linear-gradient(135deg, #ff85b3, #ff1f6e);
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
   color: white; border-radius: var(--radius-md);
   font-size: 1rem; font-weight: 500;
-  box-shadow: 0 4px 16px rgba(255,82,145,0.35);
+  box-shadow: 0 4px 16px rgba(196,168,162,0.35);
   transition: transform 0.2s var(--ease-spring), box-shadow 0.2s;
 }
 .settings-save-btn:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(255,82,145,0.5);
+  box-shadow: 0 8px 24px rgba(196,168,162,0.5);
 }
 
 /* FAB */
@@ -864,4 +1056,376 @@ button { cursor: pointer; border: none; background: none; font-family: inherit; 
   background-size: 200% auto;
   animation: shimmer 1.5s infinite linear;
   border-radius: var(--radius-sm);
+}
+
+/* =============================================
+   GitHub OAuth 登录按钮样式
+   ============================================= */
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 12px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px);
+}
+
+.user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+}
+
+.user-name {
+  font-size: 13px;
+  color: var(--text-primary);
+  font-weight: 500;
+}
+
+.logout-btn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  transition: color 0.2s;
+}
+
+.logout-btn:hover {
+  color: var(--accent);
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #24292e;
+  color: white;
+  border-radius: var(--radius-lg);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.login-btn:hover {
+  background: #2f363d;
+  transform: translateY(-1px);
+}
+
+/* =============================================
+   编辑浮动按钮 (FAB)
+   ============================================= */
+.edit-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 100px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  transition: all 0.3s var(--ease-spring);
+}
+
+.edit-fab:hover {
+  transform: scale(1.1) rotate(90deg);
+  box-shadow: var(--shadow-lg);
+}
+
+/* =============================================
+   添加按钮
+   ============================================= */
+.add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.add-btn:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-2px);
+}
+
+/* =============================================
+   删除按钮 (hover 显示)
+   ============================================= */
+.delete-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(200, 80, 80, 0.9);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.gallery-item:hover .delete-btn,
+.letter-card:hover .delete-btn,
+.travel-item:hover .delete-btn,
+.wish-item:hover .delete-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.delete-btn:hover {
+  background: #c44040;
+  transform: scale(1.1) !important;
+}
+
+/* =============================================
+   编辑模态框
+   ============================================= */
+.edit-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  width: min(500px, 90vw);
+  max-height: 85vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+
+.edit-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.edit-modal .modal-header h3 {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--text-primary);
+}
+
+.edit-modal .modal-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.edit-modal .modal-close:hover {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.edit-modal .modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.edit-modal .modal-footer {
+  display: flex;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  justify-content: flex-end;
+}
+
+/* =============================================
+   表单样式
+   ============================================= */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+}
+
+.form-group textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* =============================================
+   按钮样式
+   ============================================= */
+.btn-cancel {
+  padding: 10px 20px;
+  background: var(--bg-glass);
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-cancel:hover {
+  background: var(--accent-soft);
+}
+
+.btn-save {
+  padding: 10px 24px;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-save:hover {
+  background: var(--accent-secondary);
+  transform: translateY(-1px);
+}
+
+.btn-danger {
+  padding: 10px 20px;
+  background: #c44040;
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.btn-danger:hover {
+  background: #b03030;
+}
+
+/* =============================================
+   确认对话框
+   ============================================= */
+.confirm-modal {
+  background: var(--bg-card);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  width: min(400px, 90vw);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+}
+
+.confirm-message {
+  font-size: 15px;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
+/* =============================================
+   Toast 提示
+   ============================================= */
+.toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%) translateY(100px);
+  padding: 12px 24px;
+  background: var(--text-primary);
+  color: var(--bg);
+  border-radius: var(--radius-lg);
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-md);
+  z-index: 1000;
+  opacity: 0;
+  transition: all 0.3s var(--ease-spring);
+}
+
+.toast.show {
+  transform: translateX(-50%) translateY(0);
+  opacity: 1;
+}
+
+.toast-success {
+  background: #4a9;
+  color: white;
+}
+
+.toast-error {
+  background: #c44040;
+  color: white;
+}
+
+/* =============================================
+   登录提示遮罩
+   ============================================= */
+.login-hint-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(253, 251, 247, 0.9);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  backdrop-filter: blur(4px);
+}
+
+.login-hint-overlay .login-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.login-hint-overlay p {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
 }

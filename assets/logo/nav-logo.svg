@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 48" width="320" height="48">
+  <!-- 图形部分：两个交叠的人形曲线 -->
+  <g transform="translate(8, 0)">
+    <!-- 左人 -->
+    <path d="M14 38 Q14 10 14 8" stroke="#C4A8A2" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M14 8 Q24 16 26 28 Q27 38 27 38" stroke="#C4A8A2" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- 右人 -->
+    <path d="M24 40 Q24 12 24 10" stroke="#B8A09B" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M24 10 Q34 18 36 29 Q37 38 37 38" stroke="#B8A09B" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+    <!-- 底部小爱心 -->
+    <path d="M25 36 Q25 33 23 35 Q21 33 21 36 Q21 39 25 41 Q29 39 29 36" fill="#D4B5B0" opacity="0.4"/>
+  </g>
+
+  <!-- 文字部分 -->
+  <text x="58" y="22" font-family="'Ma Shan Zheng', 'Noto Serif SC', serif" font-size="13" fill="#4A4A4A" letter-spacing="2">
+    Love Story with You
+  </text>
+  <text x="58" y="38" font-family="'Noto Sans SC', sans-serif" font-size="7" fill="#B0A0A0" letter-spacing="3">
+    与你的恋爱纪念册
+  </text>
+</svg>

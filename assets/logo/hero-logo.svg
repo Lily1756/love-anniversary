@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <linearGradient id="text-grad-final" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#C4A8A2"/>
+      <stop offset="100%" stop-color="#D4B5B0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- 装饰上线 -->
+  <line x1="60" y1="28" x2="340" y2="28" stroke="#D4B5B0" stroke-width="0.8" opacity="0.5"/>
+
+  <!-- 英文主标题 -->
+  <text x="200" y="62" text-anchor="middle" font-family="'Ma Shan Zheng', 'Noto Serif SC', serif" font-size="28" fill="url(#text-grad-final)" letter-spacing="4">
+    Love Story with You
+  </text>
+
+  <!-- 中文小字 -->
+  <text x="200" y="90" text-anchor="middle" font-family="'Noto Sans SC', 'PingFang SC', sans-serif" font-size="10" fill="#B0A0A0" letter-spacing="8">
+    与你的恋爱纪念册
+  </text>
+
+  <!-- 装饰下线 -->
+  <line x1="100" y1="105" x2="300" y2="105" stroke="#D4B5B0" stroke-width="0.5" opacity="0.3"/>
+</svg>

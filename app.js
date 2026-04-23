@@ -545,9 +545,9 @@ function showToast(msg) {
   toast.textContent = msg;
   toast.style.cssText = `
     position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(0);
-    background: linear-gradient(135deg,#ff85b3,#ff1f6e);
+    background: linear-gradient(135deg,#C4A8A2,#D4B5B5);
     color:white; padding:12px 24px; border-radius:50px;
-    font-size:0.9rem; z-index:9999; box-shadow:0 8px 24px rgba(255,82,145,0.4);
+    font-size:0.9rem; z-index:9999; box-shadow:0 8px 24px rgba(196,168,162,0.4);
     animation:toastIn 0.4s cubic-bezier(0.16,1,0.3,1);
   `;
 
