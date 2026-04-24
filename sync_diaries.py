@@ -35,7 +35,41 @@ API_BASE            = "https://api.dida365.com/open/v1"
 DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "diaries.json")
 
 
-def parse_date_from_content(content: str) -> Optional[str]:
+def parse_year_from_title(title: str) -> Optional[int]:
+    """
+    从标题中解析年份。
+    支持的格式：【2026】
+    返回：年份数字（如 2026），解析失败返回 None
+    """
+    if not title:
+        return None
+    
+    # 匹配【数字】格式
+    match = re.search(r'【(\d{4})】', title)
+    if match:
+        year = int(match.group(1))
+        if 1900 <= year <= 2100:
+            return year
+    return None
+
+
+def parse_month_day_from_remind_time(remind_time: Optional[int]) -> tuple[Optional[int], Optional[int]]:
+    """
+    从滴答任务的提醒时间（毫秒时间戳）解析月和日。
+    返回：(month, day)，解析失败返回 (None, None)
+    """
+    if not remind_time:
+        return None, None
+    
+    try:
+        # 滴答的 remindTime 是毫秒时间戳
+        dt = datetime.fromtimestamp(remind_time / 1000, tz=timezone.utc)
+        return dt.month, dt.day
+    except (ValueError, OSError, OverflowError):
+        return None, None
+
+
+def parse_date_from_content(content: str, fallback_year: Optional[int] = None) -> Optional[str]:
     """
     从正文中解析日期。
     支持的格式：
@@ -44,8 +78,8 @@ def parse_date_from_content(content: str) -> Optional[str]:
     - 2026/03/20
     - 2026年03月20日
     - 2026年3月20日
-    - 03月20日（使用当前年份）
-    - 3月20日（使用当前年份）
+    - 03月20日（使用 fallback_year 或当前年份）
+    - 3月20日（使用 fallback_year 或当前年份）
     - 20260320
     - 19940210
     
@@ -55,7 +89,7 @@ def parse_date_from_content(content: str) -> Optional[str]:
         return None
     
     # 当前年份（用于补全只有月日的日期）
-    current_year = datetime.now().year
+    current_year = fallback_year or datetime.now().year
     
     # 按优先级尝试各种日期格式
     
@@ -87,7 +121,7 @@ def parse_date_from_content(content: str) -> Optional[str]:
         if 1 <= month <= 12 and 1 <= day <= 31:
             return f"{year:04d}-{month:02d}-{day:02d}"
     
-    # 5. 格式：MM月DD日 或 M月D日（使用当前年份）
+    # 5. 格式：MM月DD日 或 M月D日（使用 fallback_year 或当前年份）
     match = re.search(r'(\d{1,2})月(\d{1,2})日', content)
     if match:
         month, day = int(match.group(1)), int(match.group(2))
@@ -118,15 +152,41 @@ def fetch_tasks(token: str, project_id: str) -> list:
 
 
 def tasks_to_diaries(tasks: list) -> list:
-    """将滴答任务转换为 diaries.json 格式"""
+    """将滴答任务转换为 diaries.json 格式
+    
+    日期逻辑：
+    - 年份：从标题【】中提取（如【2026】→ 2026）
+    - 月份和日期：从任务的提醒日期（remindTime）获取
+    - 如果无法获取，回退使用正文日期 → modifiedTime/createdTime
+    """
     entries = []
     for t in tasks:
+        title = (t.get("title") or "").strip()
         content = (t.get("content") or "").strip()
         
-        # 【关键修改】优先从正文解析日期
-        date_str = parse_date_from_content(content)
+        # 1. 从标题【】中提取年份
+        year = parse_year_from_title(title)
         
-        # 如果正文没有日期，回退使用 modifiedTime 或 createdTime
+        # 2. 从提醒时间获取月和日
+        remind_time = t.get("remindTime")
+        month, day = parse_month_day_from_remind_time(remind_time)
+        
+        # 3. 组装日期
+        date_str = None
+        if year and month and day:
+            # 优先使用标题年份 + 提醒时间月日
+            date_str = f"{year:04d}-{month:02d}-{day:02d}"
+        elif year:
+            # 如果有年份但没有提醒时间，尝试从正文解析月日
+            month_day = parse_date_from_content(content)
+            if month_day and month_day.startswith(str(year)):
+                date_str = month_day
+            elif month_day:
+                # 正文有日期但年份不同，用标题年份替换
+                parts = month_day.split("-")
+                date_str = f"{year:04d}-{parts[1]}-{parts[2]}"
+        
+        # 4. 如果仍然无法获取日期，回退使用 modifiedTime 或 createdTime
         if not date_str:
             raw_time = t.get("modifiedTime") or t.get("createdTime") or ""
             date_str = raw_time[:10] if raw_time else datetime.now(timezone.utc).strftime("%Y-%m-%d")
@@ -134,7 +194,7 @@ def tasks_to_diaries(tasks: list) -> list:
         entry = {
             "id":      f"dida-{t['id']}",
             "date":    date_str,
-            "title":   (t.get("title") or "").strip() or "无标题",
+            "title":   title or "无标题",
             "tag":     "💌",
             "content": content,
         }
@@ -216,33 +276,69 @@ def github_api_push(token: str, owner: str, repo: str, path: str, content: str, 
 # ── 测试日期解析函数 ─────────────────────────────────────────────────
 def test_date_parser():
     """测试日期解析函数"""
-    test_cases = [
-        # (输入文本, 期望结果)
+    print("\n📅 标题年份解析测试：")
+    print("-" * 60)
+    title_cases = [
+        ("【2026】生日快乐呀~", 2026),
+        ("【2025】我们的故事", 2025),
+        ("【2024】情人节记录", 2024),
+        ("普通标题无年份", None),
+        ("", None),
+    ]
+    all_passed = True
+    for title, expected in title_cases:
+        result = parse_year_from_title(title)
+        status = "✅" if result == expected else "❌"
+        if result != expected:
+            all_passed = False
+        print(f"{status} \"{title}\" → {result} (期望: {expected})")
+    print("-" * 60)
+    
+    print("\n📅 正文日期解析测试（带 fallback 年份）：")
+    print("-" * 60)
+    content_cases = [
         ("2026.03.20", "2026-03-20"),
         ("2026-03-20", "2026-03-20"),
         ("2026/03/20", "2026-03-20"),
         ("2026年03月20日", "2026-03-20"),
         ("2026年3月20日", "2026-03-20"),
-        ("03月20日", str(datetime.now().year) + "-03-20"),
+        ("03月20日", str(datetime.now().year) + "-03-20"),  # 无 fallback
         ("3月20日", str(datetime.now().year) + "-03-20"),
+        ("03月20日（带fallback）", "2025-03-20"),  # 带 fallback
         ("今天是2026.03.20", "2026-03-20"),
         ("生于19940210", "1994-02-10"),
         ("记录19950320发生的事情", "1995-03-20"),
-        ("【2026】生日快乐呀~", None),  # 标题里的2026不是日期（正文格式），正确返回None
+        ("【2026】生日快乐呀~", None),  # 标题里的2026不是正文日期，正确返回None
         ("无日期内容", None),
         ("", None),
     ]
     
-    print("\n📅 日期解析测试：")
-    print("-" * 60)
-    all_passed = True
-    for text, expected in test_cases:
-        result = parse_date_from_content(text)
+    for text, expected in content_cases:
+        fallback_year = 2025 if "fallback" in text else None
+        result = parse_date_from_content(text, fallback_year)
         status = "✅" if result == expected else "❌"
         if result != expected:
             all_passed = False
-        print(f"{status} \"{text[:30]}...\" → {result} (期望: {expected})")
+        print(f"{status} \"{text[:25]}...\" → {result} (期望: {expected})")
     print("-" * 60)
+    
+    print("\n📅 提醒时间戳解析测试：")
+    print("-" * 60)
+    # 2026-03-20 00:00:00 UTC 的毫秒时间戳
+    timestamp_cases = [
+        (1742428800000, (3, 20)),  # 2026-03-20 00:00:00 UTC
+        (1742428800000 + 3600000, (3, 20)),  # 2026-03-20 01:00:00 UTC
+        (None, (None, None)),
+        (0, (None, None)),
+    ]
+    for ts, expected in timestamp_cases:
+        result = parse_month_day_from_remind_time(ts)
+        status = "✅" if result == expected else "❌"
+        if result != expected:
+            all_passed = False
+        print(f"{status} {ts} → {result} (期望: {expected})")
+    print("-" * 60)
+    
     if all_passed:
         print("✅ 所有测试通过！")
     else:
