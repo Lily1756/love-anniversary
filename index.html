@@ -502,6 +502,13 @@
             transition: width 0.5s var(--ease-smooth); 
         }
 
+        /* 统计卡片链接样式 */
+        .stat-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+
         /* =============================================
            主视觉合照区 - 移动优先布局
            ============================================= */
@@ -1751,69 +1758,6 @@
             }
         }
 
-        /* ── 照片墙操作区 ── */
-        .gallery-header-row {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 16px;
-        }
-
-        .gallery-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .gallery-actions .add-btn {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            padding: 8px 16px;
-            background: var(--accent-primary);
-            color: white;
-            border-radius: var(--radius-md);
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            border: none;
-            transition: all 0.2s;
-        }
-
-        .gallery-actions .add-btn:hover {
-            background: var(--accent-secondary);
-            transform: translateY(-2px);
-        }
-
-        /* ── 删除按钮 ── */
-        .gallery-item .delete-btn {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(200, 80, 80, 0.9);
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transform: scale(0.8);
-            transition: all 0.2s;
-            z-index: 10;
-            border: none;
-            cursor: pointer;
-        }
-
-        .gallery-item:hover .delete-btn {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .gallery-item .delete-btn:hover {
-            background: #c44040;
-            transform: scale(1.1) !important;
-        }
-
         /* =============================================
            编辑模式样式
            ============================================= */
@@ -1903,36 +1847,6 @@
             opacity: 1;
         }
 
-        /* 添加按钮样式 */
-        .add-item-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            padding: 16px;
-            background: var(--bg-glass);
-            border: 2px dashed var(--accent-primary);
-            border-radius: var(--radius-md);
-            color: var(--accent-primary);
-            cursor: pointer;
-            transition: all 0.2s;
-            font-size: 14px;
-        }
-
-        .add-item-btn:hover {
-            background: var(--accent-soft);
-            border-style: solid;
-        }
-
-        .add-item-btn.hidden {
-            display: none;
-        }
-
-        /* 编辑模式下的添加按钮 */
-        body.editing-mode .add-item-btn {
-            display: flex;
-        }
-
         /* 删除按钮（编辑模式下显示） */
         body.editing-mode .item-delete-btn {
             position: absolute;
@@ -1961,6 +1875,28 @@
         .item-delete-btn:hover {
             background: #c44040;
             transform: scale(1.1);
+        }
+
+        /* =============================================
+           图标样式系统
+           ============================================= */
+        .title-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .site-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .site-icon-inline {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            margin-right: 4px;
         }
     </style>
 </head>
@@ -2016,30 +1952,30 @@
         <!-- 爱情数字模块 -->
         <section class="stats-section">
             <div class="stats-grid" id="statsGrid">
-                <div class="stat-card">
+                <a href="writings.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-writings.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statLetters">--</div>
                     <div class="stat-label">情书封数</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statLettersBar" style="width: 0%"></div></div>
-                </div>
-                <div class="stat-card">
+                </a>
+                <a href="photos.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-photos.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statPhotos">--</div>
                     <div class="stat-label">照片数量</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statPhotosBar" style="width: 0%"></div></div>
-                </div>
-                <div class="stat-card">
+                </a>
+                <a href="travels.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-travels.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statTravels">--</div>
                     <div class="stat-label">足迹地点</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statTravelsBar" style="width: 0%"></div></div>
-                </div>
-                <div class="stat-card">
+                </a>
+                <a href="wishes.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-wishes.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statWishes">--</div>
                     <div class="stat-label">愿望完成率</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statWishesBar" style="width: 0%"></div></div>
-                </div>
+                </a>
             </div>
         </section>
 
@@ -2057,16 +1993,13 @@
         <section class="letters-section">
             <h2 class="section-title"><img src="assets/icons/icon-writings.svg" alt="" class="title-icon">我们的情书时刻</h2>
             <div class="letters-grid" id="lettersGrid"></div>
-            <a href="writings.html" class="letters-button"><span><img src="assets/icons/icon-writings.svg" alt="" class="site-icon-inline">翻阅我们的 <span id="totalCount">32</span> 封情书</span></a>
+            <a href="writings.html" class="letters-button"><span>翻阅我们的 <span id="totalCount">32</span> 封情书</span></a>
         </section>
 
         <section class="gallery-section">
             <h2 class="gallery-title"><img src="assets/icons/icon-photos.svg" alt="" class="title-icon">我们的瞬间</h2>
-            <div class="gallery-header-row">
-                <div class="gallery-actions" id="galleryActions"></div>
-            </div>
             <div class="gallery-grid" id="galleryGrid"></div>
-            <a href="photos.html" class="more-photos-btn"><span><img src="assets/icons/icon-photos.svg" alt="" class="site-icon-inline">查看更多照片</span></a>
+            <a href="photos.html" class="more-photos-btn"><span>查看更多照片</span></a>
         </section>
 
         <!-- 足迹地图入口 -->
@@ -2075,7 +2008,7 @@
                 <div class="travels-icon"><img src="assets/icons/icon-travels.svg" alt="" class="title-icon"></div>
                 <div class="travels-title">我们的足迹</div>
                 <div class="travels-text">记录我们一起走过的每一个地方</div>
-                <a href="travels.html" class="more-photos-btn" style="border-color: var(--accent-primary); color: var(--accent-primary);"><span><img src="assets/icons/icon-travels.svg" alt="" class="site-icon-inline">探索足迹地图</span></a>
+                <a href="travels.html" class="more-photos-btn" style="border-color: var(--accent-primary); color: var(--accent-primary);"><span>探索足迹地图</span></a>
             </div>
         </section>
 
@@ -2085,7 +2018,7 @@
                 <div class="wishes-icon"><img src="assets/icons/icon-wishes.svg" alt="" class="title-icon"></div>
                 <div class="wishes-title">一起完成的小事</div>
                 <div class="wishes-text">记录我们想一起完成的愿望，打卡每一个美好瞬间</div>
-                <a href="wishes.html" class="wishes-btn"><span><img src="assets/icons/icon-wishes.svg" alt="" class="site-icon-inline">查看愿望清单</span></a>
+                <a href="wishes.html" class="wishes-btn"><span>查看愿望清单</span></a>
             </div>
         </section>
 
@@ -2095,7 +2028,7 @@
                 <div class="time-capsule-icon"><img src="assets/icons/icon-capsules.svg" alt="" class="title-icon"></div>
                 <div class="time-capsule-title">时间胶囊</div>
                 <div class="time-capsule-text">给未来的我们写一封信，约定某个特别的日子一起打开</div>
-                <a href="time-capsule.html" class="time-capsule-btn"><img src="assets/icons/icon-capsules.svg" alt="" class="site-icon-inline">开启胶囊</a>
+                <a href="time-capsule.html" class="time-capsule-btn">开启胶囊</a>
             </div>
         </section>
 
