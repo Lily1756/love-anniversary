@@ -583,42 +583,97 @@
         .love-letter::after { content: '"'; margin-left: 8px; }
 
         /* =============================================
-           精选情书模块 - 移动优先Grid
+           统一功能模块卡片容器
            ============================================= */
-        .letters-section { 
-            padding: var(--spacing-xl) var(--spacing-sm); 
+        .module-card {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
+            .module-card {
+                padding: 16px;
+                margin-bottom: 16px;
+                border-radius: 12px;
+            }
+        }
+
+        .module-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .module-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.1rem, 3.5vw, 1.4rem);
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .module-preview {
+            margin-bottom: 16px;
+        }
+
+        .module-empty {
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #B0A0A0;
+            font-size: 14px;
+        }
+
+        /* 统一底部按钮样式 */
+        .module-btn {
+            display: block;
+            width: fit-content;
+            margin: 0 auto;
+            padding: 8px 24px;
+            background: var(--bg-glass);
+            color: #4A4A4A;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: 1.5px solid var(--accent-soft);
+            transition: all 0.3s var(--ease-smooth);
+            text-align: center;
+        }
+
+        .module-btn:active {
+            transform: scale(0.95);
+            background: var(--accent-soft);
+        }
+
+        @media (hover: hover) {
+            .module-btn:hover {
+                background: var(--accent-soft);
+                border-color: var(--accent-primary);
+            }
+        }
+
+        /* =============================================
+           精选情书模块样式（供预览区域使用）
+           ============================================= */
+        .letters-section {
+            padding: var(--spacing-xl) var(--spacing-sm);
             animation: fadeInUp 1s var(--ease-bounce) 1s both;
-            /* 修复溢出 */
             overflow-x: hidden;
         }
 
-        .section-title { 
-            text-align: center; 
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.3rem, 4vw, 1.8rem); 
-            color: var(--text-primary); 
-            margin-bottom: var(--spacing-lg); 
-            font-weight: 500; 
-            position: relative; 
-        }
-
-        .section-title::after { 
-            content: ''; 
-            display: block; 
-            width: 60px; 
-            height: 3px; 
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); 
-            margin: var(--spacing-sm) auto 0; 
-            border-radius: 2px; 
-        }
-
-        /* 第一步：修复Grid - 使用minmax防止溢出 */
-        .letters-grid { 
-            display: grid; 
-            grid-template-columns: 1fr; 
-            gap: var(--spacing-md); 
-            max-width: 1000px; 
-            margin: 0 auto;
+        .letters-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: var(--spacing-md);
         }
 
         @media (min-width: 768px) {
@@ -627,151 +682,71 @@
             }
         }
 
-        .letter-card { 
-            background: var(--bg-glass); 
-            backdrop-filter: blur(12px); 
-            -webkit-backdrop-filter: blur(12px); 
-            border-radius: var(--radius-lg); 
-            padding: var(--spacing-md) var(--spacing-sm); 
-            box-shadow: var(--shadow-soft); 
-            border: 1px solid rgba(255, 255, 255, 0.5); 
-            transition: all 0.3s var(--ease-smooth); 
-            cursor: pointer; 
+        .letter-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: var(--radius-lg);
+            padding: var(--spacing-md) var(--spacing-sm);
+            box-shadow: var(--shadow-soft);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s var(--ease-smooth);
+            cursor: pointer;
             text-align: center;
-            /* 修复溢出 */
             overflow: hidden;
             min-width: 0;
         }
 
-        .letter-card:active { 
-            transform: scale(0.98); 
+        .letter-card:active {
+            transform: scale(0.98);
         }
 
-        @media (hover: hover) { 
-            .letter-card:hover { 
-                transform: translateY(-5px); 
-                box-shadow: var(--shadow-hover); 
-            } 
+        @media (hover: hover) {
+            .letter-card:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-hover);
+            }
         }
 
-        .letter-date { 
-            font-family: 'Poppins', sans-serif; 
-            font-size: 0.85rem; 
-            color: var(--accent-primary); 
-            margin-bottom: var(--spacing-sm); 
-            font-weight: 600; 
+        .letter-date {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.85rem;
+            color: var(--accent-primary);
+            margin-bottom: var(--spacing-sm);
+            font-weight: 600;
         }
 
-        .letter-title { 
-            font-family: 'Ma Shan Zheng', cursive; 
-            font-size: clamp(1.1rem, 3vw, 1.4rem); 
-            color: var(--text-primary); 
-            margin-bottom: var(--spacing-sm); 
-            line-height: 1.4; 
+        .letter-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: clamp(1.1rem, 3vw, 1.4rem);
+            color: var(--text-primary);
+            margin-bottom: var(--spacing-sm);
+            line-height: 1.4;
         }
 
-        .letter-preview { 
-            font-size: clamp(0.8rem, 2vw, 0.9rem); 
-            color: var(--text-muted); 
-            line-height: 1.6; 
-            display: -webkit-box; 
-            -webkit-line-clamp: 3; 
-            -webkit-box-orient: vertical; 
-            overflow: hidden; 
-        }
-
-        /* 涟漪按钮效果 - 统一浅色边框按钮 */
-        .letters-button { 
-            display: block; 
-            width: fit-content; 
-            margin: var(--spacing-md) auto 0; 
-            padding: var(--spacing-xs) var(--spacing-lg); 
-            background: var(--bg-glass); 
-            color: var(--accent-primary); 
-            text-decoration: none; 
-            border-radius: var(--radius-xl); 
-            font-size: clamp(0.9rem, 2.5vw, 1rem); 
-            font-weight: 500; 
-            border: 2px solid var(--accent-primary); 
-            transition: all 0.3s var(--ease-smooth); 
-            touch-action: manipulation;
-            position: relative;
+        .letter-preview {
+            font-size: clamp(0.8rem, 2vw, 0.9rem);
+            color: var(--text-muted);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
             overflow: hidden;
         }
 
-        .letters-button::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .letters-button:active::after {
-            width: 300px;
-            height: 300px;
-        }
-
-        .letters-button span {
-            position: relative;
-            z-index: 1;
-        }
-
-        .letters-button:active { 
-            transform: scale(0.95); 
-            background: var(--accent-primary); 
-            color: white; 
-        }
-
-        @media (hover: hover) { 
-            .letters-button:hover { 
-                background: var(--accent-primary); 
-                color: white; 
-            } 
-        }
-
         /* =============================================
-           照片画廊网格 - 移动优先
+           照片画廊网格样式（供预览区域使用）
            ============================================= */
-        .gallery-section { 
-            padding: var(--spacing-xl) var(--spacing-sm); 
+        .gallery-section {
+            padding: var(--spacing-xl) var(--spacing-sm);
             animation: fadeInUp 1s var(--ease-bounce) 1.2s both;
-            /* 修复溢出 */
             overflow-x: hidden;
         }
 
-        .gallery-title { 
-            text-align: center; 
-            font-family: 'Playfair Display', serif;
-            font-size: clamp(1.2rem, 4vw, 1.5rem); 
-            color: var(--text-primary); 
-            margin-bottom: var(--spacing-md); 
-            font-weight: 500; 
-            position: relative; 
-        }
-
-        .gallery-title::after { 
-            content: ''; 
-            display: block; 
-            width: 60px; 
-            height: 3px; 
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary)); 
-            margin: var(--spacing-sm) auto 0; 
-            border-radius: 2px; 
-        }
-
-        /* 第一步：修复Grid - 使用minmax防止溢出 */
-        .gallery-grid { 
-            display: grid; 
-            grid-template-columns: repeat(2, minmax(0, 1fr)); 
-            gap: var(--spacing-sm); 
-            max-width: 900px; 
-            margin: 0 auto;
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: var(--spacing-sm);
         }
 
         @media (min-width: 768px) {
@@ -780,109 +755,53 @@
             }
         }
 
-        .gallery-item { 
-            position: relative; 
-            border-radius: var(--radius-md); 
-            overflow: hidden; 
-            cursor: pointer; 
-            transition: all 0.3s var(--ease-smooth); 
-            box-shadow: var(--shadow-soft); 
-            aspect-ratio: 1; 
-            background: white; 
+        .gallery-item {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s var(--ease-smooth);
+            box-shadow: var(--shadow-soft);
+            aspect-ratio: 1;
+            background: white;
             padding: 6px;
-            /* 修复溢出 */
             min-width: 0;
         }
 
-        .gallery-item:active { 
-            transform: scale(0.95); 
+        .gallery-item:active {
+            transform: scale(0.95);
         }
 
-        @media (hover: hover) { 
-            .gallery-item:hover { 
-                transform: translateY(-5px); 
-                box-shadow: var(--shadow-hover); 
-            } 
-            .gallery-item:hover img { 
-                transform: scale(1.08); 
-            } 
+        @media (hover: hover) {
+            .gallery-item:hover {
+                transform: translateY(-5px);
+                box-shadow: var(--shadow-hover);
+            }
+            .gallery-item:hover img {
+                transform: scale(1.08);
+            }
         }
 
-        .gallery-item img { 
-            width: 100%; 
-            height: 100%; 
-            object-fit: cover; 
-            border-radius: var(--radius-sm); 
-            transition: transform 0.3s var(--ease-smooth); 
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: var(--radius-sm);
+            transition: transform 0.3s var(--ease-smooth);
         }
 
-        .gallery-item-label { 
-            position: absolute; 
-            bottom: 6px; 
-            left: 6px; 
-            right: 6px; 
-            background: linear-gradient(transparent, rgba(74, 74, 74, 0.85)); 
-            color: white; 
-            padding: 20px 8px 8px; 
-            font-size: clamp(0.75rem, 2vw, 0.9rem); 
-            text-align: center; 
-            border-radius: 0 0 var(--radius-sm) var(--radius-sm); 
-            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); 
-        }
-
-        /* 涟漪按钮效果 */
-        .more-photos-btn { 
-            display: block; 
-            width: fit-content; 
-            margin: var(--spacing-md) auto 0; 
-            padding: var(--spacing-xs) var(--spacing-lg); 
-            background: var(--bg-glass); 
-            color: var(--accent-primary); 
-            text-decoration: none; 
-            border-radius: var(--radius-xl); 
-            font-size: clamp(0.9rem, 2.5vw, 1rem); 
-            font-weight: 500; 
-            border: 2px solid var(--accent-primary); 
-            transition: all 0.3s var(--ease-smooth); 
-            touch-action: manipulation;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .more-photos-btn::after {
-            content: '';
+        .gallery-item-label {
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            background: var(--accent-primary);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .more-photos-btn:active::after {
-            width: 300px;
-            height: 300px;
-        }
-
-        .more-photos-btn span {
-            position: relative;
-            z-index: 1;
-        }
-
-        .more-photos-btn:active { 
-            transform: scale(0.95); 
-            background: var(--accent-primary); 
-            color: white; 
-        }
-
-        @media (hover: hover) { 
-            .more-photos-btn:hover { 
-                background: var(--accent-primary); 
-                color: white; 
-            } 
+            bottom: 6px;
+            left: 6px;
+            right: 6px;
+            background: linear-gradient(transparent, rgba(74, 74, 74, 0.85));
+            color: white;
+            padding: 20px 8px 8px;
+            font-size: clamp(0.75rem, 2vw, 0.9rem);
+            text-align: center;
+            border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
         }
 
         /* =============================================
@@ -962,6 +881,166 @@
         }
 
         /* 卡片箭头文字 */
+        /* =============================================
+           足迹预览卡片
+           ============================================= */
+        .travels-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        @media (max-width: 768px) {
+            .travels-preview-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+        }
+
+        .travel-preview-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 12px;
+            padding: 12px;
+            border: 1px solid var(--accent-soft);
+            text-align: center;
+            transition: all 0.3s var(--ease-smooth);
+        }
+
+        .travel-preview-card:active {
+            transform: scale(0.98);
+        }
+
+        @media (hover: hover) {
+            .travel-preview-card:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-soft);
+            }
+        }
+
+        .travel-preview-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .travel-preview-date {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            color: var(--accent-primary);
+            margin-bottom: 6px;
+        }
+
+        .travel-preview-memory {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* =============================================
+           愿望清单预览
+           ============================================= */
+        .wishes-preview-list {
+            margin-bottom: 16px;
+        }
+
+        .wishes-preview-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--accent-soft);
+        }
+
+        .wishes-preview-item:last-child {
+            border-bottom: none;
+        }
+
+        .wishes-checkbox {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            border: 2px solid var(--accent-primary);
+            flex-shrink: 0;
+        }
+
+        .wishes-checkbox.checked {
+            background: var(--accent-primary);
+            position: relative;
+        }
+
+        .wishes-checkbox.checked::after {
+            content: '✓';
+            color: white;
+            font-size: 10px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .wishes-item-text {
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            flex: 1;
+        }
+
+        .wishes-item-text.completed {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* =============================================
+           时间胶囊预览
+           ============================================= */
+        .capsule-preview {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .capsule-preview-card {
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 16px;
+            padding: 16px;
+            border: 1px solid rgba(180, 180, 220, 0.3);
+            display: inline-block;
+            max-width: 100%;
+        }
+
+        .capsule-icon-large {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .capsule-preview-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .capsule-preview-date {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+
+        .capsule-preview-countdown {
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.9rem;
+            color: var(--accent-primary);
+            font-weight: 500;
+        }
+
+        /* =============================================
+           卡片箭头文字
+           ============================================= */
         .card-arrow {
             display: inline-block;
             margin-top: var(--spacing-sm);
@@ -1471,57 +1550,6 @@
         }
 
         /* =============================================
-           足迹地图模块
-           ============================================= */
-        .travels-section {
-            padding: var(--spacing-xl) var(--spacing-sm);
-            margin-top: var(--spacing-lg);
-            animation: fadeInUp 1s var(--ease-bounce) 1.3s both;
-            overflow-x: hidden;
-        }
-
-        .travels-card {
-            background: linear-gradient(135deg, var(--accent-soft), rgba(212, 181, 181, 0.3));
-            border-radius: var(--radius-lg);
-            padding: var(--spacing-md);
-            text-align: center;
-            max-width: 600px;
-            margin: 0 auto;
-            border: 1px solid var(--accent-soft);
-            cursor: pointer;
-            transition: all 0.3s var(--ease-smooth);
-            text-decoration: none;
-            color: inherit;
-            display: block;
-        }
-
-        @media (hover: hover) { 
-            .travels-card:hover { 
-                transform: translateY(-3px); 
-                box-shadow: var(--shadow-medium); 
-            } 
-        }
-
-        .travels-icon {
-            font-size: 2.5rem;
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .travels-title {
-            font-family: 'Playfair Display', serif;
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: var(--text-primary);
-            margin-bottom: var(--spacing-xs);
-        }
-
-        .travels-text {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin-bottom: var(--spacing-sm);
-        }
-
-        /* =============================================
            【强制移动端适配】iPhone SE (375px) 专项修复
            ============================================= */
         @media (max-width: 480px) {
@@ -1971,45 +1999,66 @@
         </section>
 
         <section class="letters-section">
-            <h2 class="section-title"><img src="assets/icons/icon-writings.svg" alt="" class="title-icon">我们的情书时刻</h2>
-            <div class="letters-grid" id="lettersGrid"></div>
-            <a href="writings.html" class="letters-button"><span>翻阅我们的 <span id="totalCount">32</span> 封情书</span></a>
+            <div class="module-card">
+                <div class="module-header">
+                    <img src="assets/icons/icon-writings.svg" alt="" class="title-icon">
+                    <h2 class="module-title">我们的情书时刻</h2>
+                </div>
+                <div class="module-preview" id="lettersPreview"></div>
+                <div class="module-empty" id="lettersEmpty" style="display: none;"></div>
+                <a href="writings.html" class="module-btn">翻阅我们的 <span id="totalCount">32</span> 封情书</a>
+            </div>
         </section>
 
         <section class="gallery-section">
-            <h2 class="gallery-title"><img src="assets/icons/icon-photos.svg" alt="" class="title-icon">我们的瞬间</h2>
-            <div class="gallery-grid" id="galleryGrid"></div>
-            <a href="photos.html" class="more-photos-btn"><span>查看更多照片</span></a>
+            <div class="module-card">
+                <div class="module-header">
+                    <img src="assets/icons/icon-photos.svg" alt="" class="title-icon">
+                    <h2 class="module-title">我们的瞬间</h2>
+                </div>
+                <div class="module-preview" id="photosPreview"></div>
+                <div class="module-empty" id="photosEmpty" style="display: none;"></div>
+                <a href="photos.html" class="module-btn">查看更多照片</a>
+            </div>
         </section>
 
         <!-- 足迹地图入口 -->
         <section class="travels-section">
-            <a href="travels.html" class="travels-card">
-                <div class="travels-icon"><img src="assets/icons/icon-travels.svg" alt="" class="title-icon"></div>
-                <div class="travels-title">我们的足迹</div>
-                <div class="travels-text">记录我们一起走过的每一个地方</div>
-                <span class="card-arrow">探索足迹地图 →</span>
-            </a>
+            <div class="module-card">
+                <div class="module-header">
+                    <img src="assets/icons/icon-travels.svg" alt="" class="title-icon">
+                    <h2 class="module-title">我们的足迹</h2>
+                </div>
+                <div class="module-preview" id="travelsPreview"></div>
+                <div class="module-empty" id="travelsEmpty" style="display: none;"></div>
+                <a href="travels.html" class="module-btn">探索足迹地图</a>
+            </div>
         </section>
 
         <!-- 愿望清单入口 -->
         <section class="wishes-section">
-            <a href="wishes.html" class="wishes-card">
-                <div class="wishes-icon"><img src="assets/icons/icon-wishes.svg" alt="" class="title-icon"></div>
-                <div class="wishes-title">一起完成的小事</div>
-                <div class="wishes-text">记录我们想一起完成的愿望，打卡每一个美好瞬间</div>
-                <span class="card-arrow">查看愿望清单 →</span>
-            </a>
+            <div class="module-card">
+                <div class="module-header">
+                    <img src="assets/icons/icon-wishes.svg" alt="" class="title-icon">
+                    <h2 class="module-title">一起完成的小事</h2>
+                </div>
+                <div class="module-preview" id="wishesPreview"></div>
+                <div class="module-empty" id="wishesEmpty" style="display: none;"></div>
+                <a href="wishes.html" class="module-btn">查看愿望清单</a>
+            </div>
         </section>
 
         <!-- 时间胶囊入口 -->
         <section class="time-capsule-section">
-            <a href="time-capsule.html" class="time-capsule-card">
-                <div class="time-capsule-icon"><img src="assets/icons/icon-capsules.svg" alt="" class="title-icon"></div>
-                <div class="time-capsule-title">时间胶囊</div>
-                <div class="time-capsule-text">给未来的我们写一封信，约定某个特别的日子一起打开</div>
-                <span class="card-arrow capsule-arrow">开启胶囊 →</span>
-            </a>
+            <div class="module-card">
+                <div class="module-header">
+                    <img src="assets/icons/icon-capsules.svg" alt="" class="title-icon">
+                    <h2 class="module-title">时间胶囊</h2>
+                </div>
+                <div class="module-preview" id="capsulePreview"></div>
+                <div class="module-empty" id="capsuleEmpty" style="display: none;"></div>
+                <a href="time-capsule.html" class="module-btn capsule-btn">开启胶囊</a>
+            </div>
         </section>
 
         <footer class="footer-surprise">
@@ -2337,37 +2386,20 @@
             const totalCountEl = document.getElementById('totalCount');
             if (totalCountEl) totalCountEl.textContent = diariesData.length;
 
-            // 【修复】渲染精选情书卡片（最新3篇，不重复）
-            const grid = document.getElementById('lettersGrid');
-            grid.innerHTML = '';
-            const uniqueLetters = getRecentUniqueLetters();
-            const sortedForModal = [...diariesData].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
-            
-            uniqueLetters.forEach((d) => {
-                const card = document.createElement('div');
-                card.className = 'letter-card';
-                // 预览时也需要去掉加粗标记的星号
-                const previewContent = (d.content || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/\n/g, ' ');
-                card.innerHTML = `
-                    <div class="letter-date">${(d.date || '').replace(/-/g, '.')}</div>
-                    <div class="letter-title">${d.title || '无标题'}</div>
-                    <div class="letter-preview">${previewContent}</div>
-                `;
-                // 使用 sortedForModal 找到正确的索引
-                const originalIndex = sortedForModal.findIndex(item => item.id === d.id);
-                card.addEventListener('click', () => openLetterModal(originalIndex));
-                grid.appendChild(card);
-            });
+            // 渲染情书预览（使用新的预览结构）
+            await renderLettersPreview();
 
-            // 渲染照片
-            const gallery = document.getElementById('galleryGrid');
-            gallery.innerHTML = '';
-            defaultPhotos.slice(0, 6).forEach((p, i) => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                item.innerHTML = `<img src="${p.src}" alt="${p.title}" loading="lazy"><div class="gallery-item-label">${p.title}</div>`;
-                gallery.appendChild(item);
-            });
+            // 渲染照片预览
+            await renderPhotosPreview();
+
+            // 渲染足迹预览
+            await renderTravelsPreview();
+
+            // 渲染愿望清单预览
+            await renderWishesPreview();
+
+            // 渲染时间胶囊预览
+            await renderCapsulePreview();
 
             // 启动计时器
             updateTimer();
@@ -2383,6 +2415,211 @@
             document.getElementById('settingPassword').value = appData.password || '';
             document.getElementById('settingToken').value = appData.didaToken || '';
             document.getElementById('settingProjectId').value = appData.didaProjectId || '';
+        }
+
+        // 渲染情书预览
+        async function renderLettersPreview() {
+            const previewEl = document.getElementById('lettersPreview');
+            const emptyEl = document.getElementById('lettersEmpty');
+
+            if (!diariesData || diariesData.length === 0) {
+                previewEl.style.display = 'none';
+                emptyEl.style.display = 'flex';
+                emptyEl.textContent = '还没有写过情书，去情书博物馆写下第一封吧 ❤️';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            previewEl.style.display = 'grid';
+            previewEl.className = 'module-preview letters-grid';
+
+            const sorted = [...diariesData].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            const toShow = sorted.slice(0, 3);
+
+            previewEl.innerHTML = '';
+            toShow.forEach((d, idx) => {
+                const card = document.createElement('div');
+                card.className = 'letter-card';
+                const previewContent = (d.content || '').replace(/\*\*(.+?)\*\*/g, '$1').replace(/\n/g, ' ').substring(0, 80);
+                card.innerHTML = `
+                    <div class="letter-date">${(d.date || '').replace(/-/g, '.')}</div>
+                    <div class="letter-title">${d.title || '无标题'}</div>
+                    <div class="letter-preview">${previewContent}${d.content.length > 80 ? '...' : ''}</div>
+                `;
+                const originalIndex = sorted.findIndex(item => item.id === d.id);
+                card.addEventListener('click', () => openLetterModal(originalIndex));
+                previewEl.appendChild(card);
+            });
+        }
+
+        // 渲染照片预览
+        async function renderPhotosPreview() {
+            const previewEl = document.getElementById('photosPreview');
+            const emptyEl = document.getElementById('photosEmpty');
+
+            let photos = defaultPhotos;
+            try {
+                const resp = await fetch('data/photos.json?t=' + Date.now());
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        photos = data;
+                    }
+                }
+            } catch {}
+
+            if (!photos || photos.length === 0) {
+                previewEl.style.display = 'none';
+                emptyEl.style.display = 'flex';
+                emptyEl.textContent = '还没有上传照片，去照片墙上添加第一张回忆吧 📷';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            previewEl.style.display = 'grid';
+            previewEl.className = 'module-preview gallery-grid';
+
+            previewEl.innerHTML = '';
+            photos.slice(0, 6).forEach((p) => {
+                const item = document.createElement('div');
+                item.className = 'gallery-item';
+                item.innerHTML = `<img src="${p.src}" alt="${p.title || ''}" loading="lazy"><div class="gallery-item-label">${p.title || ''}</div>`;
+                previewEl.appendChild(item);
+            });
+        }
+
+        // 渲染足迹预览
+        async function renderTravelsPreview() {
+            const previewEl = document.getElementById('travelsPreview');
+            const emptyEl = document.getElementById('travelsEmpty');
+
+            let travels = [];
+            try {
+                const resp = await fetch('data/travels.json?t=' + Date.now());
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        travels = data;
+                    }
+                }
+            } catch {}
+
+            if (!travels || travels.length === 0) {
+                previewEl.style.display = 'none';
+                emptyEl.style.display = 'flex';
+                emptyEl.textContent = '还没有记录足迹，去足迹地图标记第一个地方吧 📍';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            previewEl.style.display = 'block';
+
+            const isMobile = window.innerWidth <= 768;
+            const toShow = travels.slice(0, isMobile ? 1 : 3);
+
+            previewEl.innerHTML = '<div class="travels-preview-grid">' + toShow.map(t => `
+                <div class="travel-preview-card">
+                    <div class="travel-preview-name">${t.name}</div>
+                    <div class="travel-preview-date">${(t.date || '').replace(/-/g, '.')}</div>
+                    <div class="travel-preview-memory">${(t.memory || '').substring(0, 50)}...</div>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        // 渲染愿望清单预览
+        async function renderWishesPreview() {
+            const previewEl = document.getElementById('wishesPreview');
+            const emptyEl = document.getElementById('wishesEmpty');
+
+            let wishes = [];
+            try {
+                const resp = await fetch('data/wishes.json?t=' + Date.now());
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        wishes = data;
+                    }
+                }
+            } catch {}
+
+            if (!wishes || wishes.length === 0) {
+                previewEl.style.display = 'none';
+                emptyEl.style.display = 'flex';
+                emptyEl.textContent = '还没有添加愿望，去清单里写下第一个小心愿吧 ⭐';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            previewEl.style.display = 'block';
+
+            const isMobile = window.innerWidth <= 768;
+            const incomplete = wishes.filter(w => !w.completed);
+            let toShow;
+
+            if (incomplete.length > 0) {
+                toShow = incomplete.slice(0, isMobile ? 2 : 3).map(w => ({ ...w, isCompleted: false }));
+            } else {
+                const completed = wishes.filter(w => w.completed);
+                toShow = completed.slice(0, isMobile ? 2 : 2).map(w => ({ ...w, isCompleted: true }));
+            }
+
+            previewEl.innerHTML = '<div class="wishes-preview-list">' + toShow.map(w => `
+                <div class="wishes-preview-item">
+                    <div class="wishes-checkbox ${w.isCompleted || w.completed ? 'checked' : ''}"></div>
+                    <div class="wishes-item-text ${w.isCompleted || w.completed ? 'completed' : ''}">${w.title}</div>
+                </div>
+            `).join('') + '</div>';
+        }
+
+        // 渲染时间胶囊预览
+        async function renderCapsulePreview() {
+            const previewEl = document.getElementById('capsulePreview');
+            const emptyEl = document.getElementById('capsuleEmpty');
+
+            let capsules = [];
+            try {
+                const resp = await fetch('data/capsules.json?t=' + Date.now());
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (Array.isArray(data) && data.length > 0) {
+                        capsules = data;
+                    }
+                }
+            } catch {}
+
+            if (!capsules || capsules.length === 0) {
+                previewEl.style.display = 'none';
+                emptyEl.style.display = 'flex';
+                emptyEl.textContent = '还没有埋下胶囊，去写一封给未来的信吧 ⏳';
+                return;
+            }
+
+            emptyEl.style.display = 'none';
+            previewEl.style.display = 'block';
+
+            const capsule = capsules[0];
+            const unlockDate = new Date(capsule.unlockDate || capsule.date);
+            const now = new Date();
+            const diffDays = Math.ceil((unlockDate - now) / (1000 * 60 * 60 * 24));
+            const isUnlocked = diffDays <= 0;
+
+            let countdownText;
+            if (isUnlocked) {
+                countdownText = '🎉 可以打开啦！';
+            } else {
+                countdownText = `还有 ${diffDays} 天解锁`;
+            }
+
+            previewEl.innerHTML = `
+                <div class="capsule-preview">
+                    <div class="capsule-preview-card">
+                        <div class="capsule-icon-large">${isUnlocked ? '🔓' : '🔒'}</div>
+                        <div class="capsule-preview-title">${capsule.title || '神秘胶囊'}</div>
+                        <div class="capsule-preview-date">埋藏于 ${(capsule.date || '').replace(/-/g, '.')}</div>
+                        <div class="capsule-preview-countdown">${countdownText}</div>
+                    </div>
+                </div>
+            `;
         }
 
         // 情书弹窗
