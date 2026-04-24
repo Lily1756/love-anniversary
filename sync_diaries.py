@@ -11,6 +11,7 @@ import argparse
 import base64
 import json
 import os
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -34,6 +35,76 @@ API_BASE            = "https://api.dida365.com/open/v1"
 DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "diaries.json")
 
 
+def parse_date_from_content(content: str) -> Optional[str]:
+    """
+    从正文中解析日期。
+    支持的格式：
+    - 2026.03.20
+    - 2026-03-20
+    - 2026/03/20
+    - 2026年03月20日
+    - 2026年3月20日
+    - 03月20日（使用当前年份）
+    - 3月20日（使用当前年份）
+    - 20260320
+    - 19940210
+    
+    返回：解析到的日期字符串（YYYY-MM-DD格式），解析失败返回 None
+    """
+    if not content:
+        return None
+    
+    # 当前年份（用于补全只有月日的日期）
+    current_year = datetime.now().year
+    
+    # 按优先级尝试各种日期格式
+    
+    # 1. 格式：YYYY.MM.DD 或 YYYY.M.D（最常见）
+    match = re.search(r'(\d{4})\.(\d{1,2})\.(\d{1,2})', content)
+    if match:
+        year, month, day = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        if 1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31:
+            return f"{year:04d}-{month:02d}-{day:02d}"
+    
+    # 2. 格式：YYYY-MM-DD 或 YYYY-M-D
+    match = re.search(r'(\d{4})-(\d{1,2})-(\d{1,2})', content)
+    if match:
+        year, month, day = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        if 1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31:
+            return f"{year:04d}-{month:02d}-{day:02d}"
+    
+    # 3. 格式：YYYY/MM/DD 或 YYYY/M/D
+    match = re.search(r'(\d{4})/(\d{1,2})/(\d{1,2})', content)
+    if match:
+        year, month, day = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        if 1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31:
+            return f"{year:04d}-{month:02d}-{day:02d}"
+    
+    # 4. 格式：YYYY年MM月DD日 或 YYYY年M月D日
+    match = re.search(r'(\d{4})年(\d{1,2})月(\d{1,2})日', content)
+    if match:
+        year, month, day = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        if 1 <= month <= 12 and 1 <= day <= 31:
+            return f"{year:04d}-{month:02d}-{day:02d}"
+    
+    # 5. 格式：MM月DD日 或 M月D日（使用当前年份）
+    match = re.search(r'(\d{1,2})月(\d{1,2})日', content)
+    if match:
+        month, day = int(match.group(1)), int(match.group(2))
+        if 1 <= month <= 12 and 1 <= day <= 31:
+            return f"{current_year:04d}-{month:02d}-{day:02d}"
+    
+    # 6. 格式：YYYYMMDD（8位连续数字，支持换行符后的数字）
+    # 使用 (?:^|\D) 和 (?:\D|$) 代替 \b，确保换行符后也能匹配
+    match = re.search(r'(?:^|\D)(\d{4})(\d{2})(\d{2})(?:\D|$)', content)
+    if match:
+        year, month, day = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        if 1900 <= year <= 2100 and 1 <= month <= 12 and 1 <= day <= 31:
+            return f"{year:04d}-{month:02d}-{day:02d}"
+    
+    return None
+
+
 def fetch_tasks(token: str, project_id: str) -> list:
     """从滴答清单 API 获取指定项目的所有任务"""
     url = f"{API_BASE}/project/{project_id}/data"
@@ -50,16 +121,22 @@ def tasks_to_diaries(tasks: list) -> list:
     """将滴答任务转换为 diaries.json 格式"""
     entries = []
     for t in tasks:
-        # 优先用 modifiedTime，其次 createdTime
-        raw_time = t.get("modifiedTime") or t.get("createdTime") or ""
-        date_str = raw_time[:10] if raw_time else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        content = (t.get("content") or "").strip()
+        
+        # 【关键修改】优先从正文解析日期
+        date_str = parse_date_from_content(content)
+        
+        # 如果正文没有日期，回退使用 modifiedTime 或 createdTime
+        if not date_str:
+            raw_time = t.get("modifiedTime") or t.get("createdTime") or ""
+            date_str = raw_time[:10] if raw_time else datetime.now(timezone.utc).strftime("%Y-%m-%d")
 
         entry = {
             "id":      f"dida-{t['id']}",
             "date":    date_str,
             "title":   (t.get("title") or "").strip() or "无标题",
             "tag":     "💌",
-            "content": (t.get("content") or "").strip(),
+            "content": content,
         }
         entries.append(entry)
 
@@ -136,6 +213,43 @@ def github_api_push(token: str, owner: str, repo: str, path: str, content: str, 
         raise RuntimeError(f"GitHub API 推送失败: {resp.status_code} {resp_text}")
 
 
+# ── 测试日期解析函数 ─────────────────────────────────────────────────
+def test_date_parser():
+    """测试日期解析函数"""
+    test_cases = [
+        # (输入文本, 期望结果)
+        ("2026.03.20", "2026-03-20"),
+        ("2026-03-20", "2026-03-20"),
+        ("2026/03/20", "2026-03-20"),
+        ("2026年03月20日", "2026-03-20"),
+        ("2026年3月20日", "2026-03-20"),
+        ("03月20日", str(datetime.now().year) + "-03-20"),
+        ("3月20日", str(datetime.now().year) + "-03-20"),
+        ("今天是2026.03.20", "2026-03-20"),
+        ("生于19940210", "1994-02-10"),
+        ("记录19950320发生的事情", "1995-03-20"),
+        ("【2026】生日快乐呀~", None),  # 标题里的2026不是日期（正文格式），正确返回None
+        ("无日期内容", None),
+        ("", None),
+    ]
+    
+    print("\n📅 日期解析测试：")
+    print("-" * 60)
+    all_passed = True
+    for text, expected in test_cases:
+        result = parse_date_from_content(text)
+        status = "✅" if result == expected else "❌"
+        if result != expected:
+            all_passed = False
+        print(f"{status} \"{text[:30]}...\" → {result} (期望: {expected})")
+    print("-" * 60)
+    if all_passed:
+        print("✅ 所有测试通过！")
+    else:
+        print("❌ 部分测试失败，请检查解析逻辑")
+    print()
+
+
 def main():
     parser = argparse.ArgumentParser(description="同步滴答清单小作文到 diaries.json")
     parser.add_argument("--token",       default=DEFAULT_TOKEN,       help="滴答 Access Token")
@@ -143,7 +257,13 @@ def main():
     parser.add_argument("--gh-token",    default=DEFAULT_GH_TOKEN,   help="GitHub PAT（通过 API 推送，必填）")
     parser.add_argument("--dry-run",     action="store_true",          help="只打印，不写入也不推送")
     parser.add_argument("--no-push",     action="store_true",          help="只更新本地文件，不推送到 GitHub")
+    parser.add_argument("--test",        action="store_true",          help="运行日期解析测试")
     args = parser.parse_args()
+
+    # 如果有 --test 参数，先运行测试
+    if args.test:
+        test_date_parser()
+        return
 
     print("\n💕 滴答清单同步开始")
     print(f"   项目 ID : {args.project_id}")
