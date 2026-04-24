@@ -170,6 +170,32 @@
             font-size: 14px;
         }
 
+        /* 【关键优化】防止内容闪烁 - 初始状态隐藏两个容器 */
+        body[data-unlocked=""] .lock-screen,
+        body:not([data-unlocked]) .lock-screen {
+            /* 未检查前隐藏锁屏，避免显示0 */
+        }
+        body[data-unlocked=""] .container,
+        body:not([data-unlocked]) .container {
+            display: none !important;
+        }
+        
+        /* 已解锁状态：隐藏锁屏，显示主内容 */
+        body[data-unlocked="true"] .lock-screen {
+            display: none !important;
+        }
+        body[data-unlocked="true"] .container {
+            display: block !important;
+        }
+        
+        /* 未解锁状态：显示锁屏，隐藏主内容 */
+        body[data-unlocked="false"] .lock-screen {
+            display: flex !important;
+        }
+        body[data-unlocked="false"] .container {
+            display: none !important;
+        }
+
         /* 全局容器 - 防止溢出 */
         .container {
             max-width: 1200px;
@@ -2089,6 +2115,17 @@
     </style>
 </head>
 <body>
+    <!-- 【关键优化】内联脚本：在页面渲染前立即检查解锁状态，防止闪烁 -->
+    <script>
+        (function() {
+            const STORAGE_KEY = 'love_journal_data_v2';
+            let storedData = null;
+            try { storedData = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch(e) {}
+            const isUnlocked = storedData && storedData.unlocked === true;
+            document.body.dataset.unlocked = isUnlocked ? 'true' : 'false';
+        })();
+    </script>
+    
     <!-- 密码锁 -->
     <div class="lock-screen" id="lockScreen">
         <div class="lock-card">
@@ -2106,32 +2143,32 @@
             <img src="assets/logo/hero-logo.svg" alt="Love Story with You" class="logo-hero">
         </header>
 
-        <!-- 第一步：修复计时器 - 确保从纪念日开始正常计算 -->
+        <!-- 计时器 -->
         <section class="timer-card">
             <div class="timer-title" id="timerTitle">我们已经在一起了</div>
             <div class="timer-display" id="timerDisplay">
                 <div class="time-unit">
-                    <div class="time-number" id="years">0</div>
+                    <div class="time-number" id="years">--</div>
                     <div class="time-label">年</div>
                 </div>
                 <div class="time-unit">
-                    <div class="time-number" id="months">0</div>
+                    <div class="time-number" id="months">--</div>
                     <div class="time-label">个月</div>
                 </div>
                 <div class="time-unit">
-                    <div class="time-number" id="days">0</div>
+                    <div class="time-number" id="days">--</div>
                     <div class="time-label">天</div>
                 </div>
                 <div class="time-unit">
-                    <div class="time-number" id="hours">0</div>
+                    <div class="time-number" id="hours">--</div>
                     <div class="time-label">时</div>
                 </div>
                 <div class="time-unit">
-                    <div class="time-number" id="minutes">0</div>
+                    <div class="time-number" id="minutes">--</div>
                     <div class="time-label">分</div>
                 </div>
                 <div class="time-unit">
-                    <div class="time-number" id="seconds">0</div>
+                    <div class="time-number" id="seconds">--</div>
                     <div class="time-label">秒</div>
                 </div>
             </div>
@@ -2411,9 +2448,9 @@
             if (password === correctPassword) {
                 appData.unlocked = true;
                 saveData(appData);
-                document.getElementById('lockScreen').classList.add('hidden');
-                document.getElementById('mainContent').classList.remove('hidden');
-                // settingsBtn 已移除，不再显示设置按钮
+                // 【关键优化】更新 body 属性，CSS 自动处理显示/隐藏
+                document.body.dataset.unlocked = 'true';
+                // 显示菜单和音乐播放器
                 document.getElementById('menuBtn').classList.remove('hidden');
                 document.getElementById('musicIframe').classList.remove('hidden');
                 await initContent();
@@ -3038,22 +3075,19 @@
             const loadedData = await loadData();
             Object.assign(appData, loadedData);
             
+            // 【关键优化】更新 body 的 data-unlocked 属性，CSS 会自动处理显示/隐藏
+            document.body.dataset.unlocked = appData.unlocked ? 'true' : 'false';
+            
             // 密码按钮事件
             document.getElementById('lockBtn').addEventListener('click', checkPassword);
             document.getElementById('lockInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') checkPassword(); });
 
-            // 【修复密码锁闪烁】先检查解锁状态，再决定显示锁屏还是主内容
+            // 【修复密码锁闪烁】已由 CSS 和内联脚本处理
             if (appData.unlocked) {
-                // 已解锁：直接显示主内容，不显示锁屏
-                document.getElementById('lockScreen').style.display = 'none'; // 使用 display 而非 class，确保不闪烁
-                document.getElementById('mainContent').classList.remove('hidden');
-                // settingsBtn 已移除
+                // 已解锁：显示主内容并初始化
                 document.getElementById('menuBtn').classList.remove('hidden');
                 document.getElementById('musicIframe').classList.remove('hidden');
                 await initContent();
-            } else {
-                // 未解锁：显示锁屏
-                document.getElementById('lockScreen').style.display = 'flex';
             }
 
             // 更多菜单
