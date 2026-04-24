@@ -6,6 +6,30 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#FDFBF7">
     <title>情书博物馆 · Love Story with You</title>
+    <meta name="description" content="我们写下的每一封情书，都是爱的见证">
+    
+    <!-- Open Graph / 微信分享优化 -->
+    <meta property="og:title" content="情书博物馆 · Love Story with You">
+    <meta property="og:description" content="我们写下的每一封情书，都是爱的见证">
+    <meta property="og:image" content="https://lily1756.github.io/love-anniversary/assets/icons/og-cover.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="https://lily1756.github.io/love-anniversary/writings.html">
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="Love Story with You">
+    <meta property="og:locale" content="zh_CN">
+    
+    <!-- 微信专属 -->
+    <meta itemprop="name" content="情书博物馆 · Love Story with You">
+    <meta itemprop="description" content="我们写下的每一封情书，都是爱的见证">
+    <meta itemprop="image" content="https://lily1756.github.io/love-anniversary/assets/icons/og-cover.jpg">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="情书博物馆 · Love Story with You">
+    <meta name="twitter:description" content="我们写下的每一封情书，都是爱的见证">
+    <meta name="twitter:image" content="https://lily1756.github.io/love-anniversary/assets/icons/og-cover.jpg">
+    
     <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <link rel="icon" type="image/png" sizes="64x64" href="favicon-64.png">
     <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
@@ -13,72 +37,692 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Dancing+Script:wght@500;600&family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@400;500;700&family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
+        /* =============================================
+           全局基础样式
+           ============================================= */
         * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; /* 强制防溢出 */ max-width: 100vw; overflow-x: hidden; }
-
-        /* 【强制移动端适配】全局防溢出规则 */
+        html { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); scroll-behavior: smooth; -webkit-overflow-scrolling: touch; max-width: 100vw; overflow-x: hidden; }
         *, *::before, *::after { max-width: 100vw; overflow-x: hidden; box-sizing: border-box; }
         img { max-width: 100%; height: auto; display: block; }
-        div, section, article, aside, header, footer, nav, main { max-width: 100vw; overflow-x: hidden; }
-        .container, .top-bar, .filter-section, .year-filters, .desktop-layout, .letter-list-item { flex-wrap: wrap; }
 
-        /* Logo 导航样式 */
-        .logo-nav {
-            height: 40px;
-            width: auto;
-            display: inline-block;
-            vertical-align: middle;
-            cursor: pointer;
-            transition: opacity 0.2s ease;
-        }
-        .logo-nav:hover {
-            opacity: 0.8;
-        }
         :root {
-            --bg-primary: #FDFBF7;
-            --bg-secondary: #F5F0EB;
-            --accent-primary: #D4B5B5;
-            --accent-secondary: #E2C5C5;
-            --accent-soft: #F0E6E6;
-            --radius-sm: 8px;
+            --bg: #FDFBF7;
+            --bg-card: #ffffff;
+            --bg-glass: rgba(255,255,255,0.85);
+            --bg-glass-light: rgba(255,255,255,0.6);
+            --border: rgba(196,168,162,0.25);
+            --border-card: rgba(196,168,162,0.35);
+            --text-primary: #4A4A4A;
+            --text-secondary: #5A4A4A;
+            --text-muted: #8A8A8A;
+            --text-hint: #B0A0A0;
+            --accent: #C4A8A2;
+            --accent-hover: #B09090;
+            --shadow-sm: 0 1px 8px rgba(0,0,0,0.04);
+            --shadow-md: 0 4px 20px rgba(196,168,162,0.12);
+            --shadow-lg: 0 12px 48px rgba(196,168,162,0.18);
+            --radius-sm: 12px;
             --radius-md: 16px;
-            --radius-lg: 24px;
-            --text-dark: #5a4a4a;
+            --radius-lg: 20px;
+            --font-serif: 'Playfair Display', 'Ma Shan Zheng', 'Noto Serif SC', serif;
+            --font-sans: 'Noto Sans SC', 'PingFang SC', sans-serif;
+            --font-title: 'Ma Shan Zheng', cursive;
         }
-        body { font-family: 'Noto Sans SC', sans-serif; min-height: 100vh; min-height: -webkit-fill-available; background-color: #FDFBF7; position: relative; color: var(--text-dark); /* 移动端基础字体不小于14px */ font-size: 14px; }
-        @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; } }
 
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; position: relative; z-index: 1; }
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg);
+            color: var(--text-primary);
+            min-height: 100vh;
+            position: relative;
+        }
 
-        .top-bar { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .back-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; background: rgba(255,255,255,0.8); color: var(--text-dark); text-decoration: none; border-radius: var(--radius-lg); font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 500; transition: all 0.3s ease; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.5); touch-action: manipulation; white-space: nowrap; min-height: 44px; min-width: 44px; }
-        .back-btn:active { transform: scale(0.95); }
-        @media (hover: hover) { .back-btn:hover { background: var(--accent-primary); color: white; } }
-        .page-title { font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; font-weight: 700; text-align: center; flex: 1; min-width: 200px; }
+        /* ── 图标样式 ── */
+        .site-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+        .site-icon-inline {
+            width: 16px;
+            height: 16px;
+            vertical-align: middle;
+            display: inline-block;
+            margin-right: 6px;
+            flex-shrink: 0;
+        }
+        .title-icon {
+            width: 24px;
+            height: 24px;
+            vertical-align: middle;
+            display: inline-block;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
 
-        /* 编辑模式样式 */
+        /* =============================================
+           页面头部
+           ============================================= */
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 24px 20px 60px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-family: var(--font-title);
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .page-subtitle {
+            font-size: 12px;
+            color: var(--text-hint);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* =============================================
+           顶部导航栏
+           ============================================= */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            gap: 12px;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .nav-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .nav-btn:hover svg path,
+        .nav-btn:hover svg rect,
+        .nav-btn:hover svg circle {
+            stroke: white;
+        }
+
+        .nav-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* =============================================
+           操作栏
+           ============================================= */
+        .action-bar {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .year-filters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .year-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 400;
+            color: var(--text-hint);
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-height: 36px;
+        }
+
+        .year-btn:hover {
+            background: rgba(196,168,162,0.15);
+        }
+
+        .year-btn.active {
+            background: var(--accent);
+            color: white;
+            font-weight: 500;
+            border-color: var(--accent);
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 180px;
+            max-width: 280px;
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 16px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            font-family: var(--font-sans);
+            color: var(--text-primary);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            outline: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-hint);
+        }
+
+        .search-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(196,168,162,0.15);
+        }
+
+        .generate-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 18px;
+            background: var(--bg-glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            white-space: nowrap;
+        }
+
+        .generate-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .generate-btn:hover .site-icon-inline path {
+            stroke: white;
+        }
+
+        /* =============================================
+           情书列表
+           ============================================= */
+        .letter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .letter-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .letter-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: rgba(196,168,162,0.5);
+        }
+
+        .letter-date {
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            color: var(--text-hint);
+            margin-bottom: 6px;
+        }
+
+        .letter-title {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .letter-excerpt {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.6;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .letter-read-more {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .letter-read-more::after {
+            content: '→';
+            transition: transform 0.2s ease;
+        }
+
+        .letter-card:hover .letter-read-more::after {
+            transform: translateX(4px);
+        }
+
+        /* =============================================
+           阅读详情弹窗
+           ============================================= */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: var(--radius-lg);
+            max-width: 640px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(240,232,232,1);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+
+        .modal-close:hover svg line {
+            stroke: var(--text-muted);
+        }
+
+        .modal-date {
+            font-family: 'Poppins', sans-serif;
+            font-size: 12px;
+            color: var(--text-hint);
+            margin-bottom: 6px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text-primary);
+            line-height: 1.4;
+        }
+
+        .modal-body {
+            padding: 24px;
+        }
+
+        .modal-text {
+            font-size: 14px;
+            color: var(--text-primary);
+            line-height: 1.8;
+            white-space: pre-wrap;
+        }
+
+        .modal-text strong {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: space-between;
+            padding: 16px 24px;
+            border-top: 1px solid rgba(240,232,232,1);
+        }
+
+        .modal-nav-btn {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .modal-nav-btn:hover {
+            color: var(--accent-hover);
+        }
+
+        .modal-nav-btn.disabled {
+            color: var(--text-hint);
+            pointer-events: none;
+        }
+
+        .modal-counter {
+            font-size: 12px;
+            color: var(--text-hint);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* =============================================
+           空状态
+           ============================================= */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-hint);
+        }
+
+        .empty-state-icon {
+            margin-bottom: 12px;
+        }
+
+        .empty-state-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .empty-state-text {
+            font-size: 14px;
+        }
+
+        /* =============================================
+           骨架屏
+           ============================================= */
+        .skeleton-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .skeleton-line {
+            background: linear-gradient(90deg, rgba(196,168,162,0.1) 25%, rgba(196,168,162,0.2) 50%, rgba(196,168,162,0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite linear;
+            border-radius: 4px;
+        }
+
+        .skeleton-date {
+            width: 100px;
+            height: 12px;
+            margin-bottom: 10px;
+        }
+
+        .skeleton-title {
+            width: 70%;
+            height: 16px;
+            margin-bottom: 10px;
+        }
+
+        .skeleton-excerpt {
+            width: 100%;
+            height: 13px;
+            margin-bottom: 6px;
+        }
+
+        .skeleton-excerpt:last-child {
+            width: 60%;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* =============================================
+           电子书模态框
+           ============================================= */
+        .ebook-modal .modal-content {
+            max-width: 1000px;
+        }
+
+        .ebook-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(240,232,232,1);
+        }
+
+        .ebook-title {
+            font-family: var(--font-title);
+            font-size: 20px;
+            color: var(--text-primary);
+        }
+
+        .ebook-body {
+            padding: 24px;
+        }
+
+        .year-selector-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .year-card {
+            background: var(--bg-glass-light);
+            border: 2px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 20px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .year-card:hover:not(.disabled) {
+            border-color: var(--accent);
+            background: rgba(196,168,162,0.1);
+        }
+
+        .year-card.disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .year-card-number {
+            font-family: 'Poppins', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .year-card-count {
+            font-size: 12px;
+            color: var(--text-hint);
+        }
+
+        /* =============================================
+           加载动画
+           ============================================= */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            color: white;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        /* =============================================
+           打印样式
+           ============================================= */
+        @media print {
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+            body {
+                background: white;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .container, .top-bar, .action-bar, .modal-overlay, .loading-overlay, .nav-actions {
+                display: none !important;
+            }
+            .print-book { display: block !important; }
+            .print-letter-page {
+                page-break-after: always;
+                padding: 2cm 0;
+            }
+            .print-letter-date {
+                font-family: 'Poppins', sans-serif;
+                font-size: 12px;
+                color: #888;
+                margin-bottom: 1em;
+            }
+            .print-letter-title {
+                font-family: 'Ma Shan Zheng', cursive;
+                font-size: 20px;
+                color: var(--accent);
+                margin-bottom: 1em;
+                padding-bottom: 0.5em;
+                border-bottom: 1px solid #eee;
+            }
+            .print-letter-content {
+                font-size: 14px;
+                line-height: 1.9;
+                color: #333;
+                white-space: pre-wrap;
+            }
+        }
+
+        .print-book { display: none; }
+
+        /* =============================================
+           编辑模式
+           ============================================= */
         .edit-toggle-btn {
             position: fixed;
             right: 24px;
-            bottom: 160px;
-            width: 52px;
-            height: 52px;
+            bottom: 100px;
+            width: 48px;
+            height: 48px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.9);
+            background: var(--bg-glass);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(212,165,165,0.3);
-            box-shadow: 0 4px 16px rgba(212,165,165,0.2);
+            border: 1px solid var(--border-card);
+            box-shadow: var(--shadow-md);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             z-index: 100;
             transition: all 0.3s ease;
-            color: var(--accent-primary);
+            color: var(--accent);
         }
 
         .edit-toggle-btn:hover {
-            background: var(--accent-primary);
+            background: var(--accent);
             color: white;
             transform: scale(1.1);
         }
@@ -87,64 +731,16 @@
             display: none;
         }
 
-        body.editing-mode .edit-toggle-btn {
-            background: var(--accent-primary);
-            color: white;
-        }
-
-        .edit-add-btn {
-            position: fixed;
-            right: 90px;
-            bottom: 160px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            padding: 12px 20px;
-            background: var(--accent-primary);
-            color: white;
-            border-radius: 25px;
-            border: none;
-            cursor: pointer;
-            z-index: 100;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 16px rgba(212,165,165,0.3);
-        }
-
-        .edit-add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(212,165,165,0.4);
-        }
-
-        .edit-add-btn.hidden {
-            display: none;
-        }
-
-        /* 编辑模式指示 */
-        body.editing-mode::before {
-            content: '✏️ 编辑模式';
-            position: fixed;
-            top: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--accent-primary);
-            color: white;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: 12px;
-            z-index: 9999;
-            box-shadow: 0 4px 16px rgba(212,165,165,0.3);
-        }
-
-        body.editing-mode .letter-list-item {
+        body.editing-mode .letter-card {
             cursor: pointer;
             transition: all 0.2s;
         }
 
-        body.editing-mode .letter-list-item:hover {
-            background: rgba(212,165,165,0.2);
+        body.editing-mode .letter-card:hover {
+            background: rgba(196,168,162,0.1);
         }
 
-        body.editing-mode .letter-list-item .delete-btn {
+        body.editing-mode .letter-card .delete-btn {
             position: absolute;
             top: 8px;
             right: 8px;
@@ -164,19 +760,20 @@
             z-index: 10;
         }
 
-        body.editing-mode .letter-list-item:hover .delete-btn {
+        body.editing-mode .letter-card:hover .delete-btn {
             opacity: 1;
         }
 
-        /* 添加/编辑情书模态框 */
+        /* 编辑模态框 */
         .letter-edit-modal {
             position: fixed;
             inset: 0;
             background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(5px);
             display: none;
             align-items: center;
             justify-content: center;
-            z-index: 500;
+            z-index: 1500;
             padding: 20px;
         }
 
@@ -186,8 +783,8 @@
 
         .letter-edit-content {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
+            border-radius: var(--radius-lg);
+            padding: 28px;
             width: min(500px, 100%);
             max-height: 80vh;
             overflow-y: auto;
@@ -195,8 +792,9 @@
 
         .letter-edit-content h3 {
             margin: 0 0 20px;
-            color: #5a4a4a;
-            font-size: 1.2rem;
+            color: var(--text-primary);
+            font-size: 18px;
+            font-family: var(--font-title);
         }
 
         .letter-edit-content .form-group {
@@ -206,25 +804,26 @@
         .letter-edit-content .form-group label {
             display: block;
             margin-bottom: 6px;
-            color: #a08080;
-            font-size: 0.9rem;
+            color: var(--text-muted);
+            font-size: 13px;
+            font-weight: 500;
         }
 
         .letter-edit-content .form-group input,
         .letter-edit-content .form-group textarea {
             width: 100%;
             padding: 12px 16px;
-            border: 1px solid rgba(212,165,165,0.3);
-            border-radius: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             font-size: 14px;
-            font-family: inherit;
+            font-family: var(--font-sans);
             transition: border-color 0.2s;
         }
 
         .letter-edit-content .form-group input:focus,
         .letter-edit-content .form-group textarea:focus {
             outline: none;
-            border-color: var(--accent-primary);
+            border-color: var(--accent);
         }
 
         .letter-edit-content .form-group textarea {
@@ -241,7 +840,7 @@
         .letter-edit-actions button {
             flex: 1;
             padding: 12px;
-            border-radius: 12px;
+            border-radius: var(--radius-sm);
             font-size: 14px;
             cursor: pointer;
             transition: all 0.2s;
@@ -254,835 +853,227 @@
         }
 
         .letter-edit-actions .btn-save {
-            background: var(--accent-primary);
+            background: var(--accent);
             color: white;
             border: none;
-        }
-
-        /* 生成电子书按钮 */
-        .generate-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: var(--accent-primary, #C4A8A2); color: white; border: none; border-radius: 20px; font-size: clamp(0.9rem,2.5vw,1rem); font-weight: 600; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 16px rgba(196,168,162,0.4); white-space: nowrap; min-height: 44px; }
-        .generate-btn:active { transform: scale(0.95); }
-        @media (hover: hover) { .generate-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,165,165,0.5); } }
-
-        .filter-section { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-        .year-filters { display: flex; gap: 10px; flex-wrap: wrap; }
-        .year-btn { padding: 10px 18px; background: rgba(255,255,255,0.7); border: 1px solid rgba(212,165,165,0.3); border-radius: 20px; font-size: 0.9rem; color: #5a4a4a; cursor: pointer; transition: all 0.3s ease; touch-action: manipulation; min-height: 44px; min-width: 44px; display: inline-flex; align-items: center; justify-content: center; }
-        .year-btn:active { transform: scale(0.95); }
-        .year-btn.active { background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; border-color: transparent; }
-        @media (hover: hover) { .year-btn:hover:not(.active) { background: rgba(212,165,165,0.3); } }
-        .search-box { flex: 1; min-width: 200px; max-width: 350px; position: relative; }
-        .search-input { width: 100%; padding: 12px 20px 12px 45px; border: 1px solid rgba(212,165,165,0.3); border-radius: 25px; font-size: 16px; /* 移动端输入框字体不小于16px，防止iOS自动缩放 */ background: rgba(255,255,255,0.8); color: #5a4a4a; backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); outline: none; transition: all 0.3s ease; }
-        .search-input::placeholder { color: #a08080; }
-        .search-input:focus { border-color: #d4a5a5; box-shadow: 0 0 0 3px rgba(212,165,165,0.2); }
-        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: #d4a5a5; font-size: 1.1rem; pointer-events: none; }
-
-        .desktop-layout { display: flex; gap: 25px; min-height: 600px; }
-        .letters-sidebar { width: 320px; flex-shrink: 0; background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 20px; padding: 20px; box-shadow: 0 8px 32px rgba(212,165,165,0.15); border: 1px solid rgba(255,255,255,0.5); max-height: 70vh; overflow-y: auto; }
-        .letters-sidebar::-webkit-scrollbar { width: 6px; }
-        .letters-sidebar::-webkit-scrollbar-track { background: rgba(255,255,255,0.3); border-radius: 3px; }
-        .letters-sidebar::-webkit-scrollbar-thumb { background: #d4a5a5; border-radius: 3px; }
-        .sidebar-title { font-size: 1rem; color: #d4a5a5; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid rgba(212,165,165,0.3); font-weight: 500; }
-
-        .letter-list-item { padding: 15px 12px; border-radius: 12px; cursor: pointer; transition: all 0.3s ease; margin-bottom: 8px; border: 1px solid transparent; }
-        .letter-list-item:active { transform: scale(0.98); }
-        .letter-list-item:hover { background: rgba(255,255,255,0.5); }
-        .letter-list-item.active { background: linear-gradient(135deg, rgba(212,165,165,0.2), rgba(255,182,193,0.2)); border-color: rgba(212,165,165,0.4); }
-        .letter-list-date { font-family: 'Poppins', sans-serif; font-size: 0.8rem; color: #d4a5a5; margin-bottom: 5px; }
-        .letter-list-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.1rem; color: #5a4a4a; line-height: 1.4; }
-
-        .reading-area { flex: 1; background: linear-gradient(135deg, #fdf8f0 0%, #faf5eb 50%, #fdf8f0 100%); border-radius: 24px; padding: 40px 35px; box-shadow: 0 12px 48px rgba(212,165,165,0.15); position: relative; overflow: hidden; }
-        .reading-area::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(90deg, transparent 79px, rgba(212,165,165,0.1) 79px, rgba(212,165,165,0.1) 80px, transparent 80px), linear-gradient(rgba(212,165,165,0.05) 1px, transparent 1px); background-size: 100% 28px; pointer-events: none; }
-        .reading-header { position: relative; z-index: 1; text-align: center; margin-bottom: 30px; padding-bottom: 25px; border-bottom: 2px dashed rgba(212,165,165,0.3); }
-        .reading-date { font-family: 'Poppins', sans-serif; font-size: 0.9rem; color: #d4a5a5; margin-bottom: 12px; }
-        .reading-title { font-family: 'Ma Shan Zheng', cursive; font-size: clamp(1.5rem,4vw,2rem); color: #5a4a4a; line-height: 1.5; margin-bottom: 15px; }
-        .reading-number { font-family: 'Dancing Script', cursive; font-size: 1.1rem; color: #d4a5a5; }
-        .reading-content { position: relative; z-index: 1; font-size: clamp(1rem,2.5vw,1.15rem); color: #5a4a4a; line-height: 2; text-align: justify; padding: 0 10px; white-space: pre-wrap; }
-        .reading-content strong { color: #c85a5a; font-weight: 600; text-shadow: 0 0 1px rgba(200, 90, 90, 0.3); }
-        .reading-footer { position: relative; z-index: 1; margin-top: 40px; padding-top: 20px; border-top: 1px solid rgba(212,165,165,0.2); text-align: center; }
-        .reading-stats { font-size: 0.95rem; color: #a08080; font-family: 'Poppins', sans-serif; }
-        .reading-stats span { color: #d4a5a5; font-weight: 600; }
-
-        .paper-corner { position: absolute; width: 60px; height: 60px; opacity: 0.15; }
-        .paper-corner.top-left { top: 15px; left: 15px; border-top: 3px solid #d4a5a5; border-left: 3px solid #d4a5a5; }
-        .paper-corner.top-right { top: 15px; right: 15px; border-top: 3px solid #d4a5a5; border-right: 3px solid #d4a5a5; }
-        .paper-corner.bottom-left { bottom: 15px; left: 15px; border-bottom: 3px solid #d4a5a5; border-left: 3px solid #d4a5a5; }
-        .paper-corner.bottom-right { bottom: 15px; right: 15px; border-bottom: 3px solid #d4a5a5; border-right: 3px solid #d4a5a5; }
-
-        .mobile-layout { display: none; }
-        .mobile-selector { width: 100%; padding: 15px 20px; border: 1px solid rgba(212,165,165,0.3); border-radius: 16px; font-size: 1rem; background: rgba(255,255,255,0.8); color: #5a4a4a; font-family: 'Noto Sans SC', sans-serif; cursor: pointer; outline: none; margin-bottom: 20px; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23d4a5a5' d='M6 8L1 3h10z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 15px center; }
-        .mobile-reading-area { background: linear-gradient(135deg, #fdf8f0 0%, #faf5eb 50%, #fdf8f0 100%); border-radius: 20px; padding: 25px 20px; min-height: 400px; position: relative; }
-        .mobile-reading-area::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-image: linear-gradient(90deg, transparent 79px, rgba(212,165,165,0.1) 79px, rgba(212,165,165,0.1) 80px, transparent 80px), linear-gradient(rgba(212,165,165,0.05) 1px, transparent 1px); background-size: 100% 28px; pointer-events: none; border-radius: 20px; }
-
-        .empty-state { text-align: center; padding: 60px 20px; color: #a08080; }
-        .empty-state-icon { font-size: 3rem; margin-bottom: 15px; }
-        .empty-state-text { font-size: 1.1rem; }
-
-        /* ========== 模态框通用样式 ========== */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(5px); z-index: 10000; display: none; align-items: center; justify-content: center; padding: 20px; opacity: 0; transition: opacity 0.3s ease; }
-        .modal-overlay.active { display: flex; opacity: 1; }
-        .modal-content { background: rgba(255,255,255,0.95); backdrop-filter: blur(20px); border-radius: 24px; max-width: 900px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); transform: scale(0.9); transition: transform 0.3s ease; }
-        .modal-overlay.active .modal-content { transform: scale(1); }
-        .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 20px 25px; border-bottom: 1px solid rgba(212,165,165,0.2); }
-        .modal-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.5rem; color: #5a4a4a; }
-        .modal-close { width: 40px; height: 40px; border-radius: 50%; background: rgba(212,165,165,0.2); border: none; font-size: 1.5rem; cursor: pointer; color: #5a4a4a; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
-        .modal-close:active { transform: scale(0.9); }
-        @media (hover: hover) { .modal-close:hover { background: rgba(212,165,165,0.4); } }
-        .modal-body { padding: 25px; }
-
-        /* 年份选择器样式 */
-        .year-selector-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; }
-        .year-card { background: rgba(255,255,255,0.8); border: 2px solid rgba(212,165,165,0.3); border-radius: 16px; padding: 25px 15px; text-align: center; cursor: pointer; transition: all 0.3s ease; }
-        .year-card:active { transform: scale(0.95); }
-        @media (hover: hover) { .year-card:hover:not(.disabled) { border-color: var(--accent-primary); var(--accent-soft); transform: translateY(-3px); } }
-        .year-card.disabled { opacity: 0.4; cursor: not-allowed; }
-        .year-card.selected { border-color: var(--accent-primary); background: linear-gradient(135deg, rgba(196,168,162,0.2), rgba(212,181,181,0.1)); }
-        .year-card-number { font-family: 'Poppins', sans-serif; font-size: 2rem; font-weight: 700; color: #5a4a4a; }
-        .year-card-count { font-size: 0.85rem; color: #d4a5a5; margin-top: 5px; }
-
-        /* 电子书定制界面样式 */
-        .ebook-builder { display: flex; gap: 25px; }
-        .preview-area { flex: 1; background: #f5f5f5; border-radius: 16px; padding: 20px; min-height: 400px; }
-        .preview-tabs { display: flex; gap: 10px; margin-bottom: 15px; }
-        .preview-tab { padding: 8px 16px; border-radius: 20px; background: rgba(255,255,255,0.8); border: 1px solid rgba(212,165,165,0.3); font-size: 0.9rem; color: #5a4a4a; cursor: pointer; transition: all 0.3s; }
-        .preview-tab.active { linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); color: white; border-color: transparent; }
-        .preview-container { background: white; border-radius: 12px; min-height: 350px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-
-        /* 封面预览 */
-        .book-cover { padding: 40px; text-align: center; background: linear-gradient(135deg, var(--cover-bg-start, #fff0f5), var(--cover-bg-end, #ffe4e1)); min-height: 350px; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
-        .book-cover-bg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-size: cover; background-position: center; opacity: 0.3; }
-        .cover-title { font-family: 'Ma Shan Zheng', cursive; font-size: 2.5rem; color: var(--cover-title-color, #5a4a4a); margin-bottom: 15px; position: relative; z-index: 1; }
-        .cover-subtitle { font-size: 1rem; color: var(--cover-subtitle-color, #a08080); margin-bottom: 30px; position: relative; z-index: 1; }
-        .cover-image { width: 150px; height: 150px; border-radius: 16px; object-fit: cover; margin-bottom: 30px; box-shadow: 0 8px 25px rgba(0,0,0,0.15); position: relative; z-index: 1; }
-        .cover-names { font-family: 'Dancing Script', cursive; font-size: 1.3rem; color: var(--cover-title-color, #5a4a4a); }
-        .cover-year { position: absolute; bottom: 20px; right: 25px; font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: rgba(0,0,0,0.1); }
-
-        /* 内页预览 */
-        .book-page { padding: 30px; background: #fff; }
-        .page-header { text-align: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.1); }
-        .page-date { font-family: 'Poppins', sans-serif; font-size: 0.85rem; color: #d4a5a5; }
-        .page-title { font-family: 'Ma Shan Zheng', cursive; font-size: 1.5rem; color: #5a4a4a; margin-top: 8px; }
-        .page-content { font-size: 1rem; color: #5a4a4a; line-height: 1.8; }
-        .page-footer { margin-top: 30px; padding-top: 15px; border-top: 1px dashed rgba(0,0,0,0.1); text-align: center; font-size: 0.8rem; color: #a08080; }
-
-        /* 定制选项区 */
-        .options-area { width: 350px; flex-shrink: 0; }
-        .option-group { margin-bottom: 20px; }
-        .option-label { font-size: 0.9rem; color: #5a4a4a; font-weight: 600; margin-bottom: 8px; display: block; }
-        .option-input { width: 100%; padding: 12px 15px; border: 1px solid rgba(212,165,165,0.3); border-radius: 12px; font-size: 0.95rem; font-family: 'Noto Sans SC', sans-serif; background: rgba(255,255,255,0.8); color: #5a4a4a; outline: none; transition: all 0.3s; }
-        .option-input:focus { border-color: #d4a5a5; box-shadow: 0 0 0 3px rgba(212,165,165,0.2); }
-        textarea.option-input { resize: vertical; min-height: 80px; }
-
-        /* 配色方案 */
-        .color-options { display: flex; gap: 10px; flex-wrap: wrap; }
-        .color-option { width: 50px; height: 50px; border-radius: 12px; cursor: pointer; border: 3px solid transparent; transition: all 0.3s; }
-        .color-option.selected { border-color: #5a4a4a; transform: scale(1.1); }
-        .color-option:active { transform: scale(0.95); }
-
-        /* 字体选择 */
-        .font-options { display: flex; gap: 10px; }
-        .font-option { flex: 1; padding: 12px; border: 2px solid rgba(212,165,165,0.3); border-radius: 12px; background: rgba(255,255,255,0.8); cursor: pointer; text-align: center; transition: all 0.3s; }
-        .font-option:active { transform: scale(0.95); }
-        @media (hover: hover) { .font-option:hover { border-color: var(--accent-primary); } }
-        .font-option.selected { border-color: var(--accent-primary); var(--accent-soft); }
-        .font-option-name { font-size: 0.9rem; color: #5a4a4a; margin-bottom: 5px; }
-        .font-option-sample { font-size: 0.8rem; color: #a08080; }
-
-        /* 上传区域 */
-        .upload-area { border: 2px dashed rgba(212,165,165,0.4); border-radius: 12px; padding: 20px; text-align: center; cursor: pointer; transition: all 0.3s; }
-        .upload-area:active { transform: scale(0.98); }
-        @media (hover: hover) { .upload-area:hover { border-color: var(--accent-primary); background: rgba(196,168,162,0.05); } }
-        .upload-icon { font-size: 2rem; margin-bottom: 10px; }
-        .upload-text { font-size: 0.9rem; color: #a08080; }
-        .upload-preview { width: 80px; height: 80px; border-radius: 12px; object-fit: cover; margin-top: 10px; }
-
-        /* 操作按钮 */
-        .action-buttons { display: flex; gap: 12px; margin-top: 25px; padding-top: 20px; border-top: 1px solid rgba(212,165,165,0.2); }
-        .action-btn { flex: 1; padding: 14px 20px; border: none; border-radius: 20px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .action-btn:active { transform: scale(0.95); }
-        .btn-primary { background: var(--accent-primary, #C4A8A2); color: white; box-shadow: 0 4px 16px rgba(196,168,162,0.4); }
-        .btn-secondary { background: rgba(255,255,255,0.7); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); color: #5a4a4a; border: 1px solid rgba(255,255,255,0.5); box-shadow: 0 2px 12px rgba(0,0,0,0.05); }
-        @media (hover: hover) { .action-btn:hover { transform: translateY(-2px); } .btn-primary:hover { box-shadow: 0 6px 20px rgba(196,168,162,0.5); } .btn-secondary:hover { background: rgba(255,255,255,0.85); } }
-
-        /* 加载动画 */
-        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 10001; flex-direction: column; }
-        .loading-overlay.active { display: flex; }
-        .loading-spinner { width: 50px; height: 50px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .loading-text { color: white; margin-top: 15px; font-size: 1rem; }
-
-        /* 打印样式 - 电子书专业排版 */
-        @media print {
-            @page {
-                size: A4;
-                margin: 2.5cm 2cm;
-            }
-
-            body {
-                background: white !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            /* 隐藏所有非打印元素 */
-            .hearts-container, .container, .top-bar, .filter-section,
-            .desktop-layout, .mobile-layout, .modal-overlay, .loading-overlay,
-            .generate-btn, .ebook-builder, .nav-links, .musicIframe, iframe,
-            .back-btn, .page-title, .action-buttons, .reading-area {
-                display: none !important;
-            }
-
-            /* 打印书籍容器 */
-            .print-book {
-                display: block !important;
-                width: 100%;
-                max-width: none;
-                background: white;
-            }
-
-            /* 每页基础样式 - 强制分页 */
-            .print-page {
-                page-break-after: always;
-                page-break-inside: avoid;
-                padding: 0;
-                min-height: 100vh;
-                box-sizing: border-box;
-                background: #FFF8F8;
-                position: relative;
-            }
-            .print-page:last-child {
-                page-break-after: auto;
-            }
-
-            /* ========== 封面页 ========== */
-            .print-cover {
-                page-break-after: always;
-                page-break-inside: avoid;
-                text-align: center;
-                padding: 6cm 2cm 2cm;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                background: linear-gradient(135deg, #FFF8F8 0%, #FFE4E1 100%);
-                position: relative;
-            }
-
-            .print-cover::before {
-                content: '♡';
-                position: absolute;
-                top: 30px;
-                right: 40px;
-                font-size: 1.5rem;
-                color: #F0D0D0;
-            }
-
-            .print-cover::after {
-                content: '♡';
-                position: absolute;
-                bottom: 30px;
-                left: 40px;
-                font-size: 1.5rem;
-                color: #F0D0D0;
-            }
-
-            .print-cover-image {
-                width: 180px;
-                height: 180px;
-                border-radius: 20px;
-                object-fit: cover;
-                margin-bottom: 50px;
-                box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            }
-
-            .print-cover-title {
-                font-size: 2.8rem;
-                font-family: 'Ma Shan Zheng', 'YouYuan', cursive;
-                color: #C85A5A;
-                margin-bottom: 20px;
-                letter-spacing: 0.1em;
-            }
-
-            .print-cover-subtitle {
-                font-size: 1.3rem;
-                color: #B0A0A0;
-                margin-bottom: 60px;
-                font-style: italic;
-            }
-
-            .print-cover-names {
-                font-size: 1.6rem;
-                font-family: 'Dancing Script', cursive;
-                color: #D46B6B;
-            }
-
-            .print-cover-year {
-                position: absolute;
-                bottom: 2cm;
-                right: 2cm;
-                font-size: 5rem;
-                font-family: 'Poppins', sans-serif;
-                font-weight: 700;
-                color: rgba(200,90,90,0.08);
-            }
-
-            /* ========== 目录页 ========== */
-            .print-toc {
-                padding: 3cm 2cm;
-                background: white;
-            }
-
-            .print-toc-title {
-                font-size: 2rem;
-                font-family: 'Ma Shan Zheng', cursive;
-                text-align: center;
-                margin-bottom: 50px;
-                color: #C85A5A;
-                letter-spacing: 0.2em;
-            }
-
-            .print-toc-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: baseline;
-                padding: 14px 0;
-                border-bottom: 1px solid #F0D0D0;
-                font-size: 1rem;
-                color: #4A4A4A;
-            }
-
-            .print-toc-item span:first-child {
-                flex: 1;
-                text-align: left;
-                padding-right: 20px;
-            }
-
-            .print-toc-item span:last-child {
-                text-align: right;
-                color: #B0A0A0;
-                font-size: 0.9rem;
-                min-width: 60px;
-            }
-
-            /* ========== 内页 - 每篇小作文 ========== */
-            .print-letter-page {
-                page-break-before: always;
-                page-break-inside: avoid;
-                padding: 2.5cm 2cm 2cm;
-                min-height: calc(100vh - 5cm);
-                background: white;
-                position: relative;
-            }
-
-            .print-letter-page:first-of-type {
-                page-break-before: auto;
-            }
-
-            .print-letter-date {
-                font-family: 'Poppins', sans-serif;
-                font-size: 0.85rem;
-                color: #B0A0A0;
-                text-align: center;
-                margin-bottom: 1em;
-                letter-spacing: 0.1em;
-            }
-
-            .print-letter-title {
-                font-family: 'Ma Shan Zheng', cursive;
-                font-size: 1.6rem;
-                color: #C85A5A;
-                text-align: center;
-                margin-bottom: 1em;
-                padding-bottom: 1em;
-                border-bottom: 1px solid #F0D0D0;
-                position: relative;
-            }
-
-            .print-letter-title::after {
-                content: '';
-                display: block;
-                width: 60px;
-                height: 2px;
-                background: #F0D0D0;
-                margin: 1em auto 0;
-            }
-
-            .print-letter-content {
-                font-size: 1.05rem;
-                line-height: 1.9;
-                color: #4A4A4A;
-                text-align: justify;
-                font-family: 'YouYuan', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-                white-space: pre-wrap;
-                word-break: break-word;
-                margin-bottom: 2em;
-            }
-
-            .print-letter-content p {
-                margin-bottom: 0.8em;
-                text-indent: 2em;
-            }
-
-            .print-letter-footer {
-                display: none; /* 移除页脚的品牌信息 */
-            }
-
-            /* ========== 封底页 ========== */
-            .print-back-cover {
-                page-break-before: always;
-                page-break-inside: avoid;
-                text-align: center;
-                padding: 6cm 2cm 2cm;
-                min-height: 100vh;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                background: linear-gradient(135deg, #FFE4E1 0%, #FFF8F8 100%);
-                position: relative;
-            }
-
-            .print-back-cover::before {
-                content: '♡';
-                position: absolute;
-                top: 30px;
-                left: 40px;
-                font-size: 1.5rem;
-                color: #F0D0D0;
-            }
-
-            .print-back-cover::after {
-                content: '♡';
-                position: absolute;
-                bottom: 30px;
-                right: 40px;
-                font-size: 1.5rem;
-                color: #F0D0D0;
-            }
-
-            .print-back-text {
-                font-size: 2rem;
-                font-family: 'Dancing Script', cursive;
-                color: #C85A5A;
-                margin-bottom: 40px;
-            }
-
-            .print-brand {
-                font-size: 0.9rem;
-                color: #B0A0A0;
-            }
-        }
-
-        .print-book {
-            display: none;
-        }
-
-        @media (max-width: 900px) {
-            .desktop-layout { display: none; }
-            .mobile-layout { display: block; }
-            .ebook-builder { flex-direction: column; }
-            .options-area { width: 100%; }
-            .year-selector-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-        }
-        @media (max-width: 768px) {
-            .container { padding: 15px; }
-            .top-bar { flex-direction: column; align-items: stretch; gap: 10px; }
-            .back-btn { align-self: flex-start; }
-            .page-title { text-align: left; min-width: auto; }
-            .filter-section { flex-direction: column; align-items: stretch; }
-            .year-filters { justify-content: flex-start; }
-            .search-box { max-width: none; }
-            .mobile-reading-area { padding: 20px 15px; }
-            .reading-header { margin-bottom: 20px; padding-bottom: 15px; }
-            .reading-content { line-height: 1.9; }
-            .modal-content { max-height: 95vh; }
-            .action-buttons { flex-direction: column; }
-        }
-        @media (max-width: 480px) {
-            .page-title { font-size: 1.3rem; }
-            .year-btn { padding: 10px 14px; font-size: 0.9rem; min-height: 44px; min-width: 44px; }
-            .mobile-selector { padding: 14px 15px; font-size: 0.95rem; min-height: 48px; }
         }
 
         /* =============================================
-           【强制移动端适配】iPhone SE (375px) 专项修复
+           移动端适配
            ============================================= */
-        @media (max-width: 480px) {
-            /* 全局重置 - 强制防溢出 */
-            * {
-                max-width: 100vw !important;
-                overflow-x: hidden !important;
-                box-sizing: border-box;
-            }
-
-            html, body {
-                font-size: 14px !important;
-                line-height: 1.5 !important;
-            }
-
-            /* 容器限制 */
+        @media (max-width: 768px) {
             .container {
-                padding: 12px !important;
-                max-width: 100vw !important;
+                padding: 16px 16px 80px;
             }
 
-            /* 顶部导航优化 */
-            .top-bar {
-                gap: 8px !important;
-            }
-
-            .back-btn, .generate-btn {
-                min-height: 44px !important;
-                min-width: 44px !important;
-                padding: 10px 15px !important;
-                font-size: 14px !important;
+            .page-header {
+                margin-bottom: 24px;
             }
 
             .page-title {
-                font-size: 1.2rem !important;
-                min-width: auto !important;
-                text-align: center !important;
+                font-size: 16px;
             }
 
-            /* 筛选器优化 */
-            .filter-section {
-                gap: 10px !important;
+            .action-bar {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
             }
 
             .year-filters {
-                gap: 6px !important;
-                overflow-x: auto !important;
-                flex-wrap: nowrap !important;
-                -webkit-overflow-scrolling: touch !important;
-                padding-bottom: 5px !important;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 4px;
+                gap: 6px;
             }
 
             .year-btn {
-                flex-shrink: 0 !important;
-                min-width: 50px !important;
-                padding: 8px 12px !important;
+                flex-shrink: 0;
+                padding: 8px 14px;
+                font-size: 12px;
             }
 
             .search-box {
-                min-width: auto !important;
+                max-width: none;
             }
 
-            /* 搜索框 */
-            .search-input {
-                font-size: 16px !important;
-                min-height: 44px !important;
-                padding: 10px 15px 10px 40px !important;
+            .generate-btn {
+                width: 100%;
+                justify-content: center;
             }
 
-            /* 阅读区域 */
-            .reading-area {
-                padding: 20px 15px !important;
+            .letter-card {
+                padding: 16px;
             }
 
-            .reading-header {
-                margin-bottom: 15px !important;
-                padding-bottom: 15px !important;
+            .letter-title {
+                font-size: 14px;
             }
 
-            .reading-title {
-                font-size: 1.3rem !important;
+            .letter-excerpt {
+                font-size: 12px;
             }
 
-            .reading-content {
-                font-size: 14px !important;
-                line-height: 1.8 !important;
-                padding: 0 5px !important;
-            }
-
-            /* 移动端选择器 */
-            .mobile-selector {
-                font-size: 16px !important;
-                min-height: 48px !important;
-                padding: 12px 15px !important;
-            }
-
-            .mobile-reading-area {
-                padding: 15px 12px !important;
-            }
-
-            /* 侧边栏列表 */
-            .letters-sidebar {
-                width: 100% !important;
-                max-height: 200px !important;
-                padding: 15px !important;
-            }
-
-            .letter-list-item {
-                padding: 12px 10px !important;
-            }
-
-            .letter-list-title {
-                font-size: 1rem !important;
-            }
-
-            /* 模态框优化 */
             .modal-content {
-                margin: 10px !important;
-                max-height: 90vh !important;
-                padding: 15px !important;
+                margin: 0;
+                border-radius: var(--radius-md);
+                max-height: 100vh;
+                height: 100vh;
             }
 
             .modal-header {
-                padding: 15px !important;
-            }
-
-            .modal-title {
-                font-size: 1.2rem !important;
+                padding: 16px 20px;
             }
 
             .modal-body {
-                padding: 15px !important;
+                padding: 20px;
             }
 
-            .action-buttons {
-                flex-direction: column !important;
-                gap: 10px !important;
+            .modal-footer {
+                padding: 12px 20px;
             }
 
-            /* 音乐播放器位置 */
-            iframe#musicIframe {
-                bottom: calc(20px + env(safe-area-inset-bottom)) !important;
-                left: 15px !important;
-                width: 40px !important;
-                height: 40px !important;
-            }
-
-            /* 所有按钮最小点击区域 */
-            button, .back-btn, .generate-btn, .year-btn, .modal-close, .action-btn {
-                min-height: 44px !important;
-                min-width: 44px !important;
-                padding: 10px !important;
-                touch-action: manipulation !important;
-            }
-
-            /* 输入框优化 */
-            input, textarea, select {
-                font-size: 16px !important;
-                min-height: 44px !important;
-                padding: 12px !important;
+            .nav-btn {
+                width: 32px;
+                height: 32px;
             }
         }
 
-        /* ── GitHub 登录容器 ── */
-        .nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 12px 12px 80px;
+            }
 
-        #authContainer {
-            display: inline-block;
-        }
+            .page-title {
+                font-size: 15px;
+            }
 
-        /* ── 情书删除按钮 ── */
-        .diary-delete-btn {
-            position: absolute;
-            top: 50%;
-            right: 8px;
-            transform: translateY(-50%);
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: rgba(200, 80, 80, 0.9);
-            color: white;
-            font-size: 14px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            transition: all 0.2s;
-            border: none;
-            cursor: pointer;
-        }
-
-        .letter-item:hover .diary-delete-btn {
-            opacity: 1;
-        }
-
-        .diary-delete-btn:hover {
-            background: #c44040;
-            transform: translateY(-50%) scale(1.1);
+            .title-icon {
+                width: 20px;
+                height: 20px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <!-- 页面头部 -->
+        <div class="page-header">
+            <h1 class="page-title">
+                <svg class="title-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20" stroke="#C4A8A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z" stroke="#C4A8A2" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                我们的情书博物馆
+            </h1>
+            <div class="page-subtitle" id="pageSubtitle">加载中...</div>
+        </div>
+
+        <!-- 顶部导航栏 -->
         <div class="top-bar">
-            <a href="index.html" class="back-btn" title="返回首页">
-                <img src="assets/logo/nav-logo.svg" alt="首页" class="logo-nav">
-            </a>
-            <h1 class="page-title"><img src="assets/icons/icon-writings.svg" alt="" class="title-icon">我们的情书博物馆</h1>
             <div class="nav-actions">
-                <a href="travels.html" class="back-btn" style="padding: 6px 10px;"><img src="assets/icons/icon-travels.svg" alt="" class="site-icon-inline"></a>
-                <a href="wishes.html" class="back-btn" style="padding: 6px 10px;"><img src="assets/icons/icon-wishes.svg" alt="" class="site-icon-inline"></a>
-                <a href="time-capsule.html" class="back-btn" style="padding: 6px 10px;"><img src="assets/icons/icon-capsules.svg" alt="" class="site-icon-inline"></a>
+                <a href="index.html" class="nav-btn" title="返回首页">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M3 9L12 2L21 9V20C21 20.5304 20.7893 21.0391 20.4142 21.4142C20.0391 21.7893 19.5304 22 19 22H5C4.46957 22 3.96086 21.7893 3.58579 21.4142C3.21071 21.0391 3 20.5304 3 20V9Z" stroke="#5A4A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="travels.html" class="nav-btn" title="足迹地图">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 22C12 22 20 18 20 12V5L12 2L4 5V12C4 18 12 22 12 22Z" stroke="#5A4A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="wishes.html" class="nav-btn" title="愿望清单">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" stroke="#5A4A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </a>
+                <a href="time-capsule.html" class="nav-btn" title="时间胶囊">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="8" width="18" height="12" rx="2" stroke="#5A4A4A" stroke-width="1.5"/>
+                        <path d="M7 8V6C7 4.67392 7.52678 3.40215 8.46447 2.46447C9.40215 1.52678 10.6739 1 12 1C13.3261 1 14.5979 1.52678 15.5355 2.46447C16.4732 3.40215 17 4.67392 17 6V8" stroke="#5A4A4A" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="12" y1="12" x2="12" y2="16" stroke="#5A4A4A" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </a>
             </div>
-        </div>
-
-        <div class="top-bar" style="margin-top: -10px; padding-top: 5px;">
-            <div id="topActionsLeft"></div>
-            <button class="generate-btn" id="generateBtn" style="font-size: 0.9rem;">
-                <img src="assets/icons/icon-writings.svg" alt="" class="site-icon-inline">生成年度情书
+            <button class="generate-btn" id="generateBtn">
+                <svg class="site-icon-inline" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 19.5C4 18.837 4.26339 18.2011 4.73223 17.7322C5.20107 17.2634 5.83696 17 6.5 17H20" stroke="#4A4A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M6.5 2H20V22H6.5C5.83696 22 5.20107 21.7366 4.73223 21.2678C4.26339 20.7989 4 20.163 4 19.5V4.5C4 3.83696 4.26339 3.20107 4.73223 2.73223C5.20107 2.26339 5.83696 2 6.5 2Z" stroke="#4A4A4A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                生成年度情书
             </button>
-            <div></div>
         </div>
 
-        <div class="filter-section">
+        <!-- 操作栏 -->
+        <div class="action-bar">
             <div class="year-filters" id="yearFilters">
                 <button class="year-btn active" data-year="all">全部</button>
             </div>
             <div class="search-box">
-                <span class="search-icon">🔍</span>
-                <input type="text" class="search-input" id="searchInput" placeholder="搜索情书标题或内容...">
+                <input type="text" class="search-input" id="searchInput" placeholder="搜索情书标题或内容…">
             </div>
         </div>
 
-        <div class="desktop-layout" id="desktopLayout">
-            <div class="letters-sidebar">
-                <div class="sidebar-title">📜 情书列表（共 <span id="listCount">0</span> 封）</div>
-                <div id="lettersList"></div>
+        <!-- 情书列表 -->
+        <div class="letter-list" id="letterList">
+            <!-- 骨架屏 -->
+            <div class="skeleton-card">
+                <div class="skeleton-line skeleton-date"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-excerpt"></div>
+                <div class="skeleton-line skeleton-excerpt"></div>
             </div>
-            <div class="reading-area" id="readingArea">
-                <div class="paper-corner top-left"></div>
-                <div class="paper-corner top-right"></div>
-                <div class="paper-corner bottom-left"></div>
-                <div class="paper-corner bottom-right"></div>
-                <div class="reading-header">
-                    <div class="reading-date" id="readingDate"></div>
-                    <h2 class="reading-title" id="readingTitle"></h2>
-                    <div class="reading-number" id="readingNumber"></div>
-                </div>
-                <div class="reading-content" id="readingContent"></div>
-                <div class="reading-footer">
-                    <div class="reading-stats">共计 <span id="totalLetters">0</span> 封情书</div>
-                </div>
+            <div class="skeleton-card">
+                <div class="skeleton-line skeleton-date"></div>
+                <div class="skeleton-line skeleton-title"></div>
+                <div class="skeleton-line skeleton-excerpt"></div>
+                <div class="skeleton-line skeleton-excerpt"></div>
             </div>
         </div>
+    </div>
 
-        <div class="mobile-layout" id="mobileLayout">
-            <select class="mobile-selector" id="mobileSelector">
-                <option value="">请选择一封情书阅读...</option>
-            </select>
-            <div class="mobile-reading-area">
-                <div class="paper-corner top-left"></div>
-                <div class="paper-corner top-right"></div>
-                <div class="paper-corner bottom-left"></div>
-                <div class="paper-corner bottom-right"></div>
-                <div class="reading-header">
-                    <div class="reading-date" id="mobileReadingDate"></div>
-                    <h2 class="reading-title" id="mobileReadingTitle"></h2>
-                    <div class="reading-number" id="mobileReadingNumber"></div>
+    <!-- 阅读详情弹窗 -->
+    <div class="modal-overlay" id="readingModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div>
+                    <div class="modal-date" id="modalDate"></div>
+                    <h2 class="modal-title" id="modalTitle"></h2>
                 </div>
-                <div class="reading-content" id="mobileReadingContent"></div>
-                <div class="reading-footer">
-                    <div class="reading-stats">共计 <span id="mobileTotalLetters">0</span> 封情书</div>
-                </div>
+                <button class="modal-close" id="modalClose">
+                    <svg viewBox="0 0 28 28" width="20" height="20">
+                        <line x1="8" y1="8" x2="20" y2="20" stroke="#B0A0A0" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="20" y1="8" x2="8" y2="20" stroke="#B0A0A0" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-text" id="modalText"></div>
+            </div>
+            <div class="modal-footer">
+                <span class="modal-nav-btn" id="prevBtn">← 上一封</span>
+                <span class="modal-counter" id="modalCounter"></span>
+                <span class="modal-nav-btn" id="nextBtn">下一封 →</span>
             </div>
         </div>
     </div>
 
     <!-- 年份选择器模态框 -->
-    <div class="modal-overlay" id="yearModal">
+    <div class="modal-overlay ebook-modal" id="ebookModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">📖 选择年份</h2>
-                <button class="modal-close" id="yearModalClose">×</button>
+            <div class="ebook-header">
+                <h2 class="ebook-title">选择年份</h2>
+                <button class="modal-close" id="ebookClose">
+                    <svg viewBox="0 0 28 28" width="20" height="20">
+                        <line x1="8" y1="8" x2="20" y2="20" stroke="#B0A0A0" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="20" y1="8" x2="8" y2="20" stroke="#B0A0A0" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </button>
             </div>
-            <div class="modal-body">
-                <p style="color: #a08080; margin-bottom: 20px; font-size: 0.95rem;">请选择要生成电子书的年份</p>
-                <div class="year-selector-grid" id="yearSelectorGrid">
-                    <!-- 动态生成年份卡片 -->
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 电子书定制模态框 -->
-    <div class="modal-overlay" id="ebookModal">
-        <div class="modal-content" style="max-width: 1100px;">
-            <div class="modal-header">
-                <h2 class="modal-title">📖 电子书预览与定制</h2>
-                <button class="modal-close" id="ebookModalClose">×</button>
-            </div>
-            <div class="modal-body">
-                <div class="ebook-builder">
-                    <!-- 预览区 -->
-                    <div class="preview-area">
-                        <div class="preview-tabs">
-                            <button class="preview-tab active" data-tab="cover">封面</button>
-                            <button class="preview-tab" data-tab="page">内页</button>
-                        </div>
-                        <div class="preview-container" id="previewContainer">
-                            <!-- 动态渲染预览 -->
-                        </div>
-                    </div>
-
-                    <!-- 定制选项区 -->
-                    <div class="options-area">
-                        <div class="option-group">
-                            <label class="option-label">📌 封面标题</label>
-                            <input type="text" class="option-input" id="coverTitle" value="我们的 2024 年">
-                        </div>
-
-                        <div class="option-group">
-                            <label class="option-label">💕 封面副标题</label>
-                            <input type="text" class="option-input" id="coverSubtitle" value="这一年，我们写下的所有温柔">
-                        </div>
-
-                        <div class="option-group">
-                            <label class="option-label">🖼️ 封面照片</label>
-                            <div class="upload-area" id="coverUpload">
-                                <div class="upload-icon">📷</div>
-                                <div class="upload-text">点击上传封面图片</div>
-                                <img class="upload-preview" id="coverPreview" style="display:none;">
-                                <input type="file" id="coverFileInput" accept="image/*" style="display:none;">
-                            </div>
-                        </div>
-
-                        <div class="option-group">
-                            <label class="option-label">🎨 主题配色</label>
-                            <div class="color-options">
-                                <div class="color-option selected" data-colors="#FDFBF7,#F5F0EB,#C4A8A2,#5a4a4a" style="background: linear-gradient(135deg, #FDFBF7, #C4A8A2);" title="粉白浪漫"></div>
-                                <div class="color-option" data-colors="#f0f5f0,#d4e4d4,#4a8a5a,#2d4a2d" style="background: linear-gradient(135deg, #f0f5f0, #4a8a5a);" title="森系墨绿"></div>
-                                <div class="color-option" data-colors="#faf6f0,#e8ddd0,#8a6a4a,#4a3a2a" style="background: linear-gradient(135deg, #faf6f0, #8a6a4a);" title="简约米棕"></div>
-                                <div class="color-option" data-colors="#f0f4f8,#d0e4f0,#4a7aa0,#2a4a6a" style="background: linear-gradient(135deg, #f0f4f8, #4a7aa0);" title="静谧蓝灰"></div>
-                            </div>
-                        </div>
-
-                        <div class="option-group">
-                            <label class="option-label">✍️ 字体风格</label>
-                            <div class="font-options">
-                                <div class="font-option selected" data-font="Ma Shan Zheng" data-sample="💌 亲启">
-                                    <div class="font-option-name">手写体</div>
-                                    <div class="font-option-sample">亲启</div>
-                                </div>
-                                <div class="font-option" data-font="Noto Serif SC" data-sample="💌 亲启">
-                                    <div class="font-option-name">宋体</div>
-                                    <div class="font-option-sample">亲启</div>
-                                </div>
-                                <div class="font-option" data-font="Noto Sans SC" data-sample="💌 亲启">
-                                    <div class="font-option-name">圆体</div>
-                                    <div class="font-option-sample">亲启</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="action-buttons">
-                            <button class="action-btn btn-primary" id="downloadPdf">
-                                📥 下载 PDF
-                            </button>
-                            <button class="action-btn btn-secondary" id="printBtn">
-                                🖨️ 打印
-                            </button>
-                        </div>
-                    </div>
-                </div>
+            <div class="ebook-body">
+                <p style="color: var(--text-hint); margin-bottom: 20px; font-size: 13px;">请选择要生成电子书的年份</p>
+                <div class="year-selector-grid" id="yearSelectorGrid"></div>
             </div>
         </div>
     </div>
@@ -1093,48 +1084,59 @@
         <div class="loading-text">正在生成电子书...</div>
     </div>
 
-    <!-- 打印内容（隐藏） -->
-    <div class="print-book" id="printBookContent">
-        <!-- 动态生成打印内容 -->
-    </div>
-
     <!-- 编辑按钮 -->
-    <button class="edit-toggle-btn hidden" id="editBtn" onclick="openPasswordModal()" title="编辑内容">
+    <button class="edit-toggle-btn hidden" id="editBtn" title="编辑内容">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
         </svg>
     </button>
 
-    <!-- 添加情书按钮 -->
-    <button class="edit-add-btn hidden" id="addLetterBtn" onclick="showAddLetterModal()">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-        添加情书
-    </button>
+    <!-- 打印内容（隐藏） -->
+    <div class="print-book" id="printBookContent"></div>
+
+    <!-- 添加/编辑情书模态框 -->
+    <div class="letter-edit-modal" id="letterEditModal">
+        <div class="letter-edit-content">
+            <h3 id="letterEditTitle">添加新情书</h3>
+            <div class="form-group">
+                <label>日期</label>
+                <input type="date" id="letterDateInput">
+            </div>
+            <div class="form-group">
+                <label>标题</label>
+                <input type="text" id="letterTitleInput" placeholder="请输入标题...">
+            </div>
+            <div class="form-group">
+                <label>内容</label>
+                <textarea id="letterContentInput" placeholder="请输入内容...&#10;支持 **加粗** 语法"></textarea>
+            </div>
+            <div class="letter-edit-actions">
+                <button class="btn-cancel" onclick="closeLetterEditModal()">取消</button>
+                <button class="btn-save" onclick="saveLetter()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 跨页面音乐播放器 -->
+    <iframe src="music-player.html" style="position: fixed; bottom: 20px; left: 20px; width: 44px; height: 44px; border: none; z-index: 9998; background: transparent;" allow="autoplay" id="musicIframe" title="音乐播放器"></iframe>
 
     <script src="js/simple-edit.js"></script>
     <script>
+        // =============================================
+        // 数据与状态
+        // =============================================
         let diariesData = [];
         let filteredLetters = [];
         let availableYears = [];
         let currentFilter = 'all';
         let currentSearch = '';
-        let selectedYear = null;
-        let yearLetters = [];
+        let currentLetterIndex = 0;
+        let editingLetterId = null;
 
-        // 电子书配置
-        let ebookConfig = {
-            title: '我们的 2024 年',
-            subtitle: '这一年，我们写下的所有温柔',
-            coverImage: null,
-            colors: ['#FDFBF7', '#F5F0EB', '#C4A8A2', '#5a4a4a'],
-            font: 'Ma Shan Zheng',
-            names: '方志浩 & 张祎'
-        };
-
+        // =============================================
+        // 加载数据
+        // =============================================
         async function loadDiaries() {
             try {
                 const resp = await fetch('diaries.json?t=' + Date.now());
@@ -1146,15 +1148,22 @@
                     }
                 }
             } catch {}
+
+            // 演示数据
             diariesData = [
-                { id: 'demo-1', date: '2025-05-17', title: '【2025】因缘际会在一起', content: '抱着还人情的心态吃完了一顿饭，原本以为会各回各家，相忘于江湖...\n\n也许是对亲密关系本能的恐惧，也许是意料之外的好感，亦或者只是从未正式思考过继续往下走的可能性。', tag: '💌' },
-                { id: 'demo-2', date: '2025-06-09', title: '【2025】我们要开始记录了', content: '喜欢跟志浩在一起的每一天，希望能开始认真记录每一份酸甜苦辣～谢谢志浩愿意陪我一起记录✌️', tag: '💌' },
+                { id: 'demo-1', date: '2025-05-17', title: '【2025】因缘际会在一起', content: '抱着还人情的心态吃完了一顿饭，原本以为会各回各家，相忘于江湖...\n\n也许是对亲密关系本能的恐惧，也许是意料之外的好感，亦或者只是从未正式思考过继续往下走的可能性。' },
+                { id: 'demo-2', date: '2025-06-09', title: '【2025】我们要开始记录了', content: '喜欢跟志浩在一起的每一天，希望能开始认真记录每一份酸甜苦辣～谢谢志浩愿意陪我一起记录✌️' },
             ];
         }
 
+        // =============================================
+        // 初始化年份筛选
+        // =============================================
         function initYearFilters() {
             const yearFilters = document.getElementById('yearFilters');
+            // 移除除了"全部"以外的所有按钮
             yearFilters.querySelectorAll('.year-btn:not([data-year="all"])').forEach(b => b.remove());
+
             availableYears.forEach(year => {
                 const btn = document.createElement('button');
                 btn.className = 'year-btn';
@@ -1173,11 +1182,17 @@
             applyFilters();
         }
 
+        // =============================================
+        // 搜索功能
+        // =============================================
         document.getElementById('searchInput').addEventListener('input', (e) => {
-            currentSearch = e.target.value.toLowerCase();
+            currentSearch = e.target.value.toLowerCase().trim();
             applyFilters();
         });
 
+        // =============================================
+        // 应用筛选
+        // =============================================
         function applyFilters() {
             filteredLetters = diariesData.filter(letter => {
                 const letterYear = letter.date ? letter.date.split('-')[0] : '2025';
@@ -1191,103 +1206,150 @@
             updateStats();
         }
 
+        // =============================================
+        // 更新统计信息
+        // =============================================
+        function updateStats() {
+            const totalLetters = diariesData.length;
+            const totalWords = diariesData.reduce((sum, letter) => sum + (letter.content ? letter.content.length : 0), 0);
+            document.getElementById('pageSubtitle').textContent = `共 ${totalLetters} 封情书，约 ${Math.round(totalWords / 100) * 100} 字`;
+        }
+
+        // =============================================
+        // 渲染情书列表
+        // =============================================
         function renderLettersList() {
-            const listContainer = document.getElementById('lettersList');
-            const mobileSelector = document.getElementById('mobileSelector');
+            const listContainer = document.getElementById('letterList');
             listContainer.innerHTML = '';
-            mobileSelector.innerHTML = '<option value="">请选择一封情书阅读...</option>';
 
             if (filteredLetters.length === 0) {
-                listContainer.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">没有找到符合条件的情书</div></div>';
+                if (currentSearch) {
+                    listContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-text">没有找到匹配的情书</div>
+                        </div>
+                    `;
+                } else if (currentFilter !== 'all') {
+                    listContainer.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="#C4A8A2"/>
+                                </svg>
+                            </div>
+                            <div class="empty-state-text">这个年份还没有情书，期待你们的故事</div>
+                        </div>
+                    `;
+                }
                 return;
             }
 
             filteredLetters.forEach((letter, index) => {
-                const item = document.createElement('div');
-                item.className = 'letter-list-item';
-                item.innerHTML = `<div class="letter-list-date">${letter.date || '未知日期'}</div><div class="letter-list-title">${letter.title || '无标题'}</div>`;
-                item.addEventListener('click', () => selectLetter(letter, index));
-                listContainer.appendChild(item);
+                const card = document.createElement('div');
+                card.className = 'letter-card';
+                card.style.position = 'relative';
 
-                const option = document.createElement('option');
-                option.value = index;
-                option.textContent = `${letter.date || '未知日期'} - ${letter.title || '无标题'}`;
-                mobileSelector.appendChild(option);
+                // 提取摘要（去除标题中的年份标签）
+                let excerpt = letter.content || '';
+                if (excerpt.length > 100) {
+                    excerpt = excerpt.substring(0, 100) + '...';
+                }
+
+                card.innerHTML = `
+                    ${document.body.classList.contains('editing-mode') ? '<button class="delete-btn" onclick="event.stopPropagation(); deleteLetter(\'' + letter.id + '\')">×</button>' : ''}
+                    <div class="letter-date">${formatDisplayDate(letter.date)}</div>
+                    <div class="letter-title">${letter.title || '无标题'}</div>
+                    <div class="letter-excerpt">${excerpt}</div>
+                    <span class="letter-read-more">阅读全文</span>
+                `;
+
+                card.addEventListener('click', () => openLetter(index));
+                listContainer.appendChild(card);
             });
-
-            if (filteredLetters.length > 0) {
-                selectLetter(filteredLetters[0], 0);
-                mobileSelector.value = '0';
-            }
         }
 
-        // 解析 Markdown 加粗语法 **文字** -> <strong>文字</strong>
+        // =============================================
+        // 格式化日期
+        // =============================================
+        function formatDisplayDate(dateStr) {
+            if (!dateStr) return '未知日期';
+            const parts = dateStr.split('-');
+            if (parts.length >= 3) {
+                return `${parts[0]}.${parts[1]}.${parts[2]}`;
+            }
+            return dateStr;
+        }
+
+        // 解析 Markdown 加粗
         function parseMarkdownBold(text) {
             if (!text) return '';
             return text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
         }
 
-        function selectLetter(letter, index) {
-            const globalIndex = diariesData.indexOf(letter);
-            document.querySelectorAll('.letter-list-item').forEach((item, i) => {
-                item.classList.toggle('active', i === index);
-            });
-            const letterNumber = globalIndex >= 0 ? globalIndex + 1 : index + 1;
-            document.getElementById('readingDate').textContent = letter.date || '未知日期';
-            document.getElementById('readingTitle').textContent = letter.title || '无标题';
-            document.getElementById('readingNumber').textContent = `第 ${letterNumber} 封情书`;
-            document.getElementById('readingContent').innerHTML = parseMarkdownBold(letter.content || '');
-            document.getElementById('mobileReadingDate').textContent = letter.date || '未知日期';
-            document.getElementById('mobileReadingTitle').textContent = letter.title || '无标题';
-            document.getElementById('mobileReadingNumber').textContent = `第 ${letterNumber} 封情书`;
-            document.getElementById('mobileReadingContent').innerHTML = parseMarkdownBold(letter.content || '');
+        // =============================================
+        // 阅读弹窗
+        // =============================================
+        function openLetter(index) {
+            if (index < 0 || index >= filteredLetters.length) return;
+
+            currentLetterIndex = index;
+            const letter = filteredLetters[index];
+
+            document.getElementById('modalDate').textContent = `第 ${index + 1} 封情书 · ${formatDisplayDate(letter.date)}`;
+            document.getElementById('modalTitle').textContent = letter.title || '无标题';
+            document.getElementById('modalText').innerHTML = parseMarkdownBold(letter.content || '');
+            document.getElementById('modalCounter').textContent = `${index + 1} / ${filteredLetters.length}`;
+
+            // 更新导航按钮状态
+            document.getElementById('prevBtn').classList.toggle('disabled', index === 0);
+            document.getElementById('nextBtn').classList.toggle('disabled', index === filteredLetters.length - 1);
+
+            document.getElementById('readingModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
         }
 
-        document.getElementById('mobileSelector').addEventListener('change', (e) => {
-            const index = parseInt(e.target.value);
-            if (!isNaN(index) && filteredLetters[index]) {
-                selectLetter(filteredLetters[index], index);
+        function closeReadingModal() {
+            document.getElementById('readingModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('modalClose').addEventListener('click', closeReadingModal);
+        document.getElementById('readingModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('readingModal')) {
+                closeReadingModal();
             }
         });
 
-        function updateStats() {
-            document.getElementById('totalLetters').textContent = filteredLetters.length;
-            document.getElementById('listCount').textContent = filteredLetters.length;
-            document.getElementById('mobileTotalLetters').textContent = filteredLetters.length;
-        }
+        document.getElementById('prevBtn').addEventListener('click', () => {
+            if (currentLetterIndex > 0) {
+                openLetter(currentLetterIndex - 1);
+            }
+        });
 
-        // ========== 电子书功能 ==========
+        document.getElementById('nextBtn').addEventListener('click', () => {
+            if (currentLetterIndex < filteredLetters.length - 1) {
+                openLetter(currentLetterIndex + 1);
+            }
+        });
 
-        // 打开年份选择器
+        // =============================================
+        // 电子书生成
+        // =============================================
         document.getElementById('generateBtn').addEventListener('click', () => {
             renderYearSelector();
-            document.getElementById('yearModal').classList.add('active');
+            document.getElementById('ebookModal').classList.add('active');
         });
 
-        // 关闭年份选择器
-        document.getElementById('yearModalClose').addEventListener('click', () => {
-            document.getElementById('yearModal').classList.remove('active');
-        });
-
-        // 点击模态框背景关闭
-        document.getElementById('yearModal').addEventListener('click', (e) => {
-            if (e.target.id === 'yearModal') {
-                document.getElementById('yearModal').classList.remove('active');
-            }
-        });
-
-        // 关闭电子书模态框
-        document.getElementById('ebookModalClose').addEventListener('click', () => {
+        document.getElementById('ebookClose').addEventListener('click', () => {
             document.getElementById('ebookModal').classList.remove('active');
         });
 
         document.getElementById('ebookModal').addEventListener('click', (e) => {
-            if (e.target.id === 'ebookModal') {
+            if (e.target === document.getElementById('ebookModal')) {
                 document.getElementById('ebookModal').classList.remove('active');
             }
         });
 
-        // 渲染年份选择器
         function renderYearSelector() {
             const grid = document.getElementById('yearSelectorGrid');
             grid.innerHTML = '';
@@ -1295,226 +1357,50 @@
             availableYears.forEach(year => {
                 const lettersInYear = diariesData.filter(l => l.date && l.date.startsWith(year));
                 const card = document.createElement('div');
-                card.className = 'year-card';
+                card.className = 'year-card' + (lettersInYear.length === 0 ? ' disabled' : '');
                 card.innerHTML = `
                     <div class="year-card-number">${year}</div>
                     <div class="year-card-count">${lettersInYear.length} 封情书</div>
                 `;
-                card.addEventListener('click', () => {
-                    if (lettersInYear.length > 0) {
-                        selectYearAndOpenBuilder(year);
-                    }
-                });
+                if (lettersInYear.length > 0) {
+                    card.addEventListener('click', () => generateEbook(year));
+                }
                 grid.appendChild(card);
             });
         }
 
-        // 选择年份并打开定制界面
-        function selectYearAndOpenBuilder(year) {
-            selectedYear = year;
-            yearLetters = diariesData
+        function generateEbook(year) {
+            document.getElementById('ebookModal').classList.remove('active');
+            showLoading();
+
+            const yearLetters = diariesData
                 .filter(l => l.date && l.date.startsWith(year))
                 .sort((a, b) => new Date(a.date) - new Date(b.date));
 
-            ebookConfig.title = `我们的 ${year} 年`;
-
-            document.getElementById('yearModal').classList.remove('active');
-            document.getElementById('ebookModal').classList.add('active');
-            document.getElementById('coverTitle').value = ebookConfig.title;
-            document.getElementById('coverSubtitle').value = ebookConfig.subtitle;
-
-            renderPreview('cover');
-        }
-
-        // 渲染预览
-        function renderPreview(tab) {
-            const container = document.getElementById('previewContainer');
-
-            if (tab === 'cover') {
-                const [bgStart, bgEnd, , textColor] = ebookConfig.colors;
-                container.innerHTML = `
-                    <div class="book-cover" style="--cover-bg-start: ${bgStart}; --cover-bg-end: ${bgEnd}; --cover-title-color: ${textColor}; --cover-subtitle-color: ${textColor}">
-                        ${ebookConfig.coverImage ? `<img class="cover-image" src="${ebookConfig.coverImage}" style="background: ${bgStart};">` : `<div class="cover-image" style="background: ${bgStart}; display:flex;align-items:center;justify-content:center;font-size:3rem;">💕</div>`}
-                        <div class="cover-title" style="font-family: '${ebookConfig.font}', cursive;">${ebookConfig.title}</div>
-                        <div class="cover-subtitle">${ebookConfig.subtitle}</div>
-                        <div class="cover-names">${ebookConfig.names}</div>
-                        <div class="cover-year">${selectedYear}</div>
-                    </div>
-                `;
-            } else {
-                const firstLetter = yearLetters[0] || { date: '2024-01-01', title: '示例标题', content: '这是情书内容的预览区域，展示了电子书的排版效果。正文采用舒适的行距和精美的字体，适合阅读和打印。' };
-                container.innerHTML = `
-                    <div class="book-page">
-                        <div class="page-header">
-                            <div class="page-date">${firstLetter.date}</div>
-                            <h3 class="page-title" style="font-family: '${ebookConfig.font}', cursive;">${firstLetter.title}</h3>
-                        </div>
-                        <div class="page-content">${(firstLetter.content || '').substring(0, 200)}...</div>
-                        <div class="page-footer">💕 第 1 页 · 共 ${yearLetters.length + 3} 页</div>
-                    </div>
-                `;
-            }
-
-            // 更新tab状态
-            document.querySelectorAll('.preview-tab').forEach(t => {
-                t.classList.toggle('active', t.dataset.tab === tab);
-            });
-        }
-
-        // 预览tab切换
-        document.querySelectorAll('.preview-tab').forEach(tab => {
-            tab.addEventListener('click', () => renderPreview(tab.dataset.tab));
-        });
-
-        // 封面标题/副标题同步
-        document.getElementById('coverTitle').addEventListener('input', (e) => {
-            ebookConfig.title = e.target.value;
-            renderPreview('cover');
-        });
-
-        document.getElementById('coverSubtitle').addEventListener('input', (e) => {
-            ebookConfig.subtitle = e.target.value;
-            renderPreview('cover');
-        });
-
-        // 上传封面图片
-        document.getElementById('coverUpload').addEventListener('click', () => {
-            document.getElementById('coverFileInput').click();
-        });
-
-        document.getElementById('coverFileInput').addEventListener('change', (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    ebookConfig.coverImage = e.target.result;
-                    const preview = document.getElementById('coverPreview');
-                    preview.src = e.target.result;
-                    preview.style.display = 'block';
-                    document.querySelector('.upload-text').textContent = '点击更换图片';
-                    renderPreview('cover');
-                };
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // 配色选择
-        document.querySelectorAll('.color-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                document.querySelectorAll('.color-option').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                ebookConfig.colors = opt.dataset.colors.split(',');
-                renderPreview('cover');
-            });
-        });
-
-        // 字体选择
-        document.querySelectorAll('.font-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                document.querySelectorAll('.font-option').forEach(o => o.classList.remove('selected'));
-                opt.classList.add('selected');
-                ebookConfig.font = opt.dataset.font;
-                renderPreview('cover');
-            });
-        });
-
-        // 下载PDF（使用打印功能）
-        document.getElementById('downloadPdf').addEventListener('click', () => {
-            generatePrintContent();
-            showLoading();
             setTimeout(() => {
-                hideLoading();
-                window.print();
-            }, 500);
-        });
+                const printBook = document.getElementById('printBookContent');
+                let html = '';
 
-        // 打印
-        document.getElementById('printBtn').addEventListener('click', () => {
-            generatePrintContent();
-            showLoading();
-            setTimeout(() => {
-                hideLoading();
-                window.print();
-            }, 500);
-        });
+                yearLetters.forEach((letter, index) => {
+                    const paragraphs = (letter.content || '')
+                        .split('\n')
+                        .filter(p => p.trim())
+                        .map(p => `<p>${p}</p>`)
+                        .join('');
 
-        // 生成打印内容
-        function generatePrintContent() {
-            const [bgStart, bgEnd, accent, textColor] = ebookConfig.colors;
-            const printBook = document.getElementById('printBookContent');
-            let html = '';
-
-            // 封面
-            html += `
-                <div class="print-page">
-                    <div class="print-cover" style="background: linear-gradient(135deg, ${bgStart}, ${bgEnd});">
-                        ${ebookConfig.coverImage
-                            ? `<img class="print-cover-image" src="${ebookConfig.coverImage}" alt="封面">`
-                            : `<div style="width:180px;height:180px;border-radius:20px;background:${bgStart};display:flex;align-items:center;justify-content:center;font-size:4rem;box-shadow:0 10px 30px rgba(0,0,0,0.1);">💕</div>`
-                        }
-                        <div class="print-cover-title">${ebookConfig.title}</div>
-                        <div class="print-cover-subtitle">${ebookConfig.subtitle}</div>
-                        <div class="print-cover-names">${ebookConfig.names}</div>
-                        <div class="print-cover-year">${selectedYear}</div>
-                    </div>
-                </div>
-            `;
-
-            // 目录页
-            html += `
-                <div class="print-page">
-                    <div class="print-toc">
-                        <div class="print-toc-title">📖 目录</div>
-                        ${yearLetters.map((letter, i) => `
-                            <div class="print-toc-item">
-                                <span>${letter.title}</span>
-                                <span>${i + 1}</span>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-
-            // 内页 - 每篇小作文
-            yearLetters.forEach((letter) => {
-                // 转换换行为段落
-                const paragraphs = (letter.content || '')
-                    .split('\n')
-                    .filter(p => p.trim())
-                    .map(p => `<p>${p}</p>`)
-                    .join('');
-
-                html += `
-                    <div class="print-page">
+                    html += `
                         <div class="print-letter-page">
-                            <div class="print-letter-date">${formatDate(letter.date)}</div>
-                            <div class="print-letter-title">${letter.title}</div>
-                            <div class="print-letter-content">${paragraphs}</div>
+                            <div class="print-letter-date">${formatDisplayDate(letter.date)}</div>
+                            <div class="print-letter-title">${letter.title || '无标题'}</div>
+                            <div class="print-letter-content">${parseMarkdownBold(paragraphs)}</div>
                         </div>
-                    </div>
-                `;
-            });
+                    `;
+                });
 
-            // 封底
-            html += `
-                <div class="print-page">
-                    <div class="print-back-cover" style="background: linear-gradient(135deg, ${bgEnd}, ${bgStart});">
-                        <div class="print-back-text">故事还在继续，每一天都是新的篇章 ❤️</div>
-                    </div>
-                </div>
-            `;
-
-            printBook.innerHTML = html;
-        }
-
-        // 格式化日期为 YYYY.MM.DD
-        function formatDate(dateStr) {
-            if (!dateStr) return '';
-            const parts = dateStr.split('-');
-            if (parts.length >= 3) {
-                return `${parts[0]}.${parts[1]}.${parts[2]}`;
-            }
-            return dateStr;
+                printBook.innerHTML = html;
+                hideLoading();
+                window.print();
+            }, 500);
         }
 
         function showLoading() {
@@ -1525,43 +1411,11 @@
             document.getElementById('loadingOverlay').classList.remove('active');
         }
 
-        // 初始化
-        (async () => {
-            await loadDiaries();
-            availableYears = [...new Set(diariesData.map(l => l.date ? l.date.split('-')[0] : '2025'))].sort().reverse();
-            initYearFilters();
-            applyFilters();
-
-            window.addEventListener('resize', () => {
-                const nowMobile = window.innerWidth <= 900;
-                document.getElementById('desktopLayout').style.display = nowMobile ? 'none' : 'flex';
-                document.getElementById('mobileLayout').style.display = nowMobile ? 'block' : 'none';
-            });
-
-            // 监听 localStorage 变化，同步音乐状态
-            window.addEventListener('storage', (e) => {
-                if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
-                    const iframe = document.getElementById('musicIframe');
-                    if (iframe && iframe.contentWindow) {
-                        iframe.contentWindow.postMessage({
-                            type: 'syncMusic',
-                            isPlaying: localStorage.getItem('musicPlaying') === 'true',
-                            currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
-                        }, '*');
-                    }
-                }
-            });
-
-            // 初始化编辑按钮
-            initWritingsEdit();
-        })();
-
-        // ========== 编辑功能 ==========
-        let editingLetterId = null;
-
-        function initWritingsEdit() {
+        // =============================================
+        // 编辑功能
+        // =============================================
+        function initEdit() {
             const editBtn = document.getElementById('editBtn');
-            const addBtn = document.getElementById('addLetterBtn');
 
             if (editBtn) {
                 editBtn.addEventListener('click', () => {
@@ -1573,37 +1427,18 @@
                 });
             }
 
-            // 编辑模式下显示添加按钮
+            // 监听编辑模式变化
             const observer = new MutationObserver(() => {
                 if (document.body.classList.contains('editing-mode')) {
-                    if (addBtn) addBtn.classList.remove('hidden');
-                    renderLettersListWithEdit();
+                    if (editBtn) editBtn.classList.remove('hidden');
+                    renderLettersList();
                 } else {
-                    if (addBtn) addBtn.classList.add('hidden');
-                    renderLettersListWithEdit();
+                    if (editBtn) editBtn.classList.add('hidden');
+                    renderLettersList();
                 }
             });
 
             observer.observe(document.body, { attributes: true, attributeFilter: ['class'] });
-        }
-
-        function renderLettersListWithEdit() {
-            const listContainer = document.getElementById('lettersList');
-            listContainer.innerHTML = '';
-
-            filteredLetters.forEach((letter, index) => {
-                const item = document.createElement('div');
-                item.className = 'letter-list-item' + (document.body.classList.contains('editing-mode') ? ' editable-item' : '');
-                item.style.position = 'relative';
-
-                item.innerHTML = `
-                    <div class="letter-list-date">${letter.date || '未知日期'}</div>
-                    <div class="letter-list-title">${letter.title || '无标题'}</div>
-                    ${document.body.classList.contains('editing-mode') ? '<button class="delete-btn" onclick="event.stopPropagation(); deleteLetter(\'' + letter.id + '\')">×</button>' : ''}
-                `;
-                item.addEventListener('click', () => selectLetter(letter, index));
-                listContainer.appendChild(item);
-            });
         }
 
         function showAddLetterModal() {
@@ -1631,7 +1466,6 @@
             }
 
             if (editingLetterId) {
-                // 编辑
                 const letter = diariesData.find(l => l.id === editingLetterId);
                 if (letter) {
                     letter.date = date;
@@ -1639,22 +1473,22 @@
                     letter.content = content;
                 }
             } else {
-                // 新增
                 const newLetter = {
                     id: 'local-' + Date.now(),
                     date: date,
                     title: title,
-                    content: content,
-                    tag: '💌'
+                    content: content
                 };
                 diariesData.push(newLetter);
             }
 
-            // 保存到本地
             saveDiariesToLocal();
             closeLetterEditModal();
             applyFilters();
-            renderLettersListWithEdit();
+
+            availableYears = [...new Set(diariesData.map(l => l.date ? l.date.split('-')[0] : '2025'))].sort().reverse();
+            initYearFilters();
+
             showToast(editingLetterId ? '已更新 💕' : '已添加 💕', 'success');
             editingLetterId = null;
         }
@@ -1664,7 +1498,10 @@
                 diariesData = diariesData.filter(l => l.id !== id);
                 saveDiariesToLocal();
                 applyFilters();
-                renderLettersListWithEdit();
+
+                availableYears = [...new Set(diariesData.map(l => l.date ? l.date.split('-')[0] : '2025'))].sort().reverse();
+                initYearFilters();
+
                 showToast('已删除', 'success');
             }
         }
@@ -1685,32 +1522,34 @@
                 }
             } catch {}
         })();
+
+        // =============================================
+        // 初始化
+        // =============================================
+        (async () => {
+            await loadDiaries();
+
+            availableYears = [...new Set(diariesData.map(l => l.date ? l.date.split('-')[0] : '2025'))].sort().reverse();
+
+            initYearFilters();
+            updateStats();
+            applyFilters();
+            initEdit();
+
+            // 监听 localStorage 变化，同步音乐状态
+            window.addEventListener('storage', (e) => {
+                if (e.key === 'musicPlaying' || e.key === 'musicCurrentTime') {
+                    const iframe = document.getElementById('musicIframe');
+                    if (iframe && iframe.contentWindow) {
+                        iframe.contentWindow.postMessage({
+                            type: 'syncMusic',
+                            isPlaying: localStorage.getItem('musicPlaying') === 'true',
+                            currentTime: parseFloat(localStorage.getItem('musicCurrentTime') || '0')
+                        }, '*');
+                    }
+                }
+            });
+        })();
     </script>
-
-    <!-- 添加/编辑情书模态框 -->
-    <div class="letter-edit-modal" id="letterEditModal">
-        <div class="letter-edit-content">
-            <h3 id="letterEditTitle">添加新情书</h3>
-            <div class="form-group">
-                <label>日期</label>
-                <input type="date" id="letterDateInput">
-            </div>
-            <div class="form-group">
-                <label>标题</label>
-                <input type="text" id="letterTitleInput" placeholder="请输入标题...">
-            </div>
-            <div class="form-group">
-                <label>内容</label>
-                <textarea id="letterContentInput" placeholder="请输入内容...\n支持 **加粗** 语法"></textarea>
-            </div>
-            <div class="letter-edit-actions">
-                <button class="btn-cancel" onclick="closeLetterEditModal()">取消</button>
-                <button class="btn-save" onclick="saveLetter()">保存</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- 跨页面音乐播放器 -->
-    <iframe src="music-player.html" style="position: fixed; bottom: 25px; left: 25px; width: 44px; height: 44px; border: none; z-index: 9998; background: transparent;" allow="autoplay" id="musicIframe" title="音乐播放器"></iframe>
 </body>
 </html>

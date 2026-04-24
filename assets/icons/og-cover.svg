@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <!-- 柔和渐变背景 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FDF8F5"/>
+      <stop offset="50%" style="stop-color:#FDFBF7"/>
+      <stop offset="100%" style="stop-color:#F5EDE8"/>
+    </linearGradient>
+    <!-- 爱心渐变 -->
+    <linearGradient id="heartGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#E8B8B0"/>
+      <stop offset="100%" style="stop-color:#C4A8A2"/>
+    </linearGradient>
+    <!-- 花瓣渐变 -->
+    <linearGradient id="petalGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#F5DDD8"/>
+      <stop offset="100%" style="stop-color:#E8C4C0"/>
+    </linearGradient>
+    <!-- 金线渐变 -->
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#D4B896" stop-opacity="0"/>
+      <stop offset="50%" style="stop-color:#C9A87C"/>
+      <stop offset="100%" style="stop-color:#D4B896" stop-opacity="0"/>
+    </linearGradient>
+    <!-- 柔边滤镜 -->
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 背景 -->
+  <rect width="1200" height="630" fill="url(#bgGrad)"/>
+
+  <!-- 装饰性水彩圆圈（右上角） -->
+  <circle cx="1050" cy="80" r="120" fill="#F0DDD8" opacity="0.4"/>
+  <circle cx="1080" cy="100" r="80" fill="#E8CCC8" opacity="0.3"/>
+
+  <!-- 装饰性水彩圆圈（左下角） -->
+  <circle cx="120" cy="550" r="100" fill="#E0D4D0" opacity="0.35"/>
+  <circle cx="150" cy="530" r="60" fill="#D8C8C4" opacity="0.25"/>
+
+  <!-- 顶部装饰线 -->
+  <path d="M300,100 Q600,80 900,100" stroke="url(#goldGrad)" stroke-width="1.5" fill="none"/>
+
+  <!-- 左侧小爱心 -->
+  <g transform="translate(420, 160)" filter="url(#softGlow)">
+    <path d="M0,30 C0,10 -20,-10 -40,10 C-60,-10 -80,10 -80,30 C-80,60 -40,90 0,120 C40,90 80,60 80,30 C80,10 60,-10 40,10 C20,-10 0,10 0,30Z" fill="url(#heartGrad)" opacity="0.7" transform="scale(0.3)"/>
+  </g>
+
+  <!-- 右侧小爱心 -->
+  <g transform="translate(780, 160)" filter="url(#softGlow)">
+    <path d="M0,30 C0,10 -20,-10 -40,10 C-60,-10 -80,10 -80,30 C-80,60 -40,90 0,120 C40,90 80,60 80,30 C80,10 60,-10 40,10 C20,-10 0,10 0,30Z" fill="url(#heartGrad)" opacity="0.7" transform="scale(0.3)"/>
+  </g>
+
+  <!-- 金线连接 -->
+  <path d="M130,185 Q300,200 380,190 Q450,180 470,175 Q530,165 570,155 Q600,148 600,150 Q600,148 630,155 Q670,165 730,175 Q750,180 820,190 Q900,200 1070,185" stroke="url(#goldGrad)" stroke-width="1" fill="none" stroke-dasharray="4,4"/>
+
+  <!-- 中央主标题 -->
+  <text x="600" y="280" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="400" letter-spacing="8" fill="#5A4A4A">Love Story with You</text>
+
+  <!-- 副标题 -->
+  <text x="600" y="340" text-anchor="middle" font-family="'Noto Serif SC', 'STSong', serif" font-size="32" font-weight="400" letter-spacing="12" fill="#8A7A7A">与你的恋爱纪念册</text>
+
+  <!-- 分隔装饰 -->
+  <g transform="translate(600, 380)">
+    <line x1="-100" y1="0" x2="-20" y2="0" stroke="#C4A8A2" stroke-width="1"/>
+    <circle cx="0" cy="0" r="4" fill="#C4A8A2"/>
+    <circle cx="-10" cy="0" r="2" fill="#D8C4C0"/>
+    <circle cx="10" cy="0" r="2" fill="#D8C4C0"/>
+    <line x1="20" y1="0" x2="100" y2="0" stroke="#C4A8A2" stroke-width="1"/>
+  </g>
+
+  <!-- 底部装饰花 -->
+  <g transform="translate(600, 540)">
+    <!-- 主花瓣 -->
+    <ellipse cx="-30" cy="0" rx="18" ry="10" fill="url(#petalGrad)" transform="rotate(-30)"/>
+    <ellipse cx="-15" cy="-20" rx="18" ry="10" fill="url(#petalGrad)" transform="rotate(-60)"/>
+    <ellipse cx="15" cy="-20" rx="18" ry="10" fill="url(#petalGrad)" transform="rotate(-120)"/>
+    <ellipse cx="30" cy="0" rx="18" ry="10" fill="url(#petalGrad)" transform="rotate(-150)"/>
+    <ellipse cx="15" cy="15" rx="18" ry="10" fill="url(#petalGrad)" transform="rotate(-210)"/>
+    <ellipse cx="-15" cy="15" rx="18" ry="10" fill="url(#petalGrad)" transform="rotate(-240)"/>
+    <!-- 花心 -->
+    <circle cx="0" cy="0" r="12" fill="#E8D0C8"/>
+    <circle cx="0" cy="0" r="6" fill="#D4B8B0"/>
+    <!-- 小叶子 -->
+    <ellipse cx="-50" cy="10" rx="15" ry="8" fill="#C8D4C8" transform="rotate(-20)"/>
+    <ellipse cx="50" cy="10" rx="15" ry="8" fill="#C8D4C8" transform="rotate(20)"/>
+  </g>
+
+  <!-- 左下角小玫瑰 -->
+  <g transform="translate(180, 480)">
+    <circle cx="0" cy="0" r="15" fill="#E8C4C0"/>
+    <circle cx="-5" cy="-5" r="10" fill="#D8B4B0"/>
+    <circle cx="3" cy="-3" r="8" fill="#E0C0BC"/>
+  </g>
+
+  <!-- 右下角小玫瑰 -->
+  <g transform="translate(1020, 480)">
+    <circle cx="0" cy="0" r="15" fill="#E8C4C0"/>
+    <circle cx="5" cy="-5" r="10" fill="#D8B4B0"/>
+    <circle cx="-3" cy="-3" r="8" fill="#E0C0BC"/>
+  </g>
+</svg>
