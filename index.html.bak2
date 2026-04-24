@@ -2205,9 +2205,6 @@
             unlocked: false,
         };
 
-        // 全局数据对象（在 defaultData 之后声明，确保 checkPassword 可以访问）
-        let appData = { ...defaultData };
-
         // 情书数据（从 diaries.json 加载）
         let diariesData = [];
         let currentDiaryIndex = 0;
@@ -2271,7 +2268,7 @@
                 saveData(appData);
                 document.getElementById('lockScreen').classList.add('hidden');
                 document.getElementById('mainContent').classList.remove('hidden');
-                // settingsBtn 已移除，不再显示设置按钮
+                document.getElementById('settingsBtn').classList.remove('hidden');
                 document.getElementById('menuBtn').classList.remove('hidden');
                 document.getElementById('musicIframe').classList.remove('hidden');
                 initContent();
@@ -2508,11 +2505,11 @@
             if (currentDiaryIndex < sorted.length - 1) { currentDiaryIndex++; showLetter(currentDiaryIndex); }
         });
 
-        // 设置面板 - 通过菜单或直接调用打开
-        function openSettings() {
+        // 设置面板
+        document.getElementById('settingsBtn').addEventListener('click', () => {
             document.getElementById('settingsPanel').classList.add('open');
             document.getElementById('settingsOverlay').classList.add('open');
-        }
+        });
 
         function closeSettings() {
             document.getElementById('settingsPanel').classList.remove('open');
@@ -2672,9 +2669,9 @@
         }
 
         // 启动
+        let appData = defaultData;
         (async () => {
-            const loadedData = await loadData();
-            Object.assign(appData, loadedData);
+            appData = await loadData();
             
             // 密码按钮事件
             document.getElementById('lockBtn').addEventListener('click', checkPassword);
@@ -2685,7 +2682,7 @@
                 // 已解锁：直接显示主内容，不显示锁屏
                 document.getElementById('lockScreen').style.display = 'none'; // 使用 display 而非 class，确保不闪烁
                 document.getElementById('mainContent').classList.remove('hidden');
-                // settingsBtn 已移除
+                document.getElementById('settingsBtn').classList.remove('hidden');
                 document.getElementById('menuBtn').classList.remove('hidden');
                 document.getElementById('musicIframe').classList.remove('hidden');
                 initContent();
@@ -2711,5 +2708,4 @@
 
     </script>
 </body>
-
 </html>
