@@ -1,9 +1,30 @@
 /**
- * 简化的内容管理认证模块
- * 使用网站密码 + GitHub PAT 验证
+ * =============================================
+ * 简单内容管理认证模块
+ * =============================================
+ * 
+ * 【功能说明】
+ * - 网站密码验证（密码：2025）
+ * - GitHub PAT (Personal Access Token) 存储
+ * - 24小时管理模式过期
+ * - 管理面板 UI 渲染
+ * 
+ * 【使用方式】
+ * 1. 引入本模块：<script src="js/simple-auth.js"></script>
+ * 2. 渲染登录按钮：SimpleAuth.renderAdminEntry('containerId')
+ * 3. 检查登录状态：SimpleAuth.isAdminMode()
+ * 4. 获取 PAT：SimpleAuth.getPat()
+ * 
+ * 【依赖】
+ * - localStorage（存储 PAT 和登录状态）
  */
 
 const SimpleAuth = (function() {
+    // ========== 配置常量 ==========
+    const SITE_PASSWORD = '2025';  // 网站编辑密码
+    const PAT_KEY = 'github_pat';        // localStorage key: GitHub PAT
+    const ADMIN_MODE_KEY = 'admin_mode'; // localStorage key: 管理员模式时间戳
+    const ADMIN_EXPIRE_MS = 24 * 60 * 60 * 1000; // 管理模式 24 小时过期
     const SITE_PASSWORD = '2025';  // 网站密码
     const PAT_KEY = 'github_pat';
     const ADMIN_MODE_KEY = 'admin_mode';
