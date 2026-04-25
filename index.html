@@ -507,7 +507,37 @@
 
         @media (min-width: 600px) {
             .stats-grid {
-                grid-template-columns: repeat(4, minmax(0, 1fr));
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        /* 占位卡片样式 */
+        .stat-placeholder {
+            opacity: 0.5;
+            pointer-events: none;
+            cursor: default;
+        }
+
+        /* 一行5列布局 */
+        .stats-grid-5 {
+            max-width: 900px;
+        }
+
+        @media (min-width: 600px) {
+            .stats-grid-5 {
+                grid-template-columns: repeat(5, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 600px) {
+            .stats-grid-5 {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 400px) {
+            .stats-grid-5 {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
@@ -1776,8 +1806,12 @@
 
             /* 统计卡片单列 */
             .stats-grid {
-                grid-template-columns: 1fr !important;
+                grid-template-columns: repeat(2, 1fr) !important;
                 gap: 10px !important;
+            }
+
+            .stats-grid-5 {
+                grid-template-columns: repeat(3, 1fr) !important;
             }
 
             .stat-card {
@@ -2174,32 +2208,38 @@
             </div>
         </section>
 
-        <!-- 爱情数字模块 -->
+        <!-- 爱情数字模块 - 一行5列 -->
         <section class="stats-section">
-            <div class="stats-grid" id="statsGrid">
+            <div class="stats-grid stats-grid-5" id="statsGrid">
                 <a href="writings.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-writings.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statLetters">--</div>
-                    <div class="stat-label">情书封数</div>
+                    <div class="stat-label">情书</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statLettersBar" style="width: 0%"></div></div>
                 </a>
                 <a href="photos.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-photos.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statPhotos">--</div>
-                    <div class="stat-label">照片数量</div>
+                    <div class="stat-label">照片</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statPhotosBar" style="width: 0%"></div></div>
                 </a>
                 <a href="travels.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-travels.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statTravels">--</div>
-                    <div class="stat-label">足迹地点</div>
+                    <div class="stat-label">足迹</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statTravelsBar" style="width: 0%"></div></div>
                 </a>
                 <a href="wishes.html" class="stat-card stat-link">
                     <div class="stat-icon"><img src="assets/icons/icon-wishes.svg" alt="" class="site-icon"></div>
                     <div class="stat-value" id="statWishes">--</div>
-                    <div class="stat-label">愿望完成率</div>
+                    <div class="stat-label">愿望</div>
                     <div class="stat-bar"><div class="stat-bar-fill" id="statWishesBar" style="width: 0%"></div></div>
+                </a>
+                <a href="time-capsule.html" class="stat-card stat-link">
+                    <div class="stat-icon"><img src="assets/icons/icon-capsules.svg" alt="" class="site-icon"></div>
+                    <div class="stat-value" id="statCapsules">--</div>
+                    <div class="stat-label">胶囊</div>
+                    <div class="stat-bar"><div class="stat-bar-fill" id="statCapsulesBar" style="width: 0%"></div></div>
                 </a>
             </div>
         </section>
@@ -2685,40 +2725,173 @@
             });
         }
 
-        // 渲染照片预览
+        // ── 首页相册预览网格 ──
+        .home-album-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        @media (max-width: 768px) {
+            .home-album-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+        }
+
+        .home-album-card {
+            position: relative;
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: var(--shadow-soft);
+            aspect-ratio: 4/3;
+            background: white;
+            padding: 6px;
+        }
+        .home-album-card:active { transform: scale(0.97); }
+        @media (hover: hover) {
+            .home-album-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-hover); }
+            .home-album-card:hover .home-album-cover { transform: scale(1.08); }
+        }
+
+        .home-album-cover-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        .home-album-cover {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* 照片数量角标 */
+        .home-album-count {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(90, 74, 74, 0.75);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* 标签徽章 */
+        .home-album-tag {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(196, 168, 162, 0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: white;
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+        }
+
+        /* 相册标题 */
+        .home-album-title {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(74, 74, 74, 0.85));
+            color: white;
+            padding: 24px 8px 8px;
+            font-size: clamp(0.8rem, 2.5vw, 0.95rem);
+            font-weight: 500;
+            font-family: 'Ma Shan Zheng', cursive;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        // 渲染照片预览（相册模式）
         async function renderPhotosPreview() {
             const previewEl = document.getElementById('photosPreview');
             const emptyEl = document.getElementById('photosEmpty');
 
-            let photos = defaultPhotos;
+            let albums = [];
             try {
                 const resp = await fetch('data/photos.json?t=' + Date.now());
                 if (resp.ok) {
                     const data = await resp.json();
                     if (Array.isArray(data) && data.length > 0) {
-                        photos = data;
+                        // 判断是否是新相册结构（每个元素有 photos 数组）
+                        if (data[0] && Array.isArray(data[0].photos)) {
+                            albums = data;
+                        } else {
+                            // 旧单照片结构，转换为临时相册
+                            albums = [{
+                                id: 'temp-album',
+                                title: '全部照片',
+                                cover: data[0]?.src || '',
+                                date: data[0]?.date || '',
+                                tag: data[0]?.category || 'daily',
+                                photos: data.map(p => ({ src: p.src, caption: p.title || '' }))
+                            }];
+                        }
                     }
                 }
             } catch {}
 
-            if (!photos || photos.length === 0) {
+            if (!albums || albums.length === 0) {
                 previewEl.style.display = 'none';
                 emptyEl.style.display = 'flex';
                 emptyEl.textContent = '还没有上传照片，去照片墙上添加第一张回忆吧 📷';
                 return;
             }
 
+            // 更新照片统计
+            const statPhotos = document.getElementById('statPhotos');
+            if (statPhotos) {
+                const totalPhotos = albums.reduce((sum, a) => sum + (a.photos?.length || 0), 0);
+                statPhotos.textContent = totalPhotos;
+            }
+
             emptyEl.style.display = 'none';
             previewEl.style.display = 'grid';
-            previewEl.className = 'module-preview gallery-grid';
-
+            previewEl.className = 'module-preview home-album-grid';
             previewEl.innerHTML = '';
-            photos.slice(0, 6).forEach((p) => {
-                const item = document.createElement('div');
-                item.className = 'gallery-item';
-                item.innerHTML = `<img src="${p.src}" alt="${p.title || ''}" loading="lazy"><div class="gallery-item-label">${p.title || ''}</div>`;
-                previewEl.appendChild(item);
+
+            // 按日期倒序，显示最近 6 个相册
+            const sorted = [...albums].sort((a, b) => new Date(b.date) - new Date(a.date));
+            sorted.slice(0, 6).forEach((album) => {
+                const card = document.createElement('div');
+                card.className = 'home-album-card';
+                card.innerHTML = `
+                    <div class="home-album-cover-wrapper">
+                        <img class="home-album-cover" src="${album.cover}" alt="${album.title}" loading="lazy">
+                        <span class="home-album-count">${album.photos?.length || 0}张</span>
+                        <span class="home-album-tag">${getTagLabel(album.tag)}</span>
+                        <div class="home-album-title">${album.title}</div>
+                    </div>
+                `;
+                // 点击跳转到照片墙对应相册
+                card.addEventListener('click', () => {
+                    window.location.href = `photos.html?album=${album.id}`;
+                });
+                previewEl.appendChild(card);
             });
+        }
+
+        // 获取标签名称
+        function getTagLabel(tagKey) {
+            const tagMap = {
+                'travel': '旅行',
+                'date': '约会',
+                'daily': '日常',
+                'anniversary': '纪念日'
+            };
+            return tagMap[tagKey] || tagKey || '';
         }
 
         // 渲染足迹预览
@@ -3032,15 +3205,24 @@
             document.getElementById('statLetters').textContent = lettersCount;
             document.getElementById('statLettersBar').style.width = Math.min(lettersCount / 50 * 100, 100) + '%';
 
-            // 2. 照片数量 - 从 photos.json 获取
-            let photosCount = 6;
+            // 2. 照片数量 - 从 photos.json 相册结构获取（计算所有相册的照片总数）
+            let photosCount = 0;
             try {
                 const photosResp = await fetch('data/photos.json?t=' + Date.now());
                 if (photosResp.ok) {
                     const photos = await photosResp.json();
-                    photosCount = Array.isArray(photos) ? photos.length : 6;
+                    if (Array.isArray(photos) && photos.length > 0) {
+                        // 新相册结构：计算所有照片数量
+                        if (photos[0] && Array.isArray(photos[0].photos)) {
+                            photosCount = photos.reduce((sum, album) => sum + (album.photos?.length || 0), 0);
+                        } else {
+                            // 旧单照片结构
+                            photosCount = photos.length;
+                        }
+                    }
                 }
             } catch {}
+            if (photosCount === 0) photosCount = 6; // 默认值
             document.getElementById('statPhotos').textContent = photosCount;
             document.getElementById('statPhotosBar').style.width = Math.min(photosCount / 20 * 100, 100) + '%';
 
@@ -3069,6 +3251,18 @@
             } catch {}
             document.getElementById('statWishes').textContent = wishesRate + '%';
             document.getElementById('statWishesBar').style.width = wishesRate + '%';
+
+            // 5. 时间胶囊数量 - 从 capsules.json 获取
+            let capsulesCount = 0;
+            try {
+                const capsulesResp = await fetch('data/capsules.json?t=' + Date.now());
+                if (capsulesResp.ok) {
+                    const capsules = await capsulesResp.json();
+                    capsulesCount = Array.isArray(capsules) ? capsules.length : 0;
+                }
+            } catch {}
+            document.getElementById('statCapsules').textContent = capsulesCount;
+            document.getElementById('statCapsulesBar').style.width = Math.min(capsulesCount / 10 * 100, 100) + '%';
         }
 
         // 启动
