@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>密码锁诊断测试</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; padding: 20px; max-width: 600px; margin: 0 auto; background: #f5f5f5; }
+        h1 { color: #C4A8A2; text-align: center; }
+        .test-box { background: white; border-radius: 12px; padding: 20px; margin: 15px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .test-box h3 { margin-top: 0; color: #333; }
+        .result { padding: 10px; border-radius: 8px; margin: 10px 0; }
+        .pass { background: #e8f5e9; color: #2e7d32; }
+        .fail { background: #ffebee; color: #c62828; }
+        .wait { background: #fff3e0; color: #e65100; }
+        button { background: #C4A8A2; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; margin: 5px; }
+        button:hover { background: #b39792; }
+        input { padding: 12px; font-size: 16px; border: 2px solid #ddd; border-radius: 8px; width: 100%; margin: 5px 0; }
+        input:focus { border-color: #C4A8A2; outline: none; }
+        #debug { background: #263238; color: #aed581; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; margin-top: 15px; }
+        .step { display: flex; align-items: center; margin: 10px 0; }
+        .step-icon { width: 24px; height: 24px; border-radius: 50%; margin-right: 10px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+        .step-icon.pass { background: #4caf50; color: white; }
+        .step-icon.fail { background: #f44336; color: white; }
+        .step-icon.wait { background: #ff9800; color: white; }
+        .step-text { flex: 1; }
+    </style>
+</head>
+<body>
+    <h1>🔐 密码锁诊断测试</h1>
+    
+    <div class="test-box">
+        <h3>📋 测试步骤</h3>
+        <div id="steps"></div>
+    </div>
+    
+    <div class="test-box">
+        <h3>🔑 密码测试</h3>
+        <input type="password" id="testPassword" placeholder="输入密码（默认: 2025）" maxlength="20">
+        <div>
+            <button onclick="runTest()">测试解锁</button>
+            <button onclick="clearStorage()">清除存储</button>
+        </div>
+        <div id="testResult"></div>
+    </div>
+    
+    <div class="test-box">
+        <h3>📊 调试信息</h3>
+        <div id="debug"></div>
+    </div>
+
+    <script>
+        const STORAGE_KEY = 'love_journal_data_v2';
+        const DEFAULT_PASSWORD = '2025';
+        const debug = document.getElementById('debug');
+        
+        function log(msg) {
+            const time = new Date().toLocaleTimeString();
+            debug.textContent += `[${time}] ${msg}\n`;
+            debug.scrollTop = debug.scrollHeight;
+            console.log(msg);
+        }
+        
+        function updateStep(num, status, text) {
+            const steps = document.getElementById('steps');
+            const icons = { pass: '✓', fail: '✗', wait: '⏳' };
+            steps.innerHTML += `
+                <div class="step">
+                    <div class="step-icon ${status}">${icons[status]}</div>
+                    <div class="step-text"><strong>步骤 ${num}:</strong> ${text}</div>
+                </div>
+            `;
+        }
+        
+        // 测试 1: 检查元素是否存在
+        function test1() {
+            log('--- 测试 1: 检查 DOM 元素 ---');
+            const elements = [
+                { id: 'lockBtn', name: '解锁按钮' },
+                { id: 'lockInput', name: '密码输入框' },
+                { id: 'lockError', name: '错误提示' },
+                { id: 'lockScreen', name: '锁屏容器' },
+            ];
+            
+            let allFound = true;
+            elements.forEach(el => {
+                const element = document.getElementById(el.id);
+                const found = !!element;
+                log(`${found ? '✓' : '✗'} ${el.name}: ${found ? '存在' : '不存在'}`);
+                if (!found) allFound = false;
+            });
+            
+            updateStep(1, allFound ? 'pass' : 'fail', `DOM 元素检查 ${allFound ? '通过' : '失败'}`);
+            return allFound;
+        }
+        
+        // 测试 2: 检查 localStorage
+        function test2() {
+            log('\n--- 测试 2: 检查 localStorage ---');
+            try {
+                const data = localStorage.getItem(STORAGE_KEY);
+                log(`存储的数据: ${data || '(空)'}`);
+                
+                if (data) {
+                    const parsed = JSON.parse(data);
+                    log(`解析结果: unlocked = ${parsed.unlocked}`);
+                    updateStep(2, 'pass', `localStorage 正常 (unlocked: ${parsed.unlocked})`);
+                } else {
+                    log('无存储数据，将使用默认值');
+                    updateStep(2, 'pass', 'localStorage 正常 (无数据)');
+                }
+                return true;
+            } catch (e) {
+                log(`✗ localStorage 错误: ${e.message}`);
+                updateStep(2, 'fail', `localStorage 错误: ${e.message}`);
+                return false;
+            }
+        }
+        
+        // 测试 3: 检查 checkPassword 函数
+        function test3() {
+            log('\n--- 测试 3: 检查 checkPassword 函数 ---');
+            const hasFunc = typeof checkPassword === 'function';
+            log(`${hasFunc ? '✓' : '✗'} checkPassword 函数: ${hasFunc ? '存在' : '不存在'}`);
+            updateStep(3, hasFunc ? 'pass' : 'fail', `checkPassword 函数 ${hasFunc ? '存在' : '不存在'}`);
+            return hasFunc;
+        }
+        
+        // 测试 4: 测试密码验证
+        async function test4(password) {
+            log(`\n--- 测试 4: 测试密码 "${password}" ---`);
+            updateStep(4, 'wait', '验证密码中...');
+            
+            const input = document.getElementById('lockInput');
+            input.value = password;
+            
+            try {
+                await checkPassword();
+                log('checkPassword 执行完成');
+                
+                const bodyAttr = document.body.dataset.unlocked;
+                log(`data-unlocked: ${bodyAttr}`);
+                
+                if (bodyAttr === 'true') {
+                    updateStep(4, 'pass', '密码正确，解锁成功！');
+                    return true;
+                } else {
+                    const errorVisible = document.getElementById('lockError').style.display !== 'none';
+                    if (errorVisible) {
+                        updateStep(4, 'fail', '密码错误');
+                        return false;
+                    }
+                    updateStep(4, 'fail', '未知状态');
+                    return false;
+                }
+            } catch (e) {
+                log(`✗ 执行错误: ${e.message}`);
+                updateStep(4, 'fail', `执行错误: ${e.message}`);
+                return false;
+            }
+        }
+        
+        // 运行完整测试
+        async function runTest() {
+            document.getElementById('steps').innerHTML = '';
+            document.getElementById('testResult').innerHTML = '';
+            debug.textContent = '';
+            
+            log('开始诊断测试...\n');
+            
+            const t1 = test1();
+            const t2 = test2();
+            const t3 = test3();
+            
+            if (t1 && t2 && t3) {
+                const password = document.getElementById('testPassword').value.trim() || DEFAULT_PASSWORD;
+                const t4 = await test4(password);
+                
+                if (t4) {
+                    document.getElementById('testResult').innerHTML = '<div class="result pass">🎉 测试通过！密码锁功能正常。</div>';
+                } else {
+                    document.getElementById('testResult').innerHTML = '<div class="result fail">❌ 密码验证失败。请检查密码是否正确（默认: 2025）。</div>';
+                }
+            } else {
+                document.getElementById('testResult').innerHTML = '<div class="result fail">❌ 前置测试未通过，无法继续。</div>';
+            }
+        }
+        
+        function clearStorage() {
+            localStorage.removeItem(STORAGE_KEY);
+            document.body.dataset.unlocked = 'false';
+            document.getElementById('lockError').style.display = 'none';
+            log('已清除 localStorage');
+            alert('已清除存储数据，现在可以重新测试。');
+        }
+        
+        // 密码验证函数
+        async function checkPassword() {
+            const password = document.getElementById('lockInput').value.trim();
+            const correctPassword = DEFAULT_PASSWORD;
+            
+            log(`输入: "${password}" | 正确: "${correctPassword}"`);
+            
+            if (password === correctPassword) {
+                const data = { unlocked: true };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                document.body.dataset.unlocked = 'true';
+                log('✓ 密码正确！');
+                return true;
+            } else {
+                document.getElementById('lockError').style.display = 'block';
+                log('✗ 密码错误');
+                return false;
+            }
+        }
+        
+        // 初始化
+        log('诊断工具已加载');
+        log('密码: 2025');
+        log('\n点击下方按钮开始测试');
+    </script>
+    
+    <!-- 模拟页面元素 -->
+    <div id="lockScreen" style="display:none;">
+        <div id="lockError" style="display:none; color:red;">密码错误！</div>
+    </div>
+</body>
+</html>
