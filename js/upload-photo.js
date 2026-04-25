@@ -214,10 +214,28 @@ const PhotoUploader = (function() {
         return deleted;
     }
 
-    // 加载所有照片
+    // 加载所有照片（无需认证的公开读取）
     async function loadPhotos() {
-        const photos = await readFile(CONFIG.photosPath);
-        return photos.photos || [];
+        // 优先尝试公开读取（无需认证）
+        try {
+            const publicUrl = `https://raw.githubusercontent.com/${CONFIG.owner}/${CONFIG.repo}/${CONFIG.branch}/${CONFIG.photosPath}`;
+            const response = await fetch(publicUrl);
+            if (response.ok) {
+                const photos = await response.json();
+                return photos.photos || [];
+            }
+        } catch (e) {
+            console.warn('公开读取失败，尝试认证读取:', e);
+        }
+        
+        // 如果公开读取失败，尝试认证读取
+        if (getAuth()) {
+            const photos = await readFile(CONFIG.photosPath);
+            return photos.photos || [];
+        }
+        
+        // 如果都没有，返回空数组
+        return [];
     }
 
     return {
