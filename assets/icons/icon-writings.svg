@@ -1,10 +1,3 @@
-<<<<<<< Updated upstream
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" width="24" height="24">
-  <rect x="2" y="5" width="24" height="18" rx="2" stroke="#C4A8A2" stroke-width="1.5" fill="none"/>
-  <path d="M2 5 L14 15 L26 5" stroke="#C4A8A2" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M17 11.5 C17 9, 14.5 9, 14 10.5 C13.5 9, 11 9, 11 11.5 C11 14.5, 14 17, 14 17 C14 17, 17 14.5, 17 11.5 Z" fill="#D4B5B0" stroke="#D4B5B0" stroke-width="0.8"/>
-</svg>
-=======
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
   <defs>
     <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
@@ -18,4 +11,3 @@
   <!-- 封口爱心 -->
   <path d="M32 30 C29 27 24 29 24 33 C24 36.5 32 42 32 42 C32 42 40 36.5 40 33 C40 29 35 27 32 30Z" fill="#D4B5B5"/>
 </svg>
->>>>>>> Stashed changes
