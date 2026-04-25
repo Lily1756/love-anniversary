@@ -576,11 +576,47 @@
             color: white !important;
         }
 
+        /* 隐藏缩放按钮原始文字，替换为中文图标 */
+        .leaflet-control-zoom-in span,
+        .leaflet-control-zoom-out span {
+            display: none !important;
+        }
+
+        .leaflet-control-zoom-in::before,
+        .leaflet-control-zoom-out::before {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+            font-size: 0 !important;
+        }
+
+        /* 放大按钮：中文 + 图标 */
+        .leaflet-control-zoom-in::before {
+            content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23C4A8A2' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3Cline x1='11' y1='8' x2='11' y2='14'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3C/svg%3E") !important;
+        }
+
+        /* 缩小按钮：中文 - 图标 */
+        .leaflet-control-zoom-out::before {
+            content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23C4A8A2' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3C/svg%3E") !important;
+        }
+
+        .leaflet-control-zoom a:hover::before {
+            content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3Cline x1='11' y1='8' x2='11' y2='14'/%3E%3C/svg%3E") !important;
+        }
+
+        .leaflet-control-zoom-out:hover::before {
+            content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.5' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cline x1='21' y1='21' x2='16.65' y2='16.65'/%3E%3Cline x1='8' y1='11' x2='14' y2='11'/%3E%3C/svg%3E") !important;
+        }
+
+        /* 中文 attribution */
         .leaflet-control-attribution {
             background: rgba(255, 255, 255, 0.7) !important;
             backdrop-filter: blur(5px) !important;
             font-size: 10px !important;
             border-radius: 8px 0 0 0 !important;
+            color: rgba(90, 74, 74, 0.6) !important;
         }
 
         .leaflet-control-attribution a {
@@ -753,12 +789,69 @@
                         touchZoom: true,
                     });
                     
-                    // 添加 CARTO 浅色瓦片图层（比 OSM 更稳定）
-                    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-                        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/">CARTO</a>',
+                    // 多源瓦片 + 备用层（解决灰色块问题）
+                    // 主源：CARTO 浅色
+                    const mainTile = L.tileLayer(
+                        'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+                        attribution: '地图数据来源：OpenStreetMap / CARTO',
                         maxZoom: 19,
                         subdomains: 'abcd',
-                    }).addTo(map);
+                        crossOrigin: 'anonymous',
+                    });
+
+                    // 备用1：Esri 世界地形图（国内覆盖更广）
+                    const esriTile = L.tileLayer(
+                        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+                        attribution: '地图数据来源：Esri',
+                        maxZoom: 18,
+                        crossOrigin: 'anonymous',
+                        opacity: 0, // 默认透明，有故障时启用
+                    });
+
+                    mainTile.addTo(map);
+
+                    // 监听主源瓦片错误，自动切换备用层
+                    let usingFallback = false;
+                    const switchToFallback = () => {
+                        if (usingFallback) return;
+                        usingFallback = true;
+                        console.warn('CARTO 瓦片加载失败，切换到 Esri 备用源...');
+                        esriTile.setOpacity(1);
+                        if (!map.hasLayer(esriTile)) {
+                            esriTile.addTo(map);
+                        }
+                        // 把备用层放到主源下面
+                        esriTile.setZIndex(0);
+                        mainTile.setZIndex(0);
+                    };
+
+                    mainTile.on('tileerror', function(e) {
+                        const src = e.tile && e.tile.src ? e.tile.src : '';
+                        // 排除跨域失败的图片（只要能显示就好）
+                        if (!src.startsWith('data:')) {
+                            switchToFallback();
+                        }
+                    });
+
+                    // 超时兜底：5秒内未加载完的瓦片视为失败
+                    const tileTimeout = 5000;
+                    let errorCount = 0;
+                    mainTile.on('tileloadstart', function(e) {
+                        const tile = e.tile;
+                        const img = (tile.tagName === 'IMG' ? tile : tile.querySelector('img'));
+                        if (!img) return;
+                        const timer = setTimeout(() => {
+                            if (img.parentElement && img.style.opacity !== '0') {
+                                img.style.opacity = '0.4';
+                                errorCount++;
+                                if (errorCount >= 3) {
+                                    switchToFallback();
+                                }
+                            }
+                        }, tileTimeout);
+                        img.addEventListener('load', () => clearTimeout(timer), { once: true });
+                        img.addEventListener('error', () => clearTimeout(timer), { once: true });
+                    });
                     
                     // 应用莫兰迪配色滤镜
                     const mapContainer = document.getElementById('container');
