@@ -1,10 +1,34 @@
 /**
+ * =============================================
  * 简单密码保护编辑系统
- * 密码统一为：2025
+ * =============================================
+ * 
+ * 【功能说明】
+ * - 密码验证进入编辑模式
+ * - 编辑按钮显示/隐藏控制
+ * - Toast 提示组件
+ * - 确认对话框
+ * 
+ * 【密码】
+ * - 编辑密码：2025
+ * 
+ * 【使用方式】
+ * 1. 引入本模块：<script src="js/simple-edit.js"></script>
+ * 2. 全局变量 isEditingMode 可判断当前是否编辑模式
+ * 3. 调用 toggleEditMode() 切换编辑模式
+ * 4. 调用 showToast('消息') 显示提示
+ * 
+ * 【HTML 要求】
+ * 需要页面包含：
+ * - #editBtn 编辑按钮
+ * - .edit-toggle-btn 切换按钮
+ * - .add-item-btn 添加按钮
+ * - .toast Toast 元素
  */
 
-const EDIT_PASSWORD = '2025';
-let isEditingMode = false;
+// ========== 配置常量 ==========
+const EDIT_PASSWORD = '2025'; // 编辑模式密码
+let isEditingMode = false;    // 当前是否在编辑模式
 
 // 密码验证
 function checkEditPassword() {
@@ -67,50 +91,32 @@ function closePasswordModal() {
 function enableEditingMode() {
     isEditingMode = true;
     document.body.classList.add('editing-mode');
-
+    
     // 显示编辑按钮
     document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
         btn.classList.remove('hidden');
     });
-
+    
     // 显示添加按钮
     document.querySelectorAll('.add-item-btn').forEach(btn => {
         btn.classList.remove('hidden');
     });
-
-    // 显示照片添加按钮
-    const addPhotoBtn = document.getElementById('addPhotoBtn');
-    if (addPhotoBtn) addPhotoBtn.classList.remove('hidden');
-
-    // 重新渲染照片（显示删除按钮）
-    if (typeof renderPhotos === 'function') {
-        renderPhotos();
-    }
 }
 
 // 关闭编辑模式
 function disableEditingMode() {
     isEditingMode = false;
     document.body.classList.remove('editing-mode');
-
+    
     // 隐藏编辑按钮
     document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
         btn.classList.add('hidden');
     });
-
+    
     // 隐藏添加按钮
     document.querySelectorAll('.add-item-btn').forEach(btn => {
         btn.classList.add('hidden');
     });
-
-    // 隐藏照片添加按钮
-    const addPhotoBtn = document.getElementById('addPhotoBtn');
-    if (addPhotoBtn) addPhotoBtn.classList.add('hidden');
-
-    // 重新渲染照片（隐藏删除按钮）
-    if (typeof renderPhotos === 'function') {
-        renderPhotos();
-    }
 }
 
 // 编辑开关按钮
