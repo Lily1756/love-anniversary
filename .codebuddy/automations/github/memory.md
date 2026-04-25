@@ -10,3 +10,4 @@
 
 ## 推送结果
 - 2026-04-24 01:17: 首次运行，补推了 app.js、index.html、.gitignore；修复后正确推送 13 个文件
+- 2026-04-25 01:30: 检测到 diaries.json、sync_diaries.py 改动并 commit，但 Token 已失效（401 Bad credentials），推送静默跳过。**需要更新 GitHub Token。**

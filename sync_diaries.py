@@ -84,6 +84,9 @@ def parse_month_day_from_startdate_reminders(task: dict):
         （如 'TRIGGER:P0DT9H0M0S' = startDate + 9小时）
     
     当 reminders 为 'TRIGGER:PT0S' 时，提醒时间 = startDate 本身。
+    
+    ⚠️ 重要：滴答清单存储 startDate 使用 UTC 时间 (+0000)，
+    但 UI 显示使用北京时间 (UTC+8)。需要转换时区才能得到正确的日期。
     """
     start_str = task.get("startDate", "") or ""
     reminders = task.get("reminders") or []
@@ -93,19 +96,28 @@ def parse_month_day_from_startdate_reminders(task: dict):
 
     try:
         # startDate 格式: "2027-03-19T16:00:00.000+0000"
+        # 滴答清单存储的是 UTC 时间，需要转换为北京时间 (UTC+8)
         date_part = start_str[:19]  # 取到秒 "2027-03-19T16:00:00"
+        offset_part = start_str[19:]  # 取时区偏移 "+0000"
+        
+        # 解析 UTC 时间
         start_dt = datetime.strptime(date_part, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+        
+        # 转换到北京时间 (UTC+8)
+        cst = timezone(timedelta(hours=8))
+        cst_dt = start_dt.astimezone(cst)
+        
     except (ValueError, OSError):
         return None, None
 
     if reminders:
         td = parse_iso_duration(reminders[0])
         if td is not None:
-            rem_dt = start_dt + td
+            rem_dt = cst_dt + td
             return rem_dt.month, rem_dt.day
 
-    # 无 reminders → 用 startDate 本身
-    return start_dt.month, start_dt.day
+    # 无 reminders → 用 startDate 本身（北京时间）
+    return cst_dt.month, cst_dt.day
 
 
 def parse_date_from_content(content: str, fallback_year: Optional[int] = None) -> Optional[str]:
@@ -369,15 +381,16 @@ def test_date_parser():
 
     iso_cases = [
         # (task_dict, expected_monthday_tuple, description)
+        # ⚠️ 注意：测试用例期望的是北京时间 (UTC+8)，不是滴答 API 返回的 UTC 时间
         (make_task("2027-03-19T16:00:00.000+0000", ["TRIGGER:P0DT9H0M0S"]), (3, 20), "P0DT9H = +9小时 → 3/20"),
-        (make_task("2027-02-09T23:30:00.000+0000", ["TRIGGER:PT0S"]), (2, 9), "PT0S = +0秒 → 2/9"),
-        (make_task("2027-01-17T02:30:00.000+0000", ["TRIGGER:PT0S"]), (1, 17), "PT0S → 1/17"),
-        (make_task("2027-04-12T16:00:00.000+0000", ["TRIGGER:PT0S"]), (4, 12), "PT0S → 4/12"),
-        (make_task("2027-04-01T15:00:00.000+0000", ["TRIGGER:PT0S"]), (4, 1), "PT0S → 4/1"),
+        (make_task("2027-02-09T23:30:00.000+0000", ["TRIGGER:PT0S"]), (2, 10), "PT0S = +0秒 → 2/10 (UTC 23:30=北京时间07:30)"),
+        (make_task("2027-01-17T02:30:00.000+0000", ["TRIGGER:PT0S"]), (1, 17), "PT0S → 1/17 (UTC 02:30=北京时间10:30，同一天)"),
+        (make_task("2027-04-12T16:00:00.000+0000", ["TRIGGER:PT0S"]), (4, 13), "PT0S → 4/13 (UTC 16:00=北京时间00:00，跨天)"),
+        (make_task("2027-04-01T15:00:00.000+0000", ["TRIGGER:PT0S"]), (4, 1), "PT0S → 4/1 (UTC 15:00=北京时间23:00，同一天)"),
         (make_task("", []), (None, None), "无 startDate"),
-        (make_task("2027-03-19T16:00:00.000+0000", []), (3, 19), "无 reminders → 用 startDate"),
-        (make_task("2027-03-19T16:00:00.000+0000", ["TRIGGER:-PT0S"]), (3, 19), "TRIGGER:-PT0S → 3/19"),
-        (make_task("2027-07-16T16:00:00.000+0000", ["TRIGGER:P1DT0H0M0S"]), (7, 17), "P1D = +1天 → 7/17"),
+        (make_task("2027-03-19T16:00:00.000+0000", []), (3, 20), "无 reminders → 用 startDate (UTC 16:00=北京时间00:00)"),
+        (make_task("2027-03-19T16:00:00.000+0000", ["TRIGGER:-PT0S"]), (3, 20), "TRIGGER:-PT0S → 3/20"),
+        (make_task("2027-07-16T16:00:00.000+0000", ["TRIGGER:P1DT0H0M0S"]), (7, 18), "P1D = +1天 → 7/18 (北京时间7/17 00:00 + 1天)"),
     ]
     for task, expected, desc in iso_cases:
         result = parse_month_day_from_startdate_reminders(task)
