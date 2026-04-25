@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>旅行婚礼+答谢宴 · 全程执行手册</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --cream: #fdf8f4;
@@ -23,1053 +26,773 @@
             --border: #e8ddd2;
             --border-light: #f2eae1;
             --accent-green: #8a9a7b;
-            --accent-blue: #7b8fa0;
-            --radius-sm: 8px;
             --radius: 12px;
             --radius-lg: 16px;
-            --radius-xl: 20px;
-            --font-serif: 'Noto Serif SC', 'STSong', 'Songti SC', 'SimSun', 'KaiTi', 'STKaiti', '楷体', '华文楷体', serif;
-            --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', 'Hiragino Sans GB', 'STHeiti', '微软雅黑', sans-serif;
+            --font-serif: 'Noto Serif SC', 'STSong', 'Songti SC', serif;
+            --font-sans: 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
             --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             --max-width: 960px;
             --nav-height: 56px;
         }
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html {
-            scroll-behavior: smooth;
-            scroll-padding-top: var(--nav-height);
-        }
-
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; scroll-padding-top: var(--nav-height); }
         body {
             font-family: var(--font-sans);
             background: var(--cream);
             color: var(--text);
             line-height: 1.7;
             -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
             background-image:
                 radial-gradient(ellipse at 50% 0%, rgba(200, 165, 130, 0.06) 0%, transparent 70%),
                 radial-gradient(ellipse at 80% 100%, rgba(180, 150, 120, 0.04) 0%, transparent 60%);
             background-attachment: fixed;
         }
 
-        /* ── Navigation ── */
+        /* Nav */
         .nav {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(254, 250, 246, 0.85);
-            backdrop-filter: blur(14px);
-            -webkit-backdrop-filter: blur(14px);
+            position: sticky; top: 0; z-index: 100;
+            background: rgba(254, 250, 246, 0.88);
+            backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
             border-bottom: 1px solid var(--border-light);
             height: var(--nav-height);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            gap: 8px;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
+            display: flex; align-items: center;
+            padding: 0 20px; gap: 6px;
+            overflow-x: auto; scrollbar-width: none;
         }
-        .nav::-webkit-scrollbar {
-            display: none;
-        }
+        .nav::-webkit-scrollbar { display: none; }
         .nav a {
-            flex-shrink: 0;
-            text-decoration: none;
-            font-size: 0.82rem;
-            font-weight: 500;
+            flex-shrink: 0; text-decoration: none;
+            font-size: 0.8rem; font-weight: 500;
             color: var(--text-light);
-            padding: 6px 13px;
-            border-radius: 20px;
-            transition: var(--transition);
-            white-space: nowrap;
-            letter-spacing: 0.02em;
+            padding: 5px 12px; border-radius: 20px;
+            transition: var(--transition); white-space: nowrap;
         }
-        .nav a:hover,
-        .nav a.active {
-            background: var(--rose-pale);
-            color: var(--rose-deep);
-        }
+        .nav a:hover, .nav a.active { background: var(--rose-pale); color: var(--rose-deep); }
+        .nav .back-link { font-weight: 700; color: var(--rose-deep); }
 
-        /* ── Main Container ── */
-        .main {
-            max-width: var(--max-width);
-            margin: 0 auto;
-            padding: 28px 20px 60px;
-        }
+        /* Main */
+        .main { max-width: var(--max-width); margin: 0 auto; padding: 28px 20px 60px; }
 
-        /* ── Hero ── */
-        .hero {
-            text-align: center;
-            padding: 40px 20px 36px;
-            position: relative;
-        }
+        /* Hero */
+        .hero { text-align: center; padding: 40px 20px 36px; }
         .hero .tag {
-            display: inline-block;
-            background: var(--rose-pale);
-            color: var(--rose-deep);
-            font-size: 0.78rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            padding: 5px 16px;
-            border-radius: 20px;
-            margin-bottom: 16px;
-            text-transform: uppercase;
+            display: inline-block; background: var(--rose-pale); color: var(--rose-deep);
+            font-size: 0.78rem; font-weight: 600; letter-spacing: 0.06em;
+            padding: 5px 16px; border-radius: 20px; margin-bottom: 16px;
         }
         .hero h1 {
-            font-family: var(--font-serif);
-            font-size: 2.1rem;
-            font-weight: 700;
-            color: #3d322a;
-            letter-spacing: 0.04em;
-            line-height: 1.35;
-            margin-bottom: 8px;
+            font-family: var(--font-serif); font-size: 2.1rem; font-weight: 700;
+            color: var(--text); letter-spacing: 0.04em; line-height: 1.35; margin-bottom: 8px;
         }
-        .hero .subtitle {
-            font-size: 1rem;
-            color: var(--text-muted);
-            font-weight: 400;
-            letter-spacing: 0.03em;
-        }
-        .hero .divider {
-            width: 48px;
-            height: 2px;
-            background: var(--rose-light);
-            margin: 18px auto 0;
-            border-radius: 1px;
-        }
+        .hero .subtitle { font-size: 1rem; color: var(--text-muted); letter-spacing: 0.03em; }
+        .hero .divider { width: 48px; height: 2px; background: var(--rose-light); margin: 18px auto 0; border-radius: 1px; }
 
-        /* ── Section Titles ── */
+        /* Section Title */
         .section-title {
-            font-family: var(--font-serif);
-            font-size: 1.35rem;
-            font-weight: 700;
-            color: #3d322a;
-            letter-spacing: 0.04em;
-            margin: 40px 0 6px;
-            padding-left: 2px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700;
+            color: var(--text); letter-spacing: 0.04em; margin: 44px 0 6px;
+            display: flex; align-items: center; gap: 10px;
         }
-        .section-title .icon {
-            font-size: 1.1rem;
-        }
-        .section-title .line {
-            flex: 1;
-            height: 1px;
-            background: var(--border-light);
-            min-width: 20px;
-        }
-        .section-subtitle {
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 18px;
-            letter-spacing: 0.02em;
-            padding-left: 2px;
-        }
+        .section-title .line { flex: 1; height: 1px; background: var(--border-light); min-width: 20px; }
+        .section-subtitle { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 18px; }
 
-        /* ── Cards ── */
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--radius-lg);
-            padding: 24px 26px;
-            margin-bottom: 16px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--border-light);
-            transition: var(--transition);
-            position: relative;
-        }
-        .card:hover {
-            box-shadow: var(--card-shadow-hover);
-        }
-        .card.accent-left {
-            border-left: 3px solid var(--rose);
-            padding-left: 22px;
-        }
-        .card.gold-accent {
-            border-left: 3px solid var(--gold);
-            padding-left: 22px;
-        }
-        .card.highlight {
-            background: #fffdf9;
-            border-color: var(--gold-light);
-        }
-
-        /* ── Tables ── */
+        /* Table */
         .table-wrap {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            margin: 4px 0 12px;
-            border-radius: var(--radius);
-            border: 1px solid var(--border-light);
+            overflow-x: auto; -webkit-overflow-scrolling: touch;
+            margin: 6px 0 16px; border-radius: var(--radius); border: 1px solid var(--border-light);
         }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.88rem;
-            min-width: 600px;
-            background: #fff;
-        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.86rem; min-width: 600px; background: #fff; }
         table th {
-            background: #fdf7f1;
-            color: var(--rose-deep);
-            font-weight: 600;
-            font-size: 0.78rem;
-            letter-spacing: 0.04em;
-            text-transform: uppercase;
-            padding: 11px 14px;
-            text-align: left;
-            white-space: nowrap;
-            border-bottom: 2px solid var(--rose-light);
-            position: sticky;
-            top: 0;
+            background: #fdf7f1; color: var(--rose-deep); font-weight: 600;
+            font-size: 0.76rem; letter-spacing: 0.04em; text-transform: uppercase;
+            padding: 10px 14px; text-align: left; white-space: nowrap;
+            border-bottom: 2px solid var(--rose-light); position: sticky; top: 0;
         }
-        table td {
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--border-light);
-            vertical-align: top;
-            color: var(--text);
-        }
-        table tbody tr:hover {
-            background: #fefcf9;
-        }
-        table .pill {
-            display: inline-block;
-            background: var(--rose-pale);
-            color: var(--rose-deep);
-            font-size: 0.75rem;
-            font-weight: 600;
-            padding: 2px 10px;
-            border-radius: 12px;
-            letter-spacing: 0.03em;
-            white-space: nowrap;
-        }
-        table .pill.gold {
-            background: var(--gold-light);
-            color: #8a6d3b;
-        }
-        table .pill.green {
-            background: #e8efe4;
-            color: #5a7050;
-        }
+        table td { padding: 9px 14px; border-bottom: 1px solid var(--border-light); vertical-align: top; }
+        table tbody tr:hover { background: #fefcf9; }
 
-        /* ── Timeline ── */
-        .timeline {
-            position: relative;
-            padding-left: 32px;
-            margin: 8px 0 20px;
-        }
+        /* Timeline */
+        .timeline { position: relative; padding-left: 28px; margin: 8px 0 20px; }
         .timeline::before {
-            content: '';
-            position: absolute;
-            left: 11px;
-            top: 4px;
-            bottom: 4px;
-            width: 2px;
-            background: var(--rose-light);
-            border-radius: 1px;
+            content: ''; position: absolute; left: 9px; top: 4px; bottom: 4px;
+            width: 2px; background: var(--rose-light); border-radius: 1px;
         }
-        .timeline-item {
-            position: relative;
-            margin-bottom: 18px;
-            padding-left: 20px;
+        .tl-item { position: relative; margin-bottom: 14px; padding-left: 22px; }
+        .tl-item::before {
+            content: ''; position: absolute; left: -23px; top: 5px;
+            width: 12px; height: 12px; border-radius: 50%;
+            background: #fff; border: 2.5px solid var(--rose); z-index: 1;
         }
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: -25px;
-            top: 6px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2.5px solid var(--rose);
-            z-index: 1;
-            transition: var(--transition);
-        }
-        .timeline-item.milestone::before {
-            background: var(--rose);
-            border-color: var(--rose-deep);
-            width: 14px;
-            height: 14px;
-            left: -26px;
+        .tl-item.milestone::before {
+            background: var(--rose); border-color: var(--rose-deep);
+            width: 14px; height: 14px; left: -24px;
             box-shadow: 0 0 0 4px rgba(197, 155, 122, 0.15);
         }
-        .timeline-item .tl-date {
-            font-size: 0.78rem;
-            font-weight: 700;
-            color: var(--rose-deep);
-            letter-spacing: 0.04em;
-            margin-bottom: 2px;
-        }
-        .timeline-item .tl-title {
-            font-weight: 600;
-            font-size: 0.95rem;
-            color: #3d322a;
-            margin-bottom: 2px;
-        }
-        .timeline-item .tl-desc {
-            font-size: 0.82rem;
-            color: var(--text-muted);
-        }
+        .tl-date { font-size: 0.76rem; font-weight: 700; color: var(--rose-deep); letter-spacing: 0.03em; }
+        .tl-title { font-weight: 600; font-size: 0.92rem; color: var(--text); }
+        .tl-desc { font-size: 0.8rem; color: var(--text-muted); }
 
-        /* ── Calendar Grid ── */
-        .calendar-months {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 14px;
-            margin: 8px 0 16px;
-        }
-        .cal-month {
-            background: #fff;
-            border-radius: var(--radius);
-            border: 1px solid var(--border-light);
-            padding: 16px;
-            box-shadow: var(--card-shadow);
-        }
-        .cal-month h4 {
-            font-family: var(--font-serif);
-            font-size: 0.95rem;
-            color: var(--rose-deep);
-            text-align: center;
-            margin-bottom: 8px;
-            letter-spacing: 0.04em;
-        }
-        .cal-days {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 2px;
-            font-size: 0.7rem;
-            text-align: center;
-        }
-        .cal-days .day-label {
-            color: var(--text-muted);
-            font-weight: 600;
-            font-size: 0.65rem;
-            padding: 2px 0;
-        }
-        .cal-days .day {
-            padding: 4px 0;
-            border-radius: 4px;
-            cursor: default;
+        /* Phase Card */
+        .phase-card {
+            background: var(--card-bg); border-radius: var(--radius-lg);
+            padding: 24px 26px; margin-bottom: 16px;
+            box-shadow: var(--card-shadow); border: 1px solid var(--border-light);
             transition: var(--transition);
-            font-weight: 500;
         }
-        .cal-days .day.highlight-date {
-            background: var(--rose);
-            color: #fff;
-            font-weight: 700;
-            border-radius: 6px;
+        .phase-card:hover { box-shadow: var(--card-shadow-hover); }
+        .phase-header {
+            font-family: var(--font-serif); font-size: 1.1rem; font-weight: 700;
+            color: var(--rose-deep); margin-bottom: 4px;
         }
-        .cal-days .day.highlight-range {
-            background: var(--rose-pale);
-            color: var(--rose-deep);
-            font-weight: 600;
-        }
-        .cal-days .day.empty {
-            color: transparent;
-        }
-        .cal-legend {
-            margin-top: 8px;
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            line-height: 1.5;
-        }
-        .cal-legend span {
-            display: inline-block;
-            width: 10px;
-            height: 10px;
-            border-radius: 3px;
-            margin-right: 3px;
-            vertical-align: middle;
-        }
-        .cal-legend .leg-key {
-            background: var(--rose);
-        }
-        .cal-legend .leg-range {
-            background: var(--rose-pale);
-        }
-
-        /* ── Collapsible Details ── */
-        details {
-            margin-bottom: 12px;
-        }
-        details summary {
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 0.92rem;
-            padding: 12px 16px;
-            background: #fdf9f4;
-            border-radius: var(--radius);
+        .phase-date { font-size: 0.82rem; color: var(--text-muted); margin-bottom: 14px; }
+        .sub-header {
+            font-weight: 600; font-size: 0.9rem; color: var(--text);
+            margin: 18px 0 6px; padding: 8px 14px;
+            background: #fdf9f4; border-radius: var(--radius);
             border: 1px solid var(--border-light);
-            color: var(--rose-deep);
-            letter-spacing: 0.03em;
-            transition: var(--transition);
-            list-style: none;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            user-select: none;
-        }
-        details summary::-webkit-details-marker {
-            display: none;
-        }
-        details summary::before {
-            content: '\25B8';
-            display: inline-block;
-            transition: var(--transition);
-            font-size: 0.75rem;
-            width: 16px;
-            flex-shrink: 0;
-            color: var(--rose);
-        }
-        details[open] summary::before {
-            transform: rotate(90deg);
-        }
-        details[open] summary {
-            background: #fef8f2;
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            border-bottom: none;
-        }
-        details .details-content {
-            background: #fff;
-            border: 1px solid var(--border-light);
-            border-top: none;
-            border-radius: 0 0 var(--radius) var(--radius);
-            padding: 16px 18px;
         }
 
-        /* ── Checklist ── */
-        .checklist {
-            list-style: none;
-            padding: 0;
+        /* Pill / Badge */
+        .pill {
+            display: inline-block; background: var(--rose-pale); color: var(--rose-deep);
+            font-size: 0.74rem; font-weight: 600; padding: 2px 10px;
+            border-radius: 12px; white-space: nowrap;
         }
-        .checklist li {
-            padding: 8px 0 8px 28px;
-            position: relative;
-            border-bottom: 1px solid var(--border-light);
-            font-size: 0.88rem;
-        }
-        .checklist li::before {
-            content: '\2610';
-            position: absolute;
-            left: 2px;
-            top: 8px;
-            color: var(--rose);
-            font-size: 0.9rem;
-        }
-        .checklist li.done::before {
-            content: '\2611';
-            color: var(--accent-green);
-        }
-        .checklist li.must::before {
-            content: '\2605';
-            color: var(--gold);
-            font-size: 0.75rem;
-            top: 9px;
-        }
+        .pill.gold { background: var(--gold-light); color: #8a6d3b; }
+        .pill.green { background: #e8efe4; color: #5a7050; }
+        .pill.muted { background: #f0ece8; color: var(--text-muted); }
 
-        /* ── Tags / Badges ── */
-        .badge {
-            display: inline-block;
-            font-size: 0.7rem;
-            font-weight: 700;
-            letter-spacing: 0.05em;
-            padding: 3px 10px;
-            border-radius: 12px;
-            text-transform: uppercase;
+        /* Calendar */
+        .cal-section { margin: 8px 0 16px; }
+        .cal-block {
+            background: #fff; border-radius: var(--radius);
+            border: 1px solid var(--border-light); padding: 16px 20px;
+            margin-bottom: 10px; box-shadow: var(--card-shadow);
         }
-        .badge.rose {
-            background: var(--rose-pale);
-            color: var(--rose-deep);
+        .cal-month-title {
+            font-family: var(--font-serif); font-size: 0.95rem;
+            color: var(--rose-deep); margin-bottom: 8px; letter-spacing: 0.04em;
         }
-        .badge.gold {
-            background: var(--gold-light);
-            color: #8a6d3b;
+        .cal-item { font-size: 0.84rem; color: var(--text); padding: 3px 0; line-height: 1.6; }
+        .cal-item .cal-date {
+            display: inline-block; min-width: 90px; font-weight: 700;
+            color: var(--rose-deep); font-size: 0.82rem;
         }
-        .badge.outline {
-            background: transparent;
-            border: 1.5px solid var(--rose-light);
-            color: var(--rose-deep);
+        .cal-item .cal-tag {
+            display: inline-block; font-size: 0.68rem; font-weight: 700;
+            padding: 1px 8px; border-radius: 10px; margin-left: 6px; vertical-align: middle;
         }
+        .cal-item .cal-tag.key { background: var(--rose); color: #fff; }
+        .cal-item .cal-tag.tip { background: var(--gold-light); color: #8a6d3b; }
+        .cal-item .cal-tag.deadline { background: var(--rose-pale); color: var(--rose-deep); }
 
-        /* ── Grid layouts ── */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 14px;
+        /* Note / Quote */
+        .note-box {
+            background: #fffdf9; border: 1px solid var(--gold-light);
+            border-radius: var(--radius); padding: 16px 20px;
+            margin: 14px 0; font-size: 0.85rem; color: var(--text-light);
+            line-height: 1.8;
         }
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-        @media (max-width: 680px) {
-            .grid-2,
-            .grid-3 {
-                grid-template-columns: 1fr;
-            }
-            .hero h1 {
-                font-size: 1.55rem;
-            }
-            .card {
-                padding: 18px 16px;
-            }
-            .timeline {
-                padding-left: 24px;
-            }
-            .timeline-item {
-                padding-left: 12px;
-            }
-            .timeline-item::before {
-                left: -21px;
-                width: 10px;
-                height: 10px;
-            }
-            .timeline-item.milestone::before {
-                left: -22px;
-                width: 12px;
-                height: 12px;
-            }
-            table {
-                font-size: 0.78rem;
-            }
-            table th,
-            table td {
-                padding: 8px 10px;
-            }
-            .nav a {
-                font-size: 0.74rem;
-                padding: 5px 10px;
-            }
-        }
+        .note-box strong { color: var(--rose-deep); }
 
-        /* ── Print ── */
-        @media print {
-            .nav {
-                position: static;
-                border-bottom: 1px solid #ccc;
-            }
-            body {
-                background: #fff;
-                color: #000;
-                font-size: 11pt;
-            }
-            .card {
-                box-shadow: none;
-                border: 1px solid #ddd;
-                break-inside: avoid;
-            }
-            .hero {
-                padding: 10px 0;
-            }
-            details[open] .details-content {
-                border: 1px solid #ddd;
-            }
-            .timeline::before {
-                background: #ccc;
-            }
-        }
-
-        /* ── Footer ── */
+        /* Footer */
         .footer {
-            text-align: center;
-            padding: 30px 20px;
-            color: var(--text-muted);
-            font-size: 0.78rem;
-            letter-spacing: 0.03em;
-            border-top: 1px solid var(--border-light);
-            margin-top: 40px;
+            text-align: center; padding: 30px 20px;
+            color: var(--text-muted); font-size: 0.78rem;
+            border-top: 1px solid var(--border-light); margin-top: 40px;
         }
 
-        /* ── Back to love site ── */
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 0.82rem;
-            color: var(--rose);
-            text-decoration: none;
-            font-weight: 500;
-            transition: var(--transition);
-            margin-bottom: 10px;
+        /* Responsive */
+        @media (max-width: 680px) {
+            .hero h1 { font-size: 1.5rem; }
+            .phase-card { padding: 18px 16px; }
+            table { font-size: 0.78rem; min-width: 480px; }
+            table th, table td { padding: 7px 10px; }
+            .nav a { font-size: 0.74rem; padding: 4px 9px; }
+            .cal-item .cal-date { min-width: 70px; font-size: 0.78rem; }
+            .section-title { font-size: 1.15rem; }
         }
-        .back-link:hover {
-            color: var(--rose-deep);
+
+        /* Print */
+        @media print {
+            .nav { position: static; }
+            body { background: #fff; color: #000; font-size: 11pt; }
+            .phase-card { box-shadow: none; border: 1px solid #ddd; break-inside: avoid; }
         }
     </style>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 
-    <!-- Navigation -->
-    <nav class="nav" id="topNav">
-        <a href="index.html" style="font-weight:700;color:var(--rose-deep);">&#8592; 纪念册</a>
-        <a href="#timeline">时间轴</a>
-        <a href="#phase1">父母见面</a>
-        <a href="#phases">各阶段</a>
-        <a href="#calendar">日历</a>
-        <a href="#checkpoints">检查点</a>
-        <a href="#division">分工</a>
-        <a href="#advice">建议</a>
-    </nav>
+<nav class="nav" id="topNav">
+    <a href="index.html" class="back-link">&#8592; 纪念册</a>
+    <a href="#timeline">时间轴</a>
+    <a href="#phases">各阶段</a>
+    <a href="#calendar">日历</a>
+    <a href="#checkpoints">检查点</a>
+    <a href="#division">分工</a>
+</nav>
 
-    <!-- Main Container -->
-    <div class="main">
+<div class="main">
 
-        <!-- Hero -->
-        <header class="hero">
-            <span class="tag">旅行婚礼 + 答谢宴</span>
-            <h1>从父母见面到答谢宴<br>全程执行手册</h1>
-            <p class="subtitle">2026年5月 — 2027年6月 · 放缓节奏 · 享受旅程</p>
-            <div class="divider"></div>
-        </header>
+    <header class="hero">
+        <span class="tag">旅行婚礼 + 答谢宴</span>
+        <h1>从双方父母见面到答谢宴完成<br>全程执行手册</h1>
+        <p class="subtitle">2026年5月 &#8212; 2027年6月 &#183; 放缓节奏 &#183; 享受旅程</p>
+        <div class="divider"></div>
+    </header>
 
-        <!-- 一、大节点时间轴 -->
-        <section id="timeline">
-            <div class="section-title"><span class="icon">&#9203;</span> 大节点时间轴<span class="line"></span></div>
-            <div class="timeline">
-                <div class="timeline-item milestone">
-                    <div class="tl-date">2026.05.02</div>
-                    <div class="tl-title">&#128142; 双方父母正式见面</div>
-                    <div class="tl-desc">敲定彩礼数额、订婚时间；试探旅行婚礼态度</div>
-                </div>
-                <div class="timeline-item">
-                    <div class="tl-date">2026.05-09</div>
-                    <div class="tl-title">北京购房筹备</div>
-                    <div class="tl-desc">看房、谈判、签约（节奏放缓，周末进行）</div>
-                </div>
-                <div class="timeline-item">
-                    <div class="tl-date">2026.08-09</div>
-                    <div class="tl-title">代县购房</div>
-                    <div class="tl-desc">父母住，流程简单，远程决策</div>
-                </div>
-                <div class="timeline-item milestone">
-                    <div class="tl-date">2026.09.26-27 或 10.10-11</div>
-                    <div class="tl-title">&#128142; 订婚仪式</div>
-                    <div class="tl-desc">完成订婚，正式缔结婚约</div>
-                </div>
-                <div class="timeline-item milestone">
-                    <div class="tl-date">2026.10-11</div>
-                    <div class="tl-title">&#128142; 领取结婚证</div>
-                    <div class="tl-desc">完成婚检、拍证件照、领证</div>
-                </div>
-                <div class="timeline-item">
-                    <div class="tl-date">2026.11-12</div>
-                    <div class="tl-title">确定旅行婚礼方案</div>
-                    <div class="tl-desc">目的地+日期+参与人员；需考虑父母是否同行</div>
-                </div>
-                <div class="timeline-item">
-                    <div class="tl-date">2027.01-03</div>
-                    <div class="tl-title">旅行婚礼筹备</div>
-                    <div class="tl-desc">预订、策划、服装、签证</div>
-                </div>
-                <div class="timeline-item milestone">
-                    <div class="tl-date">2027.04-05</div>
-                    <div class="tl-title">&#128142; 旅行婚礼</div>
-                    <div class="tl-desc">仪式+旅拍+蜜月一体化</div>
-                </div>
-                <div class="timeline-item milestone">
-                    <div class="tl-date">2027.06</div>
-                    <div class="tl-title">&#128142; 答谢宴</div>
-                    <div class="tl-desc">回国后举办，播放婚礼视频，宴请亲友</div>
-                </div>
+    <!-- 一、大节点时间轴 -->
+    <section id="timeline">
+        <div class="section-title">&#9203; 大节点时间轴<span class="line"></span></div>
+        <div class="timeline">
+
+            <div class="tl-item milestone">
+                <div class="tl-date">2026.05.02</div>
+                <div class="tl-title">&#128142; 双方父母正式见面</div>
+                <div class="tl-desc">敲定彩礼、订婚时间；试探旅行婚礼态度</div>
             </div>
-        </section>
 
-        <!-- 三、分阶段Todo清单 -->
-        <section id="phases">
-            <div class="section-title"><span class="icon">&#128230;</span> 分阶段 Todo 清单<span class="line"></span></div>
-            <p class="section-subtitle">点击各阶段展开详细待办事项</p>
-
-            <!-- 第一阶段 -->
-            <details id="phase1">
-                <summary>&#127919; 第一阶段：双方父母见面（2026.04.25 - 05.02）</summary>
-                <div class="details-content">
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>项目</th><th>确认值</th></tr></thead>
-                            <tbody>
-                                <tr><td>日期</td><td><span class="pill">2026年5月2日（周六）</span></td></tr>
-                                <tr><td>时间</td><td>建议中午11:30-14:00（午餐时段）</td></tr>
-                                <tr><td>地点</td><td>环境优雅的中餐厅包间</td></tr>
-                                <tr><td>参与人员</td><td>男方父母 + 男方 + 女方父母 + 女方（核心六人）</td></tr>
-                                <tr><td>核心产出</td><td><strong>彩礼数额、订婚时间</strong></td></tr>
-                                <tr><td>新增试探</td><td>旅行婚礼态度</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p style="margin-top:12px;font-weight:600;color:var(--rose-deep);">4月25日 &#8212; 两人内部对齐日</p>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>时间</th><th>Todo</th><th>产出物</th></tr></thead>
-                            <tbody>
-                                <tr><td>上午</td><td>两人逐项沟通：彩礼、订婚时间、旅行婚礼、婚后居住、生育计划</td><td>《两人内部共识清单》</td></tr>
-                                <tr><td>下午</td><td>各自梳理父母可能的反应和底线</td><td>各自写下3个顾虑+3个期望</td></tr>
-                                <tr><td>晚上</td><td>交换梳理结果，预判冲突点</td><td>《冲突预判与应对表》</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p style="font-weight:600;color:var(--rose-deep);">4月26-27日 &#8212; 各自向父母探底</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">男方单独与父母沟通彩礼预期、订婚态度、旅行婚礼态度；女方同理。27日晚两人交换反馈。</p>
-                    <p style="font-weight:600;color:var(--rose-deep);">4月28-29日 &#8212; 见面细节确认</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">选定餐厅、确认流程、分配角色。建议流程：11:30寒暄&#8594;12:15上菜&#8594;12:45进入正题&#8594;13:15试探旅行婚礼&#8594;14:00结束。</p>
-                </div>
-            </details>
-
-            <!-- 第二阶段 -->
-            <details>
-                <summary>&#127968; 第二阶段：北京购房筹备（2026.05.03 - 09.30）</summary>
-                <div class="details-content">
-                    <p style="font-size:0.85rem;color:var(--text-muted);">节奏放缓，周末看房，不占用工作日。暂不自住、不出租。</p>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>日期</th><th>待办事项</th><th>备注</th></tr></thead>
-                            <tbody>
-                                <tr><td>05.04-10</td><td>北京购房策略对齐：确定板块、预算、户型</td><td>不急于签约</td></tr>
-                                <tr><td>05.11-17</td><td>线上筛选房源+联系中介</td><td>锁定5-8个目标小区</td></tr>
-                                <tr><td>05.18-31</td><td>周末集中实地看房（第一轮）</td><td>每次3-5套</td></tr>
-                                <tr><td>06.01-14</td><td>周末集中看房（第二轮）</td><td>聚焦2-3个小区</td></tr>
-                                <tr><td>06.15-30</td><td>确定目标范围，持续跟踪价格</td><td>市场观望期</td></tr>
-                                <tr><td>07.01-08.15</td><td>继续看房或等待合适房源</td><td>心态放平</td></tr>
-                                <tr><td>08.16-31</td><td>确定目标房源，启动谈判</td><td>预留谈判空间</td></tr>
-                                <tr><td>09.01-15</td><td>交定金+签认购书</td><td>定金一般10万以内</td></tr>
-                                <tr><td>09.15-30</td><td>准备贷款材料+网签+首付</td><td>如全款更快捷</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </details>
-
-            <!-- 第三阶段：代县购房 -->
-            <details>
-                <summary>&#127969; 第三阶段：代县购房（2026.08-09，与北京并行）</summary>
-                <div class="details-content">
-                    <p style="font-size:0.85rem;color:var(--text-muted);">父母住+婚后回老家；男方父母实地看房，新人远程决策，流程简单。</p>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>日期</th><th>待办事项</th></tr></thead>
-                            <tbody>
-                                <tr><td>08.01-15</td><td>明确代县房产具体需求</td></tr>
-                                <tr><td>08.15-31</td><td>男方父母实地看房，拍照同步</td></tr>
-                                <tr><td>09.01-15</td><td>谈判+签约</td></tr>
-                                <tr><td>09.15-30</td><td>过户+交房</td></tr>
-                                <tr><td>10.01-31</td><td>父母入住+简装（如需）</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </details>
-
-            <!-- 第四阶段：订婚 -->
-            <details>
-                <summary>&#128141; 第四阶段：订婚筹备（2026.09.01 - 10.11）</summary>
-                <div class="details-content">
-                    <p style="font-size:0.85rem;color:var(--text-muted);">订婚不聊买房事宜，聚焦订婚本身。</p>
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>日期</th><th>待办事项</th></tr></thead>
-                            <tbody>
-                                <tr><td>09.01-15</td><td>细化聘礼/六礼/三金清单</td></tr>
-                                <tr><td>09.15-20</td><td>确定订婚具体日期（9.26-27 或 10.10-11）</td></tr>
-                                <tr><td>09.20-25</td><td>确认订婚场所与流程</td></tr>
-                                <tr><td>09.25-30</td><td>订婚物品准备、预订高铁票</td></tr>
-                                <tr><td>09.26-27 或 10.10-11</td><td>&#128142; 举行订婚仪式</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </details>
-
-            <!-- 第五～十阶段概览 -->
-            <details>
-                <summary>&#128203; 第五～八阶段：领证 · 旅行婚礼 · 答谢宴</summary>
-                <div class="details-content">
-                    <p style="font-weight:600;color:var(--rose-deep);">第五阶段：领证+旅行婚礼筹备启动（2026.10-12）</p>
-                    <p style="font-size:0.85rem;">10月中旬领证 &#8594; 确定旅行婚礼目的地/日期/参与人员 &#8594; 预订机票酒店 &#8594; 联系策划/摄影。</p>
-                    <p style="font-weight:600;color:var(--rose-deep);">第六阶段：旅行婚礼执行准备（2027.01-04）</p>
-                    <p style="font-size:0.85rem;">购买轻婚纱礼服 &#8594; 准备旅行物品 &#8594; 签证办理 &#8594; 出发适应目的地。</p>
-                    <p style="font-weight:600;color:var(--rose-deep);">第七阶段：旅行婚礼（2027.04-05）</p>
-                    <p style="font-size:0.85rem;">仪式+旅拍+蜜月一体化。目的地建议：三亚（父母易同行，2-4万）| 日本（仪式感强，3-6万）| 大理（预算低，1-3万）。</p>
-                    <p style="font-weight:600;color:var(--rose-deep);">第八阶段：答谢宴（2027.05-06）</p>
-                    <p style="font-size:0.85rem;">回国后1个月内举办，播放旅行婚礼视频，不收礼金或仅收长辈祝福。</p>
-                </div>
-            </details>
-
-            <!-- 见面当天执行 -->
-            <details>
-                <summary>&#128336; 见面当天执行流程（5月2日 11:30-14:00）</summary>
-                <div class="details-content">
-                    <div class="table-wrap">
-                        <table>
-                            <thead><tr><th>时间</th><th>环节</th><th>核心内容</th></tr></thead>
-                            <tbody>
-                                <tr><td>11:30</td><td>男方到达，寒暄入座</td><td>男方主动介绍父母，态度谦和</td></tr>
-                                <tr><td>11:35</td><td>互赠礼物</td><td>男方父母送上见面礼</td></tr>
-                                <tr><td>11:40-12:15</td><td>点菜+闲聊破冰</td><td>新人主导点菜，兼顾双方口味</td></tr>
-                                <tr><td>12:15-12:45</td><td>聊子女和家庭</td><td>多夸对方子女，少说自己辛苦</td></tr>
-                                <tr><td>12:45-13:15</td><td><strong>进入正题：彩礼与订婚</strong></td><td>核心产出：敲定彩礼数额、订婚日期</td></tr>
-                                <tr><td>13:15-13:30</td><td><strong>试探旅行婚礼态度</strong></td><td>新人主导，观察父母反应</td></tr>
-                                <tr><td>13:30-13:50</td><td>延伸话题：三金、居住、生育</td><td>男方主导</td></tr>
-                                <tr><td>13:50-14:00</td><td>收尾与感谢</td><td>男方买单，不急于当场敲定所有细节</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                    <p style="font-weight:600;color:var(--rose-deep);margin-top:10px;">突发情况应对：</p>
-                    <ul style="font-size:0.85rem;color:var(--text-muted);padding-left:18px;">
-                        <li>彩礼要求高于预期 &#8594; 男方："我们回去商量一下，尽量满足"</li>
-                        <li>父母对旅行婚礼强烈反对 &#8594; 新人："我们回去再考虑，也可以带你们一起去"</li>
-                        <li>气氛尴尬冷场 &#8594; 新人："来尝尝这个菜，这家招牌不错"</li>
-                    </ul>
-                </div>
-            </details>
-        </section>
-
-        <!-- 四、2026年5-10月日历视图 -->
-        <section id="calendar">
-            <div class="section-title"><span class="icon">&#128197;</span> 2026年5-10月日历视图<span class="line"></span></div>
-            <div class="calendar-months">
-                <!-- 5月 -->
-                <div class="cal-month">
-                    <h4>2026年5月</h4>
-                    <div class="cal-days">
-                        <span class="day-label">一</span><span class="day-label">二</span><span class="day-label">三</span><span class="day-label">四</span><span class="day-label">五</span><span class="day-label">六</span><span class="day-label">日</span>
-                        <span class="day empty">&middot;</span><span class="day empty">&middot;</span><span class="day empty">&middot;</span><span class="day empty">&middot;</span><span class="day">1</span><span class="day highlight-date">2</span><span class="day">3</span>
-                        <span class="day">4</span><span class="day">5</span><span class="day">6</span><span class="day">7</span><span class="day">8</span><span class="day">9</span><span class="day">10</span>
-                        <span class="day highlight-range">11</span><span class="day highlight-range">12</span><span class="day highlight-range">13</span><span class="day highlight-range">14</span><span class="day highlight-range">15</span><span class="day highlight-range">16</span><span class="day highlight-range">17</span>
-                        <span class="day highlight-range">18</span><span class="day highlight-range">19</span><span class="day highlight-range">20</span><span class="day highlight-range">21</span><span class="day highlight-range">22</span><span class="day highlight-range">23</span><span class="day highlight-range">24</span>
-                        <span class="day highlight-range">25</span><span class="day highlight-range">26</span><span class="day highlight-range">27</span><span class="day highlight-range">28</span><span class="day highlight-range">29</span><span class="day highlight-range">30</span><span class="day highlight-range">31</span>
-                    </div>
-                    <div class="cal-legend"><span class="leg-key"></span> 5.2 父母见面 &nbsp; <span class="leg-range"></span> 周末看房期</div>
-                </div>
-                <!-- 6月 -->
-                <div class="cal-month">
-                    <h4>2026年6月</h4>
-                    <div class="cal-days">
-                        <span class="day-label">一</span><span class="day-label">二</span><span class="day-label">三</span><span class="day-label">四</span><span class="day-label">五</span><span class="day-label">六</span><span class="day-label">日</span>
-                        <span class="day highlight-range">1</span><span class="day highlight-range">2</span><span class="day highlight-range">3</span><span class="day highlight-range">4</span><span class="day highlight-range">5</span><span class="day highlight-range">6</span><span class="day highlight-range">7</span>
-                        <span class="day highlight-range">8</span><span class="day highlight-range">9</span><span class="day highlight-range">10</span><span class="day highlight-range">11</span><span class="day highlight-range">12</span><span class="day highlight-range">13</span><span class="day highlight-range">14</span>
-                        <span class="day highlight-range">15</span><span class="day">16</span><span class="day">17</span><span class="day">18</span><span class="day">19</span><span class="day">20</span><span class="day">21</span>
-                        <span class="day">22</span><span class="day">23</span><span class="day">24</span><span class="day">25</span><span class="day">26</span><span class="day">27</span><span class="day">28</span>
-                        <span class="day">29</span><span class="day">30</span>
-                    </div>
-                    <div class="cal-legend"><span class="leg-range"></span> 1-14日第二轮看房 &nbsp; 15-30日确定目标范围</div>
-                </div>
-                <!-- 9月 -->
-                <div class="cal-month">
-                    <h4>2026年9月</h4>
-                    <div class="cal-days">
-                        <span class="day-label">一</span><span class="day-label">二</span><span class="day-label">三</span><span class="day-label">四</span><span class="day-label">五</span><span class="day-label">六</span><span class="day-label">日</span>
-                        <span class="day">1</span><span class="day">2</span><span class="day">3</span><span class="day">4</span><span class="day">5</span><span class="day">6</span>
-                        <span class="day">7</span><span class="day">8</span><span class="day">9</span><span class="day">10</span><span class="day">11</span><span class="day">12</span><span class="day">13</span>
-                        <span class="day">14</span><span class="day">15</span><span class="day">16</span><span class="day">17</span><span class="day">18</span><span class="day">19</span><span class="day">20</span>
-                        <span class="day">21</span><span class="day">22</span><span class="day">23</span><span class="day">24</span><span class="day">25</span><span class="day highlight-date">26</span><span class="day highlight-date">27</span>
-                        <span class="day">28</span><span class="day">29</span><span class="day">30</span>
-                    </div>
-                    <div class="cal-legend"><span class="leg-key"></span> 9.26-27 订婚（备选）</div>
-                </div>
-                <!-- 10月 -->
-                <div class="cal-month">
-                    <h4>2026年10月</h4>
-                    <div class="cal-days">
-                        <span class="day-label">一</span><span class="day-label">二</span><span class="day-label">三</span><span class="day-label">四</span><span class="day-label">五</span><span class="day-label">六</span><span class="day-label">日</span>
-                        <span class="day">1</span><span class="day">2</span><span class="day">3</span><span class="day">4</span>
-                        <span class="day">5</span><span class="day">6</span><span class="day">7</span><span class="day">8</span><span class="day">9</span><span class="day highlight-date">10</span><span class="day highlight-date">11</span>
-                        <span class="day highlight-range">12</span><span class="day highlight-range">13</span><span class="day highlight-range">14</span><span class="day highlight-range">15</span><span class="day">16</span><span class="day">17</span><span class="day">18</span>
-                        <span class="day">19</span><span class="day">20</span><span class="day">21</span><span class="day">22</span><span class="day">23</span><span class="day">24</span><span class="day">25</span>
-                        <span class="day">26</span><span class="day">27</span><span class="day">28</span><span class="day">29</span><span class="day">30</span><span class="day">31</span>
-                    </div>
-                    <div class="cal-legend"><span class="leg-key"></span> 10.10-11 订婚（备选） &nbsp; <span class="leg-range"></span> 12-15日领证窗口</div>
-                </div>
+            <div class="tl-item">
+                <div class="tl-date">2026.05.10</div>
+                <div class="tl-title">&#128161; 三金/钻戒购买（提前）</div>
+                <div class="tl-desc">订婚可用</div>
             </div>
-        </section>
 
-        <!-- 五、关键决策检查点 -->
-        <section id="checkpoints">
-            <div class="section-title"><span class="icon">&#9989;</span> 关键决策检查点<span class="line"></span></div>
+            <div class="tl-item">
+                <div class="tl-date">2026.05.10</div>
+                <div class="tl-title">北京购房策略对齐</div>
+                <div class="tl-desc">确定区域、预算、户型</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.05.31</div>
+                <div class="tl-title">北京第一轮看房完成</div>
+                <div class="tl-desc">锁定目标小区范围</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.06.14</div>
+                <div class="tl-title">北京第二轮看房完成</div>
+                <div class="tl-desc">聚焦2-3个满意小区</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.06.30</div>
+                <div class="tl-title">&#128161; 婚纱照拍摄完成（提前）</div>
+                <div class="tl-desc">精修时间充裕</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.06.30</div>
+                <div class="tl-title">&#128161; 婚前体检完成（提前）</div>
+                <div class="tl-desc">发现问题可调理</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.07.31</div>
+                <div class="tl-title">&#128161; 婚礼策划咨询完成（提前）</div>
+                <div class="tl-desc">锁定心仪团队</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.08.31</div>
+                <div class="tl-title">代县购房看房完成</div>
+                <div class="tl-desc">男方父母同步视频</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.09.15</div>
+                <div class="tl-title">北京交定金 / 代县签约</div>
+                <div class="tl-desc">锁定房源</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.09.15</div>
+                <div class="tl-title">&#128161; 婚纱礼服试穿/定制（提前）</div>
+                <div class="tl-desc">轻婚纱提前准备</div>
+            </div>
+
+            <div class="tl-item milestone">
+                <div class="tl-date">2026.09.26-27 或 10.10-11</div>
+                <div class="tl-title">&#128142; 订婚仪式</div>
+                <div class="tl-desc">完成订婚</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.10.31</div>
+                <div class="tl-title">&#128161; 答谢宴餐厅踩点完成（提前）</div>
+                <div class="tl-desc">锁定餐厅</div>
+            </div>
+
+            <div class="tl-item milestone">
+                <div class="tl-date">2026.11.15</div>
+                <div class="tl-title">&#128142; 领取结婚证</div>
+                <div class="tl-desc">全国通办</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.11.15</div>
+                <div class="tl-title">旅行婚礼机票/酒店预订完成</div>
+                <div class="tl-desc">提前锁定价格</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2026.12.31</div>
+                <div class="tl-title">旅行婚礼策划/流程/服装确定</div>
+                <div class="tl-desc">筹备完毕</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2027.02.15</div>
+                <div class="tl-title">&#128161; 轻婚纱/礼服购买或租赁到位</div>
+                <div class="tl-desc">旅行用</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2027.03.31</div>
+                <div class="tl-title">签证/旅行物品准备完毕</div>
+                <div class="tl-desc">出发倒计时</div>
+            </div>
+
+            <div class="tl-item">
+                <div class="tl-date">2027.04.15</div>
+                <div class="tl-title">抵达旅行目的地</div>
+                <div class="tl-desc">提前适应</div>
+            </div>
+
+            <div class="tl-item milestone">
+                <div class="tl-date">2027.04-05</div>
+                <div class="tl-title">&#128142; 旅行婚礼</div>
+                <div class="tl-desc">仪式+旅拍+蜜月</div>
+            </div>
+
+            <div class="tl-item milestone">
+                <div class="tl-date">2027.06</div>
+                <div class="tl-title">&#128142; 答谢宴</div>
+                <div class="tl-desc">播放视频，宴请亲友</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 二、分阶段 Todo 清单 -->
+    <section id="phases">
+        <div class="section-title">&#128230; 分阶段 Todo 清单（含最晚完成时间）<span class="line"></span></div>
+
+        <!-- 第一阶段 -->
+        <div class="phase-card" id="phase1">
+            <div class="phase-header">&#127919; 第一阶段：双方父母见面（2026.04.25 - 05.05）</div>
+
+            <div class="sub-header">见面基本信息</div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>检查点</th><th>日期</th><th>决策内容</th><th>必须完成</th></tr></thead>
+                    <thead><tr><th>项目</th><th>确认值</th></tr></thead>
                     <tbody>
-                        <tr><td>检查点1</td><td>04.27</td><td>两人内部对齐：彩礼、订婚时间、旅行婚礼目的地倾向</td><td>&#10003;</td></tr>
-                        <tr><td>检查点2</td><td>05.02</td><td>父母见面敲定：彩礼数额、订婚时间；旅行婚礼态度明确</td><td>&#10003;</td></tr>
-                        <tr><td>检查点3</td><td>05.05</td><td>旅行婚礼方案确定（目的地、父母是否同行、预算）</td><td>&#10003;</td></tr>
-                        <tr><td>检查点4</td><td>06.30</td><td>北京是否已看完两轮房？是否有满意房源？</td><td>不必须</td></tr>
-                        <tr><td>检查点5</td><td>08.31</td><td>北京是否已确定目标房源？代县是否已启动？</td><td>不必须</td></tr>
-                        <tr><td>检查点6</td><td>09.20</td><td>订婚具体日期确定（9.26-27 或 10.10-11）</td><td>&#10003;</td></tr>
-                        <tr><td>检查点7</td><td>09.30</td><td>北京是否已签约？代县是否已完成？</td><td>不必须</td></tr>
-                        <tr><td>检查点8</td><td>10.15</td><td>是否已领证？旅行婚礼目的地+日期确定</td><td>&#10003;</td></tr>
-                        <tr><td>检查点9</td><td>12.31</td><td>旅行婚礼策划/摄影已预订？机票酒店已订？</td><td>&#10003;</td></tr>
-                        <tr><td>检查点10</td><td>2027.03.31</td><td>旅行婚礼服装/物品准备就绪</td><td>&#10003;</td></tr>
-                        <tr><td>检查点11</td><td>2027.05.31</td><td>答谢宴餐厅/菜单确定？视频制作完成</td><td>&#10003;</td></tr>
+                        <tr><td><strong>日期</strong></td><td><span class="pill">2026年5月2日（周六）</span></td></tr>
+                        <tr><td><strong>时间</strong></td><td>建议中午11:30-14:00</td></tr>
+                        <tr><td><strong>地点</strong></td><td>环境优雅的中餐厅包间（女方家附近或中间位置）</td></tr>
+                        <tr><td><strong>参与人员</strong></td><td>男方父母 + 男方 + 女方父母 + 女方（核心六人）</td></tr>
+                        <tr><td><strong>核心产出</strong></td><td><strong>彩礼数额、订婚时间</strong></td></tr>
+                        <tr><td><strong>新增试探</strong></td><td>旅行婚礼态度</td></tr>
                     </tbody>
                 </table>
             </div>
-        </section>
 
-        <!-- 六、男女分工 -->
-        <section id="division">
-            <div class="section-title"><span class="icon">&#128101;</span> 男女分工表<span class="line"></span></div>
+            <div class="sub-header">见面前准备（4月25日 - 5月1日）</div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>时间段</th><th>男方</th><th>女方</th><th>共同</th></tr></thead>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>产出物</th><th>负责人</th></tr></thead>
                     <tbody>
-                        <tr>
-                            <td>04.25-05.02</td>
-                            <td>准备见面礼、主导见面</td>
-                            <td>餐厅协调、家庭整理</td>
-                            <td>内部对齐（聚焦彩礼、订婚、旅行婚礼）</td>
-                        </tr>
-                        <tr>
-                            <td>05.03-09.30</td>
-                            <td>贷款办理、代县远程决策</td>
-                            <td>房源筛选、设计审美</td>
-                            <td>周末看房/谈判/签约</td>
-                        </tr>
-                        <tr>
-                            <td>09.01-10.11</td>
-                            <td>礼金准备、场地预订</td>
-                            <td>仪式流程、物品清单</td>
-                            <td>订婚执行（不聊买房）</td>
-                        </tr>
-                        <tr>
-                            <td>10.12-12.31</td>
-                            <td>机票预订、答谢宴场地</td>
-                            <td>婚礼策划对接、摄影沟通</td>
-                            <td>领证、确定目的地+答谢宴方案</td>
-                        </tr>
-                        <tr>
-                            <td>2027.01-04</td>
-                            <td>旅行物品准备、签证</td>
-                            <td>轻婚纱/礼服、化妆沟通</td>
-                            <td>行程确认、誓词准备</td>
-                        </tr>
-                        <tr>
-                            <td>2027.04-05</td>
-                            <td>旅行婚礼参与者</td>
-                            <td>旅行婚礼主角+化妆</td>
-                            <td>&#128142; 旅行婚礼执行</td>
-                        </tr>
-                        <tr>
-                            <td>2027.05-06</td>
-                            <td>答谢宴场地、男方宾客</td>
-                            <td>视频制作、女方宾客</td>
-                            <td>&#128142; 答谢宴执行</td>
-                        </tr>
+                        <tr><td><span class="pill">4月25日</span></td><td>两人内部对齐：彩礼、订婚时间、旅行婚礼倾向</td><td>《两人内部共识清单》</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">4月27日</span></td><td>各自向父母探底：彩礼预期、订婚态度、旅行婚礼态度</td><td>《男方/女方父母摸底反馈》</td><td>两人各自</td></tr>
+                        <tr><td><span class="pill">4月27日</span></td><td>交换摸底结果，预判冲突点</td><td>《冲突预判与应对表》</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">4月28日</span></td><td>选定见面餐厅，预订包间</td><td>餐厅确认</td><td>男为主，女配合</td></tr>
+                        <tr><td><span class="pill">4月29日</span></td><td>确认参与人员、上门人数、见面流程、角色分工</td><td>《见面流程表》《角色分工表》</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">4月30日</span></td><td>男方采购见面礼、准备红包、父母整理着装</td><td>见面礼到位</td><td>男方</td></tr>
+                        <tr><td><span class="pill">5月1日</span></td><td>女方家整理准备、提醒父母注意事项、准备应急方案</td><td>准备就绪</td><td>女方</td></tr>
                     </tbody>
                 </table>
             </div>
-        </section>
 
-        <!-- 七、核心建议 -->
-        <section id="advice">
-            <div class="section-title"><span class="icon">&#128161;</span> 核心建议<span class="line"></span></div>
-            <div class="grid-2">
-                <div class="card accent-left">
-                    <span class="badge rose">优先级1</span>
-                    <p style="margin-top:8px;font-weight:600;">5月2日见面三件事</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">敲定彩礼、敲定订婚时间、<strong>试探旅行婚礼态度</strong></p>
-                </div>
-                <div class="card accent-left">
-                    <span class="badge gold">优先级2</span>
-                    <p style="margin-top:8px;font-weight:600;">旅行婚礼目的地优先级</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">三亚（父母易同行）> 日本（仪式感强）> 大理（预算低）</p>
-                </div>
-                <div class="card">
-                    <p style="font-weight:600;">父母想同行&#8594;三亚</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">父母不想同行&#8594;日本或大理</p>
-                </div>
-                <div class="card">
-                    <p style="font-weight:600;">答谢宴在2027年6月</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">原婚礼档期，回国后1个月内，播放旅行婚礼视频</p>
-                </div>
-                <div class="card">
-                    <p style="font-weight:600;">答谢宴不收礼金</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">明确"分享幸福"定位，不是婚礼</p>
-                </div>
-                <div class="card highlight">
-                    <p style="font-weight:600;">订婚不聊买房</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">聚焦订婚本身，买房留到领证后</p>
-                </div>
-                <div class="card">
-                    <p style="font-weight:600;">北京买房慢慢看</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">不急于出手，旅行婚礼省下的钱可用于购房</p>
-                </div>
-                <div class="card">
-                    <p style="font-weight:600;">代县房产"轻处理"</p>
-                    <p style="font-size:0.85rem;color:var(--text-muted);">父母主导，你们远程决策</p>
-                </div>
+            <div class="sub-header">见面当天执行（5月2日）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>时间</th><th>Todo</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td>9:00</td><td>男方检查见面礼、红包、着装</td><td>男方</td></tr>
+                        <tr><td>9:30</td><td>男方父母出发</td><td>男方父母</td></tr>
+                        <tr><td>10:00</td><td>女方到餐厅或家中准备</td><td>女方</td></tr>
+                        <tr><td>10:30</td><td>女方父母到达</td><td>女方</td></tr>
+                        <tr><td>11:00</td><td>新人提前到达，最后对齐策略</td><td>两人</td></tr>
+                        <tr><td>11:30</td><td>男方到达，寒暄入座</td><td>男方</td></tr>
+                        <tr><td>11:35</td><td>互赠礼物</td><td>男方父母</td></tr>
+                        <tr><td>11:40</td><td>点菜</td><td>两人</td></tr>
+                        <tr><td>11:45-12:15</td><td>闲聊破冰</td><td>双方父母</td></tr>
+                        <tr><td>12:15-12:45</td><td>聊子女和家庭</td><td>双方父母</td></tr>
+                        <tr><td><strong>12:45-13:15</strong></td><td><strong>进入正题：彩礼与订婚</strong></td><td>男方主导</td></tr>
+                        <tr><td><strong>13:15-13:30</strong></td><td><strong>试探旅行婚礼态度</strong></td><td>新人主导</td></tr>
+                        <tr><td>13:30-13:50</td><td>延伸话题（三金、婚后居住）</td><td>男方主导</td></tr>
+                        <tr><td>13:50-14:00</td><td>收尾与感谢</td><td>男方父母</td></tr>
+                        <tr><td>14:00</td><td>结束，买单或AA</td><td>男方</td></tr>
+                    </tbody>
+                </table>
             </div>
-        </section>
 
-        <!-- Footer -->
-        <div class="footer">
-            <p>旅行婚礼+答谢宴 &middot; 全程执行手册 &copy; 2026-2027</p>
-            <p style="font-size:0.7rem;">放缓节奏 &middot; 享受旅程 &middot; 幸福绵长</p>
+            <div class="sub-header">见面后跟进（5月3日 - 5月5日）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>产出物</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="pill">5月3日</span></td><td>各自向父母收集反馈：彩礼、订婚时间、旅行婚礼态度</td><td>《男方/女方父母反馈》</td><td>两人各自</td></tr>
+                        <tr><td><span class="pill">5月3日</span></td><td>两人交换反馈，对比差异</td><td>《见面结果汇总表》</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">5月4日</span></td><td>针对待解决问题商量解决方案</td><td>解决方案确定</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">5月5日</span></td><td>各自向父母反馈解决方案，争取达成一致</td><td>父母确认</td><td>两人各自</td></tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
+        <!-- 第二阶段 -->
+        <div class="phase-card" id="phase2">
+            <div class="phase-header">&#127968; 第二阶段：提前启动期 + 北京购房（2026.05.03 - 09.30）</div>
+            <div class="phase-date">&#128161; 标记项为可提前启动事项，与主线并行推进</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>要求/产出</th><th>负责人</th><th>备注</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="pill">5月10日</span></td><td>北京购房策略对齐</td><td>确定区域、预算、户型、学区、贷款比例</td><td>两人共同</td><td></td></tr>
+                        <tr><td><span class="pill gold">5月10日</span></td><td>&#128161; 三金/钻戒购买（提前）</td><td>订婚仪式如需交换戒指，提前备好</td><td>女为主</td><td>关注金价促销</td></tr>
+                        <tr><td><span class="pill">5月17日</span></td><td>线上筛选北京房源</td><td>锁定5-8个目标小区，建立看房清单</td><td>两人</td><td>贝壳/链家/我爱我家</td></tr>
+                        <tr><td><span class="pill gold">5月17日</span></td><td>&#128161; 领证证件照拍摄（提前）</td><td>找好工作室，状态好时拍</td><td>两人</td><td>全国通办，提前备用</td></tr>
+                        <tr><td><span class="pill">5月31日</span></td><td>北京第一轮看房完成</td><td>每次3-5套，拍照记录，评分对比</td><td>两人</td><td>利用周末</td></tr>
+                        <tr><td><span class="pill">6月14日</span></td><td>北京第二轮看房完成</td><td>聚焦2-3个最满意小区，反复对比</td><td>两人</td><td>利用周末</td></tr>
+                        <tr><td><span class="pill gold">6月30日</span></td><td>&#128161; 婚纱照拍摄完成（提前）</td><td>利用看房间隙周末；避开旺季，精修充裕</td><td>两人（女为主）</td><td>风格确定即可</td></tr>
+                        <tr><td><span class="pill gold">6月30日</span></td><td>&#128161; 婚前体检完成（提前）</td><td>三甲医院或妇幼保健院；发现问题可提前调理</td><td>两人共同</td><td>部分项目有效期6个月</td></tr>
+                        <tr><td><span class="pill">7月31日</span></td><td>继续看房或等待合适房源</td><td>心态放平，不急于出手</td><td>两人</td><td></td></tr>
+                        <tr><td><span class="pill gold">7月31日</span></td><td>&#128161; 婚礼策划咨询完成（提前）</td><td>了解目的地婚礼市场，看真实案例；锁定心仪团队</td><td>女为主</td><td>只咨询不定</td></tr>
+                        <tr><td><span class="pill">8月15日</span></td><td>代县购房需求明确</td><td>父母住+回老家；确定面积、楼层、预算</td><td>两人+男方父母</td><td>远程沟通</td></tr>
+                        <tr><td><span class="pill">8月31日</span></td><td>男方父母代县看房完成</td><td>锁定2-3套，拍照视频同步新人</td><td>男方父母</td><td>新人远程决策</td></tr>
+                        <tr><td><span class="pill">8月31日</span></td><td>北京确定目标房源，启动谈判</td><td>谈价格、谈周期、了解业主卖房动机</td><td>两人</td><td>预留谈判空间</td></tr>
+                        <tr><td><span class="pill">9月15日</span></td><td>北京交定金+签认购书</td><td>定金一般10万以内，明确违约条款</td><td>两人</td><td>以夫妻或各自名义均可</td></tr>
+                        <tr><td><span class="pill">9月15日</span></td><td>代县谈判+签约</td><td>确定价格、付款方式</td><td>男方+父母</td><td>流程简单</td></tr>
+                        <tr><td><span class="pill gold">9月15日</span></td><td>&#128161; 婚纱礼服试穿/定制（提前）</td><td>旅行婚礼轻婚纱，轻便易携带；提前定制需1-2个月</td><td>女为主</td><td></td></tr>
+                        <tr><td><span class="pill">9月30日</span></td><td>北京网签+首付资金监管</td><td>征信、流水、收入证明；首付打入监管账户</td><td>两人</td><td>如全款更快捷</td></tr>
+                        <tr><td><span class="pill">9月30日</span></td><td>代县过户+交房</td><td>完成交易，父母准备入住</td><td>男方+父母</td><td>可委托代办</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 第三阶段 -->
+        <div class="phase-card" id="phase3">
+            <div class="phase-header">&#128141; 第三阶段：订婚筹备（2026.09.01 - 10.11）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>要求/产出</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="pill">9月15日</span></td><td>细化聘礼/六礼/三金清单</td><td>确定彩礼、三金、改口费具体数额与交付方式</td><td>两人与父母</td></tr>
+                        <tr><td><span class="pill">9月20日</span></td><td>确定订婚具体日期</td><td><strong>建议：9月26-27日或10月10-11日</strong>，避开国庆高铁高峰</td><td>两人与父母</td></tr>
+                        <tr><td><span class="pill">9月25日</span></td><td>确认订婚场所与流程</td><td>订场地（包间为佳）、定流程、确定司仪或长辈致辞、准备红包</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">9月30日</span></td><td>订婚物品准备到位</td><td>选购订婚戒指、准备礼金、通知亲友、预订高铁票（如异地）</td><td>两人分头</td></tr>
+                        <tr><td><span class="pill green">9.26-27 或 10.10-11</span></td><td>&#128142; 举行订婚仪式</td><td>登门下聘、交换戒指、敬茶等环节；不要临时加环节；<strong>不聊买房</strong></td><td>两家人协同</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-box">
+                <strong>日期选择建议：</strong><br>
+                &#8226; <strong>9月26-27日</strong>：国庆前一周，高铁票好买，亲友时间充裕<br>
+                &#8226; <strong>10月10-11日</strong>：国庆后一周，避开高峰，需考虑亲友节后上班<br>
+                &#8226; <strong>不推荐10月1-7日</strong>：高铁票紧张，酒店涨价
+            </div>
+        </div>
+
+        <!-- 第四阶段 -->
+        <div class="phase-card" id="phase4">
+            <div class="phase-header">&#128221; 第四阶段：领证 + 旅行婚礼筹备（2026.10 - 12）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>要求/产出</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="pill">10月31日</span></td><td>确定旅行婚礼方案</td><td>目的地、日期、预算、参与人员</td><td>两人共同</td></tr>
+                        <tr><td><span class="pill">10月31日</span></td><td>确定答谢宴初步方案</td><td>规模、形式、预算</td><td>两人与父母</td></tr>
+                        <tr><td><span class="pill gold">10月31日</span></td><td>&#128161; 答谢宴餐厅踩点完成（提前）</td><td>锁定好餐厅，淡季谈价；只踩点不定</td><td>两人与父母</td></tr>
+                        <tr><td><span class="pill green">11月15日</span></td><td>&#128142; 领取结婚证</td><td>婚检、证件照、领证（免户口本）</td><td>两人共同</td><td>全国通办</td></tr>
+                        <tr><td><span class="pill">11月15日</span></td><td>预订旅行婚礼机票/酒店</td><td>提前订更便宜，可退改优先</td><td>两人分头</td></tr>
+                        <tr><td><span class="pill">11月30日</span></td><td>联系目的地婚礼策划/摄影</td><td>看真实案例，签合同</td><td>女为主</td></tr>
+                        <tr><td><span class="pill">12月31日</span></td><td>确定旅行婚礼仪式流程、服装、誓词</td><td>简化流程，30-60分钟</td><td>两人共同</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 第五阶段 -->
+        <div class="phase-card" id="phase5">
+            <div class="phase-header">&#9992; 第五阶段：旅行婚礼执行准备（2027.01 - 04）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>要求/产出</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="pill">2月15日</span></td><td>购买/租赁轻婚纱、礼服到位</td><td>轻便易携带，适合旅行；新郎西装简化</td><td>女为主</td></tr>
+                        <tr><td><span class="pill">3月1日</span></td><td>准备旅行物品、戒指、誓词卡、小道具</td><td>清单核对，避免遗漏</td><td>两人分头</td></tr>
+                        <tr><td><span class="pill">3月31日</span></td><td>确认所有预订，办理签证（如需）</td><td>日本需签证，三亚免签</td><td>两人分头</td></tr>
+                        <tr><td><span class="pill">4月15日</span></td><td>抵达旅行目的地，提前适应</td><td>预留1-2天休息再仪式</td><td>两人（+父母/朋友）</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 第六阶段 -->
+        <div class="phase-card" id="phase6">
+            <div class="phase-header">&#128142; 第六阶段：旅行婚礼（2027.04 - 05）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>日期</th><th>环节</th><th>要求/产出</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td>出发前1-2天</td><td>抵达目的地，休息适应</td><td>调整时差，确认天气</td><td>两人</td></tr>
+                        <tr><td>仪式当天</td><td>自然醒，早餐，化妆</td><td>不赶时间，享受过程</td><td>女为主</td></tr>
+                        <tr><td></td><td>First Look（新郎第一次见新娘穿婚纱）</td><td>私密时刻，摄影师记录</td><td>摄影师</td></tr>
+                        <tr><td><strong>核心</strong></td><td><strong>仪式：入场、誓词、交换戒指、拥吻</strong></td><td>&#128142; 核心产出：婚礼仪式完成</td><td>策划师统筹</td></tr>
+                        <tr><td></td><td>旅拍：目的地风景+新人互动</td><td>出片率高，像电影</td><td>摄影师</td></tr>
+                        <tr><td></td><td>日落庆祝：香槟、晚餐、父母/朋友致辞（如有）</td><td>轻松庆祝，无应酬</td><td>两人</td></tr>
+                        <tr><td>仪式后</td><td>继续旅行/蜜月</td><td>无需二次安排蜜月</td><td>两人</td></tr>
+                        <tr><td><strong>全程</strong></td><td>拍摄素材用于答谢宴播放</td><td>5-10分钟精华视频 + 精选照片</td><td>摄影师</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-box">
+                <strong>目的地选择建议：</strong><br><br>
+                <table style="min-width:auto;font-size:0.84rem;">
+                    <tr><th style="background:#fdf7f1;padding:8px 14px;border-radius:6px 0 0 0;">目的地</th><th style="background:#fdf7f1;padding:8px 14px;">适合谁</th><th style="background:#fdf7f1;padding:8px 14px;">预算</th><th style="background:#fdf7f1;padding:8px 14px;border-radius:0 6px 0 0;">父母同行难度</th></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);"><strong>三亚</strong></td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">父母想同行、预算有限、怕麻烦</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">2-4万</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">低（国内，飞行短）</td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);"><strong>日本（京都/北海道）</strong></td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">追求仪式感、四季风景、出片率高</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">3-6万</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">中（需签证，飞行3小时）</td></tr>
+                    <tr><td style="padding:8px 14px;"><strong>大理/丽江</strong></td><td style="padding:8px 14px;">预算有限、喜欢国内风景、父母易同行</td><td style="padding:8px 14px;">1-3万</td><td style="padding:8px 14px;">低（国内，飞行短）</td></tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- 第七阶段 -->
+        <div class="phase-card" id="phase7">
+            <div class="phase-header">&#127881; 第七阶段：答谢宴（2027.05 - 06）</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>最晚完成时间</th><th>Todo</th><th>要求/产出</th><th>负责人</th></tr></thead>
+                    <tbody>
+                        <tr><td><span class="pill">回国后1周内</span></td><td>确定答谢宴日期、餐厅、菜单</td><td>2027年6月</td><td>两人与父母</td></tr>
+                        <tr><td><span class="pill">回国后2周内</span></td><td>制作旅行婚礼精华视频（5-10分钟）</td><td>用于答谢宴播放</td><td>摄影师/新人</td></tr>
+                        <tr><td><span class="pill">回国后3周内</span></td><td>发送邀请（微信/电话，不发请柬）</td><td>"我们旅行结婚了，6月X日请大家吃饭分享幸福"</td><td>各自分发</td></tr>
+                        <tr><td><span class="pill">答谢宴前1周</span></td><td>确认人数、准备致辞、确认播放设备</td><td>简单准备，不复杂</td><td>两人</td></tr>
+                        <tr><td><strong>答谢宴当天</strong></td><td>播放旅行婚礼视频</td><td>5-10分钟精华版</td><td>两人</td></tr>
+                        <tr><td></td><td>新人简单致辞</td><td>"我们去XX旅行结婚了，今天请大家吃饭分享幸福"</td><td>两人</td></tr>
+                        <tr><td></td><td>父母致辞（如需）</td><td>感谢来宾</td><td>父母</td></tr>
+                        <tr><td></td><td>吃饭、敬酒、收祝福</td><td>不收礼金或仅收长辈祝福</td><td>两人</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="note-box">
+                <strong>答谢宴形式建议：</strong><br><br>
+                <table style="min-width:auto;font-size:0.84rem;">
+                    <tr><th style="background:#fdf7f1;padding:8px 14px;border-radius:6px 0 0 0;">形式</th><th style="background:#fdf7f1;padding:8px 14px;">规模</th><th style="background:#fdf7f1;padding:8px 14px;">成本</th><th style="background:#fdf7f1;padding:8px 14px;border-radius:0 6px 0 0;">适合谁</th></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);"><strong>餐厅包间</strong></td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">亲戚+朋友（5-8桌）</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">1-2万</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">正常社交需求</td></tr>
+                    <tr><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);"><strong>酒店小型宴会厅</strong></td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">亲戚+朋友+同事（10-15桌）</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">2-4万</td><td style="padding:8px 14px;border-bottom:1px solid var(--border-light);">父母需要面子</td></tr>
+                    <tr><td style="padding:8px 14px;"><strong>分批次请客</strong></td><td style="padding:8px 14px;">父母请亲戚，新人请朋友</td><td style="padding:8px 14px;">灵活</td><td style="padding:8px 14px;">两边需求不同</td></tr>
+                </table>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- 三、日历视图 -->
+    <section id="calendar">
+        <div class="section-title">&#128197; 2026年5-12月日历视图（含最晚完成时间）<span class="line"></span></div>
+        <div class="cal-section">
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年5月</div>
+                <div class="cal-item"><span class="cal-date">02 六</span><span class="cal-tag key">&#128142; 父母见面</span></div>
+                <div class="cal-item"><span class="cal-date">03 日</span>整理见面结论</div>
+                <div class="cal-item"><span class="cal-date">10 日</span>&#128161; 三金/钻戒购买截止 / 北京购房策略对齐截止</div>
+                <div class="cal-item"><span class="cal-date">17 日</span>线上选房截止 / &#128161; 证件照拍摄截止</div>
+                <div class="cal-item"><span class="cal-date">31 日</span>北京第一轮看房截止</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年6月</div>
+                <div class="cal-item"><span class="cal-date">14 日</span>北京第二轮看房截止</div>
+                <div class="cal-item"><span class="cal-date">30 日</span><span class="cal-tag tip">&#128161;</span> 婚纱照拍摄截止 / &#128161; 婚前体检截止</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年7月</div>
+                <div class="cal-item"><span class="cal-date">31 日</span>继续看房或等待 / <span class="cal-tag tip">&#128161;</span> 婚礼策划咨询截止</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年8月</div>
+                <div class="cal-item"><span class="cal-date">15 日</span>代县购房需求明确截止</div>
+                <div class="cal-item"><span class="cal-date">31 日</span>代县看房截止 / 北京谈判启动</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年9月</div>
+                <div class="cal-item"><span class="cal-date">15 日</span>北京交定金截止 / 代县签约截止 / <span class="cal-tag tip">&#128161;</span> 婚纱礼服试穿截止</div>
+                <div class="cal-item"><span class="cal-date">20 日</span>订婚日期确定</div>
+                <div class="cal-item"><span class="cal-date">25 日</span>订婚场所流程确认</div>
+                <div class="cal-item"><span class="cal-date">26-27</span><span class="cal-tag key">&#128142; 订婚仪式</span>（或10.10-11）</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年10月</div>
+                <div class="cal-item"><span class="cal-date">10-11</span><span class="cal-tag key">&#128142; 订婚仪式</span>（备选日期）</div>
+                <div class="cal-item"><span class="cal-date">31 日</span>旅行婚礼方案确定 / 答谢宴方案确定 / <span class="cal-tag tip">&#128161;</span> 答谢宴餐厅踩点截止</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年11月</div>
+                <div class="cal-item"><span class="cal-date">15 日</span><span class="cal-tag key">&#128142; 领证截止</span> / 机票酒店预订截止</div>
+                <div class="cal-item"><span class="cal-date">30 日</span>婚礼策划摄影确定</div>
+            </div>
+
+            <div class="cal-block">
+                <div class="cal-month-title">&#128197; 2026年12月</div>
+                <div class="cal-item"><span class="cal-date">31 日</span>旅行婚礼流程服装誓词确定</div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- 四、关键决策检查点 -->
+    <section id="checkpoints">
+        <div class="section-title">&#9989; 关键决策检查点（含最晚完成时间）<span class="line"></span></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>检查点</th><th>最晚日期</th><th>决策内容</th><th>必须完成</th></tr></thead>
+                <tbody>
+                    <tr><td>检查点1</td><td>04.27</td><td>两人内部是否对齐：彩礼、订婚时间、旅行婚礼目的地倾向？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点2</td><td>05.02</td><td>父母见面是否敲定：<strong>彩礼数额、订婚时间</strong>？<strong>旅行婚礼态度是否明确？</strong></td><td>&#10003;</td></tr>
+                    <tr><td>检查点3</td><td>05.10</td><td>&#128161; 三金/钻戒是否已购买？领证证件照是否已拍？</td><td><span class="pill gold">建议完成</span></td></tr>
+                    <tr><td>检查点4</td><td>06.30</td><td>&#128161; 婚纱照是否已拍摄？婚前体检是否已完成？</td><td><span class="pill gold">建议完成</span></td></tr>
+                    <tr><td>检查点5</td><td>07.31</td><td>&#128161; 婚礼策划咨询是否已完成？北京看房进度？</td><td><span class="pill gold">建议完成</span></td></tr>
+                    <tr><td>检查点6</td><td>08.31</td><td>北京是否已确定目标房源？代县是否已启动？</td><td><span class="pill muted">不必须</span></td></tr>
+                    <tr><td>检查点7</td><td>09.15</td><td>&#128161; 婚纱礼服是否已试穿/定制？</td><td><span class="pill gold">建议完成</span></td></tr>
+                    <tr><td>检查点8</td><td>09.20</td><td>订婚具体日期是否确定？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点9</td><td>10.31</td><td>旅行婚礼方案是否确定？答谢宴方案是否确定？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点10</td><td>11.15</td><td>是否已领证？机票酒店是否已预订？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点11</td><td>12.31</td><td>旅行婚礼策划/流程/服装是否确定？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点12</td><td>2027.02.15</td><td>轻婚纱/礼服是否到位？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点13</td><td>2027.03.31</td><td>签证/旅行物品是否准备完毕？</td><td>&#10003;</td></tr>
+                    <tr><td>检查点14</td><td>2027.05.31</td><td>答谢宴餐厅/菜单是否确定？视频是否制作完成？</td><td>&#10003;</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- 五、男女分工 -->
+    <section id="division">
+        <div class="section-title">&#128101; 男女分工（最终版）<span class="line"></span></div>
+        <div class="table-wrap">
+            <table>
+                <thead><tr><th>时间段</th><th>男方</th><th>女方</th><th>共同</th></tr></thead>
+                <tbody>
+                    <tr>
+                        <td><strong>04.25-05.02</strong></td>
+                        <td>准备见面礼、主导见面</td>
+                        <td>餐厅协调、家庭整理</td>
+                        <td>内部对齐（聚焦彩礼、订婚时间，试探旅行婚礼）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>05.03-09.30</strong></td>
+                        <td>北京贷款办理、代县远程决策、三金/钻戒陪同购买</td>
+                        <td>北京房源筛选、设计审美、婚纱照主导</td>
+                        <td>北京周末看房/谈判/签约、婚纱照拍摄、婚前体检</td>
+                    </tr>
+                    <tr>
+                        <td><strong>09.01-10.11</strong></td>
+                        <td>礼金准备、场地预订、高铁票预订</td>
+                        <td>仪式流程、物品清单</td>
+                        <td>订婚执行（不聊买房）</td>
+                    </tr>
+                    <tr>
+                        <td><strong>10.12-12.31</strong></td>
+                        <td>领证配合、旅行婚礼机票预订、答谢宴场地跟进</td>
+                        <td>旅行婚礼策划对接、摄影沟通、答谢宴菜单</td>
+                        <td>领证、确定目的地+日期、答谢宴方案、餐厅踩点</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2027.01-04</strong></td>
+                        <td>旅行物品准备、签证办理（如需）</td>
+                        <td>轻婚纱/礼服准备、化妆沟通</td>
+                        <td>行程确认、誓词准备</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2027.04-05</strong></td>
+                        <td>旅行婚礼参与者</td>
+                        <td>旅行婚礼主角+化妆</td>
+                        <td>&#128142; 旅行婚礼执行</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2027.05-06</strong></td>
+                        <td>答谢宴场地跟进、男方宾客邀请</td>
+                        <td>答谢宴视频制作、女方宾客邀请</td>
+                        <td>&#128142; 答谢宴执行</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <div class="footer">
+        <p>旅行婚礼+答谢宴 &#183; 全程执行手册 &copy; 2026-2027</p>
+        <p style="font-size:0.7rem;">放缓节奏 &#183; 享受旅程 &#183; 幸福绵长</p>
     </div>
 
-    <!-- 轻量脚本：导航高亮 + 平滑滚动 -->
-    <script>
-        (function() {
-            var navLinks = document.querySelectorAll('.nav a[href^="#"]');
-            var sections = [];
-            navLinks.forEach(function(link) {
-                var href = link.getAttribute('href');
-                if (href && href.startsWith('#')) {
-                    var el = document.querySelector(href);
-                    if (el) sections.push({ link: link, el: el });
-                }
-            });
+</div>
 
-            navLinks.forEach(function(a) {
-                a.addEventListener('click', function(e) {
-                    var href = this.getAttribute('href');
-                    if (href && href.startsWith('#')) {
-                        e.preventDefault();
-                        var target = document.querySelector(href);
-                        if (target) {
-                            var offset = 64;
-                            var top = target.getBoundingClientRect().top + window.pageYOffset - offset;
-                            window.scrollTo({ top: top, behavior: 'smooth' });
-                        }
-                    }
-                });
-            });
-
-            function updateActiveNav() {
-                var currentId = '';
-                var scrollTop = window.pageYOffset + 80;
-                for (var i = sections.length - 1; i >= 0; i--) {
-                    if (sections[i].el.offsetTop <= scrollTop) {
-                        currentId = sections[i].link.getAttribute('href');
-                        break;
-                    }
+<script>
+(function() {
+    var navLinks = document.querySelectorAll('.nav a[href^="#"]');
+    var sections = [];
+    navLinks.forEach(function(link) {
+        var href = link.getAttribute('href');
+        if (href && href.startsWith('#')) {
+            var el = document.querySelector(href);
+            if (el) sections.push({ link: link, el: el });
+        }
+    });
+    navLinks.forEach(function(a) {
+        a.addEventListener('click', function(e) {
+            var href = this.getAttribute('href');
+            if (href && href.startsWith('#')) {
+                e.preventDefault();
+                var target = document.querySelector(href);
+                if (target) {
+                    var top = target.getBoundingClientRect().top + window.pageYOffset - 64;
+                    window.scrollTo({ top: top, behavior: 'smooth' });
                 }
-                navLinks.forEach(function(a) {
-                    if (a.getAttribute('href').startsWith('#')) {
-                        a.classList.toggle('active', a.getAttribute('href') === currentId);
-                    }
-                });
             }
-
-            window.addEventListener('scroll', updateActiveNav, { passive: true });
-            updateActiveNav();
-        })();
-    </script>
+        });
+    });
+    function updateActiveNav() {
+        var currentId = '';
+        var scrollTop = window.pageYOffset + 80;
+        for (var i = sections.length - 1; i >= 0; i--) {
+            if (sections[i].el.offsetTop <= scrollTop) {
+                currentId = sections[i].link.getAttribute('href');
+                break;
+            }
+        }
+        navLinks.forEach(function(a) {
+            if (a.getAttribute('href').startsWith('#')) {
+                a.classList.toggle('active', a.getAttribute('href') === currentId);
+            }
+        });
+    }
+    window.addEventListener('scroll', updateActiveNav, { passive: true });
+    updateActiveNav();
+})();
+</script>
 
 </body>
 </html>
