@@ -67,32 +67,50 @@ function closePasswordModal() {
 function enableEditingMode() {
     isEditingMode = true;
     document.body.classList.add('editing-mode');
-    
+
     // 显示编辑按钮
     document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
         btn.classList.remove('hidden');
     });
-    
+
     // 显示添加按钮
     document.querySelectorAll('.add-item-btn').forEach(btn => {
         btn.classList.remove('hidden');
     });
+
+    // 显示照片添加按钮
+    const addPhotoBtn = document.getElementById('addPhotoBtn');
+    if (addPhotoBtn) addPhotoBtn.classList.remove('hidden');
+
+    // 重新渲染照片（显示删除按钮）
+    if (typeof renderPhotos === 'function') {
+        renderPhotos();
+    }
 }
 
 // 关闭编辑模式
 function disableEditingMode() {
     isEditingMode = false;
     document.body.classList.remove('editing-mode');
-    
+
     // 隐藏编辑按钮
     document.querySelectorAll('.edit-toggle-btn').forEach(btn => {
         btn.classList.add('hidden');
     });
-    
+
     // 隐藏添加按钮
     document.querySelectorAll('.add-item-btn').forEach(btn => {
         btn.classList.add('hidden');
     });
+
+    // 隐藏照片添加按钮
+    const addPhotoBtn = document.getElementById('addPhotoBtn');
+    if (addPhotoBtn) addPhotoBtn.classList.add('hidden');
+
+    // 重新渲染照片（隐藏删除按钮）
+    if (typeof renderPhotos === 'function') {
+        renderPhotos();
+    }
 }
 
 // 编辑开关按钮

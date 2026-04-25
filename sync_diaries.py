@@ -14,7 +14,7 @@ import os
 import re
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 try:
@@ -53,20 +53,59 @@ def parse_year_from_title(title: str) -> Optional[int]:
     return None
 
 
-def parse_month_day_from_remind_time(remind_time: Optional[int]) -> tuple[Optional[int], Optional[int]]:
+def parse_iso_duration(s: str):
     """
-    从滴答任务的提醒时间（毫秒时间戳）解析月和日。
-    返回：(month, day)，解析失败返回 (None, None)
+    解析滴答清单 reminders 字段的 ISO 8601 持续时间格式。
+    例如: 'TRIGGER:P0DT9H0M0S' -> timedelta(hours=9)
+         'TRIGGER:PT0S'       -> timedelta(0)
+         'TRIGGER:-PT0S'      -> timedelta(0)
     """
-    if not remind_time:
-        return None, None
+    if not s or not s.startswith("TRIGGER:"):
+        return None
+    dur = s.split(":", 1)[1]
+    # P0DT9H0M0S → 9小时
+    match = re.match(r"P(\d+)DT(\d+)H(\d+)M(\d+)S", dur)
+    if match:
+        d, h, m, s2 = map(int, match.groups())
+        return timedelta(days=d, hours=h, minutes=m, seconds=s2)
+    # PT0S / -PT0S → 0秒
+    if dur in ("T0S", "-T0S"):
+        return timedelta(0)
+    return None
+
+
+def parse_month_day_from_startdate_reminders(task: dict):
+    """
+    从滴答任务中提取月和日。
     
-    try:
-        # 滴答的 remindTime 是毫秒时间戳
-        dt = datetime.fromtimestamp(remind_time / 1000, tz=timezone.utc)
-        return dt.month, dt.day
-    except (ValueError, OSError, OverflowError):
+    滴答 API 中 remindTime 始终为 null，实际提醒时间由：
+      - startDate：任务开始/计划日期（ISO 8601 字符串，如 "2027-03-19T16:00:00.000+0000"）
+      - reminders[0]：ISO 8601 持续时间，表示从 startDate 偏移多久后提醒
+        （如 'TRIGGER:P0DT9H0M0S' = startDate + 9小时）
+    
+    当 reminders 为 'TRIGGER:PT0S' 时，提醒时间 = startDate 本身。
+    """
+    start_str = task.get("startDate", "") or ""
+    reminders = task.get("reminders") or []
+
+    if not start_str:
         return None, None
+
+    try:
+        # startDate 格式: "2027-03-19T16:00:00.000+0000"
+        date_part = start_str[:19]  # 取到秒 "2027-03-19T16:00:00"
+        start_dt = datetime.strptime(date_part, "%Y-%m-%dT%H:%M:%S").replace(tzinfo=timezone.utc)
+    except (ValueError, OSError):
+        return None, None
+
+    if reminders:
+        td = parse_iso_duration(reminders[0])
+        if td is not None:
+            rem_dt = start_dt + td
+            return rem_dt.month, rem_dt.day
+
+    # 无 reminders → 用 startDate 本身
+    return start_dt.month, start_dt.day
 
 
 def parse_date_from_content(content: str, fallback_year: Optional[int] = None) -> Optional[str]:
@@ -167,9 +206,8 @@ def tasks_to_diaries(tasks: list) -> list:
         # 1. 从标题【】中提取年份
         year = parse_year_from_title(title)
         
-        # 2. 从提醒时间获取月和日
-        remind_time = t.get("remindTime")
-        month, day = parse_month_day_from_remind_time(remind_time)
+        # 2. 从 startDate + reminders 计算月和日
+        month, day = parse_month_day_from_startdate_reminders(t)
         
         # 3. 组装日期
         date_str = None
@@ -296,6 +334,7 @@ def test_date_parser():
     
     print("\n📅 正文日期解析测试（带 fallback 年份）：")
     print("-" * 60)
+    from datetime import datetime
     content_cases = [
         ("2026.03.20", "2026-03-20"),
         ("2026-03-20", "2026-03-20"),
@@ -322,21 +361,30 @@ def test_date_parser():
         print(f"{status} \"{text[:25]}...\" → {result} (期望: {expected})")
     print("-" * 60)
     
-    print("\n📅 提醒时间戳解析测试：")
+    print("\n📅 startDate + reminders 解析测试：")
     print("-" * 60)
-    # 2026-03-20 00:00:00 UTC 的毫秒时间戳
-    timestamp_cases = [
-        (1742428800000, (3, 20)),  # 2026-03-20 00:00:00 UTC
-        (1742428800000 + 3600000, (3, 20)),  # 2026-03-20 01:00:00 UTC
-        (None, (None, None)),
-        (0, (None, None)),
+    # 模拟任务字典
+    def make_task(start_str, reminders_list):
+        return {"startDate": start_str, "reminders": reminders_list}
+
+    iso_cases = [
+        # (task_dict, expected_monthday_tuple, description)
+        (make_task("2027-03-19T16:00:00.000+0000", ["TRIGGER:P0DT9H0M0S"]), (3, 20), "P0DT9H = +9小时 → 3/20"),
+        (make_task("2027-02-09T23:30:00.000+0000", ["TRIGGER:PT0S"]), (2, 9), "PT0S = +0秒 → 2/9"),
+        (make_task("2027-01-17T02:30:00.000+0000", ["TRIGGER:PT0S"]), (1, 17), "PT0S → 1/17"),
+        (make_task("2027-04-12T16:00:00.000+0000", ["TRIGGER:PT0S"]), (4, 12), "PT0S → 4/12"),
+        (make_task("2027-04-01T15:00:00.000+0000", ["TRIGGER:PT0S"]), (4, 1), "PT0S → 4/1"),
+        (make_task("", []), (None, None), "无 startDate"),
+        (make_task("2027-03-19T16:00:00.000+0000", []), (3, 19), "无 reminders → 用 startDate"),
+        (make_task("2027-03-19T16:00:00.000+0000", ["TRIGGER:-PT0S"]), (3, 19), "TRIGGER:-PT0S → 3/19"),
+        (make_task("2027-07-16T16:00:00.000+0000", ["TRIGGER:P1DT0H0M0S"]), (7, 17), "P1D = +1天 → 7/17"),
     ]
-    for ts, expected in timestamp_cases:
-        result = parse_month_day_from_remind_time(ts)
+    for task, expected, desc in iso_cases:
+        result = parse_month_day_from_startdate_reminders(task)
         status = "✅" if result == expected else "❌"
         if result != expected:
             all_passed = False
-        print(f"{status} {ts} → {result} (期望: {expected})")
+        print(f"{status} {desc}: {result} (期望: {expected})")
     print("-" * 60)
     
     if all_passed:
