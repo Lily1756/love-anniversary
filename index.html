@@ -2443,6 +2443,20 @@
         ];
 
         // 加载数据
+        // 带超时的 fetch 包装函数
+        async function fetchWithTimeout(url, options = {}, timeout = 5000) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeout);
+            try {
+                const resp = await fetch(url, { ...options, signal: controller.signal });
+                clearTimeout(timeoutId);
+                return resp;
+            } catch (e) {
+                clearTimeout(timeoutId);
+                throw e;
+            }
+        }
+
         async function loadData() {
             let stored = null;
             try { stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null'); } catch {}
@@ -2455,16 +2469,16 @@
                 base.anniversaryDate = '2025-05-17'; // 纪念日：2025-05-17
             }
 
-            // 加载 diaries.json
+            // 加载 diaries.json（5秒超时）
             try {
-                const resp = await fetch('diaries.json?t=' + Date.now());
+                const resp = await fetchWithTimeout('diaries.json?t=' + Date.now(), {}, 5000);
                 if (resp.ok) {
                     const json = await resp.json();
                     if (Array.isArray(json) && json.length > 0) {
                         diariesData = json;
                     }
                 }
-            } catch {}
+            } catch { /* 超时或网络错误，静默处理 */ }
 
             // 如果 diaries.json 为空，使用静态数据
             if (diariesData.length === 0) {
@@ -2821,8 +2835,8 @@
 
             let albums = [];
             try {
-                const resp = await fetch('data/photos.json?t=' + Date.now());
-                if (resp.ok) {
+                const resp = await fetchWithTimeout('data/photos.json?t=' + Date.now(), {}, 5000);
+                if (resp && resp.ok) {
                     const data = await resp.json();
                     if (Array.isArray(data) && data.length > 0) {
                         // 判断是否是新相册结构（每个元素有 photos 数组）
@@ -2901,8 +2915,8 @@
 
             let travels = [];
             try {
-                const resp = await fetch('data/travels.json?t=' + Date.now());
-                if (resp.ok) {
+                const resp = await fetchWithTimeout('data/travels.json?t=' + Date.now(), {}, 5000);
+                if (resp && resp.ok) {
                     const data = await resp.json();
                     if (Array.isArray(data) && data.length > 0) {
                         travels = data;
@@ -2939,8 +2953,8 @@
 
             let wishes = [];
             try {
-                const resp = await fetch('data/wishes.json?t=' + Date.now());
-                if (resp.ok) {
+                const resp = await fetchWithTimeout('data/wishes.json?t=' + Date.now(), {}, 5000);
+                if (resp && resp.ok) {
                     const data = await resp.json();
                     if (Array.isArray(data) && data.length > 0) {
                         wishes = data;
@@ -2984,8 +2998,8 @@
 
             let capsules = [];
             try {
-                const resp = await fetch('data/capsules.json?t=' + Date.now());
-                if (resp.ok) {
+                const resp = await fetchWithTimeout('data/capsules.json?t=' + Date.now(), {}, 5000);
+                if (resp && resp.ok) {
                     const data = await resp.json();
                     if (Array.isArray(data) && data.length > 0) {
                         capsules = data;
@@ -3121,10 +3135,10 @@
             }
 
             try {
-                const resp = await fetch(`https://api.dida365.com/open/v1/project/${projectId}/data`, {
+                const resp = await fetchWithTimeout(`https://api.dida365.com/open/v1/project/${projectId}/data`, {
                     headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!resp.ok) throw new Error('API 请求失败');
+                }, 10000);
+                if (!resp || !resp.ok) throw new Error('API 请求失败');
 
                 const data = await resp.json();
                 const tasks = data.tasks || [];
@@ -3195,8 +3209,8 @@
             // 1. 情书数量 - 直接从 diaries.json 获取最新数据
             let lettersCount = 0;
             try {
-                const diariesResp = await fetch('diaries.json?t=' + Date.now());
-                if (diariesResp.ok) {
+                const diariesResp = await fetchWithTimeout('diaries.json?t=' + Date.now(), {}, 5000);
+                if (diariesResp && diariesResp.ok) {
                     const diaries = await diariesResp.json();
                     lettersCount = Array.isArray(diaries) ? diaries.length : 0;
                     diariesData = diaries; // 更新全局变量
@@ -3208,8 +3222,8 @@
             // 2. 照片数量 - 从 photos.json 相册结构获取（计算所有相册的照片总数）
             let photosCount = 0;
             try {
-                const photosResp = await fetch('data/photos.json?t=' + Date.now());
-                if (photosResp.ok) {
+                const photosResp = await fetchWithTimeout('data/photos.json?t=' + Date.now(), {}, 5000);
+                if (photosResp && photosResp.ok) {
                     const photos = await photosResp.json();
                     if (Array.isArray(photos) && photos.length > 0) {
                         // 新相册结构：计算所有照片数量
@@ -3229,8 +3243,8 @@
             // 3. 足迹数量 - 从 travels.json 获取
             let travelsCount = 0;
             try {
-                const travelsResp = await fetch('data/travels.json?t=' + Date.now());
-                if (travelsResp.ok) {
+                const travelsResp = await fetchWithTimeout('data/travels.json?t=' + Date.now(), {}, 5000);
+                if (travelsResp && travelsResp.ok) {
                     const travels = await travelsResp.json();
                     travelsCount = Array.isArray(travels) ? travels.length : 0;
                 }
@@ -3241,8 +3255,8 @@
             // 4. 愿望完成率 - 从 wishes.json 获取
             let wishesRate = 0;
             try {
-                const wishesResp = await fetch('data/wishes.json?t=' + Date.now());
-                if (wishesResp.ok) {
+                const wishesResp = await fetchWithTimeout('data/wishes.json?t=' + Date.now(), {}, 5000);
+                if (wishesResp && wishesResp.ok) {
                     const wishes = await wishesResp.json();
                     const wishesArray = Array.isArray(wishes) ? wishes : [];
                     const completed = wishesArray.filter(w => w.completed).length;
@@ -3255,8 +3269,8 @@
             // 5. 时间胶囊数量 - 从 capsules.json 获取
             let capsulesCount = 0;
             try {
-                const capsulesResp = await fetch('data/capsules.json?t=' + Date.now());
-                if (capsulesResp.ok) {
+                const capsulesResp = await fetchWithTimeout('data/capsules.json?t=' + Date.now(), {}, 5000);
+                if (capsulesResp && capsulesResp.ok) {
                     const capsules = await capsulesResp.json();
                     capsulesCount = Array.isArray(capsules) ? capsules.length : 0;
                 }
