@@ -37,6 +37,7 @@ python3 -m http.server 8080
 | 足迹地图 | `travels.html` | Leaflet + OpenStreetMap 地图 |
 | 愿望清单 | `wishes.html` | 愿望管理和进度追踪 |
 | 时间胶囊 | `time-capsule.html` | 未来时光留言 |
+| 婚礼手册 | `wedding.html` | 旅行婚礼全程执行手册 |
 | 音乐播放器 | `music-player.html` | 全局背景音乐 |
 
 ## 文件结构
@@ -63,14 +64,14 @@ love-site/
 ├── js/                     # JavaScript 模块
 │   ├── simple-auth.js      # 认证模块（GitHub PAT）
 │   ├── simple-edit.js      # 编辑模式（密码 2025）
-│   ├── editor.js           # 内容编辑器（CRUD）
-│   └── upload-photo.js     # 照片上传模块
+│   └── photos.js           # 照片墙业务逻辑（Cloudinary 上传）
 │
 ├── data/                   # JSON 数据
 │   ├── diaries.json        # 情书数据（32篇）
 │   ├── photos.json         # 照片元数据
 │   ├── travels.json        # 足迹数据
-│   └── wishes.json         # 愿望数据
+│   ├── wishes.json         # 愿望数据
+│   └── capsules.json       # 时间胶囊数据
 │
 ├── music/                  # 背景音乐
 │   └── once.mp3
@@ -88,16 +89,16 @@ love-site/
 - **GitHub PAT**: 需要在 GitHub Settings → Developer settings 生成
 
 ### 数据存储
-所有内容通过 GitHub API 存储到仓库的 JSON 文件中：
-- 照片上传到 `photos/` 目录
+内容通过 GitHub API 存储到仓库的 JSON 文件中，照片通过 Cloudinary 上传：
+- 照片上传到 Cloudinary（免费 25GB/月）
 - 元数据保存在 `data/photos.json`
 
 ## 技术栈
 
 - **前端**: HTML5 + CSS3 + Vanilla JavaScript
 - **地图**: Leaflet + OpenStreetMap
-- **存储**: GitHub API (REST)
-- **部署**: Cloudflare Pages + GitHub Pages
+- **存储**: GitHub API (REST) + Cloudinary（图片）
+- **部署**: GitHub Pages
 
 ## 开发指南
 
@@ -126,6 +127,7 @@ python3 sync_diaries.py
 
 ## 版本历史
 
+- **2026-04-26**: 代码重构（提取 photos.js，清理无用文件），照片上传迁移到 Cloudinary
 - **2026-04-25**: 完成照片上传、图标更新、Cloudflare Pages 部署
 - **2026-04-24**: 完成 GitHub OAuth 编辑系统、滴答同步
 - **2026-04-23**: 完成足迹地图、情书博物馆、照片墙基础功能
