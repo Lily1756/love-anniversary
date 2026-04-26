@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>上传调试工具</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+        h1 { color: #333; }
+        .section { background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0; }
+        .log { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 13px; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+        .log .error { color: #f48771; }
+        .log .success { color: #7ec699; }
+        .log .info { color: #9cdcfe; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 4px; border: 1px solid #ccc; }
+        button:hover { background: #e0e0e0; }
+        input[type="file"] { margin: 10px 0; }
+        .result { margin-top: 10px; padding: 10px; border-radius: 4px; }
+        .result.ok { background: #d4edda; color: #155724; }
+        .result.fail { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Cloudinary 上传调试工具</h1>
+
+    <div class="section">
+        <h3>1. 环境检测</h3>
+        <button onclick="checkEnv()">检测浏览器环境</button>
+        <div id="envResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>2. 网络连通性测试</h3>
+        <button onclick="testConnection()">测试 Cloudinary 连接</button>
+        <div id="connResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>3. 实际上传测试</h3>
+        <input type="file" id="testFile" accept="image/*">
+        <button onclick="testUpload()">上传测试</button>
+        <div id="uploadResult"></div>
+    </div>
+
+    <div class="section">
+        <h3>调试日志</h3>
+        <div class="log" id="log"></div>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+
+    <script>
+        const CLOUD_NAME = 'dcpzdsdxc';
+        const UPLOAD_PRESET = 'love_site_preset';
+        const UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`;
+
+        function log(msg, type = 'info') {
+            const el = document.getElementById('log');
+            const time = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            el.innerHTML += `<div class="${className}">[${time}] ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+        }
+
+        function clearLog() {
+            document.getElementById('log').innerHTML = '';
+        }
+
+        function checkEnv() {
+            const result = document.getElementById('envResult');
+            const info = {
+                'User Agent': navigator.userAgent,
+                'HTTPS': location.protocol === 'https:',
+                'Fetch API': typeof fetch !== 'undefined',
+                'FormData': typeof FormData !== 'undefined',
+                'AbortSignal.timeout': typeof AbortSignal !== 'undefined' && AbortSignal.timeout,
+                'URL': location.href,
+            };
+            let html = '<ul>';
+            for (const [k, v] of Object.entries(info)) {
+                html += `<li><strong>${k}:</strong> ${v}</li>`;
+            }
+            html += '</ul>';
+            result.innerHTML = html;
+            log('环境检测完成', 'success');
+        }
+
+        async function testConnection() {
+            const result = document.getElementById('connResult');
+            log('开始测试 Cloudinary 连接...');
+
+            try {
+                // 测试 OPTIONS 预检
+                log('发送 OPTIONS 预检请求...');
+                const optionsResp = await fetch(UPLOAD_URL, {
+                    method: 'OPTIONS',
+                    headers: {
+                        'Access-Control-Request-Method': 'POST',
+                        'Access-Control-Request-Headers': 'content-type',
+                    }
+                });
+                log(`OPTIONS 状态: ${optionsResp.status}`, optionsResp.ok ? 'success' : 'error');
+            } catch (e) {
+                log(`OPTIONS 失败: ${e.message}`, 'error');
+            }
+
+            try {
+                // 测试 POST（不带文件，应该返回 400）
+                log('发送空 POST 请求...');
+                const postResp = await fetch(UPLOAD_URL, {
+                    method: 'POST',
+                    body: new FormData()
+                });
+                const text = await postResp.text();
+                log(`POST 状态: ${postResp.status}`, postResp.status === 400 ? 'success' : 'error');
+                log(`POST 响应: ${text.substring(0, 200)}`);
+            } catch (e) {
+                log(`POST 失败: ${e.message}`, 'error');
+            }
+
+            result.innerHTML = '<div class="result ok">连接测试完成，查看日志</div>';
+        }
+
+        async function testUpload() {
+            const fileInput = document.getElementById('testFile');
+            const result = document.getElementById('uploadResult');
+
+            if (!fileInput.files[0]) {
+                result.innerHTML = '<div class="result fail">请先选择文件</div>';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            log(`准备上传: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`);
+
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('upload_preset', UPLOAD_PRESET);
+
+            try {
+                log('发送上传请求...');
+                const startTime = Date.now();
+                const response = await fetch(UPLOAD_URL, {
+                    method: 'POST',
+                    body: formData,
+                    signal: AbortSignal.timeout(30000)
+                });
+                const duration = Date.now() - startTime;
+
+                log(`响应状态: ${response.status} (${duration}ms)`, response.ok ? 'success' : 'error');
+
+                const data = await response.json();
+                log(`响应数据: ${JSON.stringify(data, null, 2).substring(0, 500)}`);
+
+                if (response.ok && data.secure_url) {
+                    result.innerHTML = `
+                        <div class="result ok">
+                            <p>✅ 上传成功！</p>
+                            <p>URL: <a href="${data.secure_url}" target="_blank">${data.secure_url}</a></p>
+                            <img src="${data.secure_url}" style="max-width: 200px; margin-top: 10px; border-radius: 8px;">
+                        </div>
+                    `;
+                    log('上传成功！', 'success');
+                } else {
+                    result.innerHTML = `<div class="result fail">❌ 上传失败: ${data.error?.message || '未知错误'}</div>`;
+                    log(`上传失败: ${data.error?.message || JSON.stringify(data)}`, 'error');
+                }
+            } catch (err) {
+                result.innerHTML = `<div class="result fail">❌ 请求异常: ${err.message}</div>`;
+                log(`请求异常: ${err.name}: ${err.message}`, 'error');
+                if (err.name === 'TypeError') {
+                    log('TypeError 通常表示网络被拦截或 CORS 问题', 'error');
+                }
+            }
+        }
+    </script>
+</body>
+</html>
