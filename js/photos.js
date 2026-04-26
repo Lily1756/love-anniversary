@@ -300,7 +300,7 @@
                     <img class="album-cover" src="${album.cover}" alt="${album.title}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect fill=%22%23F0E6E6%22 width=%22400%22 height=%22300%22/><text x=%22200%22 y=%22160%22 text-anchor=%22middle%22 fill=%22%23C4A8A2%22 font-size=%2240%22>📷</text></svg>'">
                     <span class="album-tag">${getTagLabel(album.tag)}</span>
                     <span class="album-count">${album.photos?.length || 0}张</span>
-                    ${editMode ? `<button class="album-delete" data-id="${album.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>` : ''}
+                    ${editMode ? `<button class="album-edit" data-id="${album.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button><button class="album-delete" data-id="${album.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>` : ''}
                 </div>
                 <div class="album-info">
                     <div class="album-title">${album.title}</div>
@@ -309,6 +309,13 @@
             `;
 
             card.querySelector('.album-cover-wrap').addEventListener('click', () => openAlbum(album));
+            const editBtn = card.querySelector('.album-edit');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openAlbumModal(album);
+                });
+            }
             const delBtn = card.querySelector('.album-delete');
             if (delBtn) {
                 delBtn.addEventListener('click', (e) => {
