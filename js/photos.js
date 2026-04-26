@@ -493,10 +493,11 @@
                 isLocal = true;
             }
 
-            albumCoverUrl = uploadedUrl;
+            albumCoverUrl = uploadedUrl; // 保存时用远程 URL
+            const previewUrl = URL.createObjectURL(compressed); // 预览用本地图片（瞬间加载）
             updateProgress(100, isLocal ? '完成（本地存储）' : '完成！');
             setTimeout(() => {
-                showCoverPreview(albumCoverUrl);
+                showCoverPreview(previewUrl);
                 progressArea.style.display = 'none';
                 uploadArea.classList.remove('uploading');
                 if (isLocal) {
