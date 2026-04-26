@@ -451,7 +451,6 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            formData.append('public_id', filename.split('.')[0]);
 
             updateProgress(60, '上传到服务器...');
 
@@ -487,6 +486,7 @@
             }, 500);
 
         } catch (err) {
+            console.error('[Cloudinary Upload Error]', err);
             if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('network')) {
                 updateProgress(70, '服务器不可用，转为本地存储...');
                 try {
@@ -647,7 +647,6 @@
             const formData = new FormData();
             formData.append('file', file);
             formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-            formData.append('public_id', filename.split('.')[0]);
 
             updateProgress(50, '上传到服务器...');
 
