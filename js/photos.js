@@ -59,9 +59,26 @@
     ];
 
     // ══════════════════════════════════════════════
+    //  动态注入编辑按钮样式（兼容旧版 HTML 缓存）
+    // ══════════════════════════════════════════════
+    function injectEditButtonStyles() {
+        if (document.getElementById('albumEditDynamicStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'albumEditDynamicStyle';
+        style.textContent = `
+            .album-edit { position: absolute; top: 8px; right: 44px; width: 32px; height: 32px; background: rgba(100, 149, 237, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; transition: all 0.2s; }
+            .album-edit:active { transform: scale(0.9); }
+            .edit-mode .album-edit { display: flex !important; }
+            .edit-mode .album-delete { display: flex !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // ══════════════════════════════════════════════
     //  初始化入口
     // ══════════════════════════════════════════════
     async function init() {
+        injectEditButtonStyles();
         await loadAlbums();
         setupEventListeners();
         renderAlbums();
@@ -304,7 +321,7 @@
                 </div>
                 <div class="album-info">
                     <div class="album-title">${album.title}</div>
-                    <div class="album-date">${album.date}</div>
+                    <div class="album-date">${album.date || ''}</div>
                 </div>
             `;
 
