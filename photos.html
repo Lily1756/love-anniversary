@@ -169,6 +169,35 @@
         .fab-edit:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(196,168,162,0.5); }
         .fab-edit:active { transform: scale(0.95); }
         .fab-edit.hidden { display: none !important; }
+
+        /* ── 拖拽上传区域 ── */
+        .upload-dropzone { border: 2px dashed var(--accent-primary); border-radius: var(--radius-md); padding: 32px 24px; text-align: center; background: var(--bg-secondary); transition: all 0.3s ease; cursor: pointer; }
+        .upload-dropzone:hover { background: var(--accent-soft); border-color: #a08080; }
+        .upload-dropzone.dragover { background: var(--accent-soft); border-color: var(--accent-primary); border-style: solid; transform: scale(1.02); }
+        .upload-dropzone.uploading { pointer-events: none; opacity: 0.7; }
+        .upload-icon { font-size: 2.5rem; margin-bottom: 12px; }
+        .upload-text { color: var(--text-dark); font-weight: 500; margin-bottom: 6px; }
+        .upload-hint { color: var(--text-muted); font-size: 0.8rem; }
+
+        /* ── 上传进度 ── */
+        .upload-progress-list { display: flex; flex-direction: column; gap: 8px; }
+        .upload-progress-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg-secondary); border-radius: var(--radius-sm); }
+        .upload-progress-thumb { width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+        .upload-progress-info { flex: 1; min-width: 0; }
+        .upload-progress-name { font-size: 0.85rem; color: var(--text-dark); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .upload-progress-bar { height: 4px; background: rgba(196,168,162,0.2); border-radius: 2px; margin-top: 6px; overflow: hidden; }
+        .upload-progress-fill { height: 100%; background: var(--accent-primary); border-radius: 2px; transition: width 0.3s ease; }
+        .upload-progress-status { font-size: 0.75rem; color: var(--text-muted); margin-top: 2px; }
+        .upload-progress-percent { font-size: 0.8rem; color: var(--accent-primary); font-weight: 600; }
+
+        /* ── 已上传照片列表 ── */
+        .uploaded-photos-list { display: flex; flex-wrap: wrap; gap: 10px; max-height: 200px; overflow-y: auto; padding: 12px; background: var(--bg-secondary); border-radius: var(--radius-sm); }
+        .uploaded-photo-item { position: relative; width: 80px; height: 80px; border-radius: 8px; overflow: hidden; background: white; }
+        .uploaded-photo-item img { width: 100%; height: 100%; object-fit: cover; }
+        .uploaded-photo-item .remove-btn { position: absolute; top: 4px; right: 4px; width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; color: #e74c3c; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.2s; }
+        .uploaded-photo-item:hover .remove-btn { opacity: 1; }
+        .uploaded-photo-item .caption-input { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px 6px; border: none; background: rgba(0,0,0,0.6); color: white; font-size: 10px; width: 100%; outline: none; }
+        .uploaded-photo-item .caption-input::placeholder { color: rgba(255,255,255,0.6); }
     </style>
 </head>
 <body>
@@ -277,37 +306,55 @@
 
     <!-- 添加照片模态框 -->
     <div class="modal-overlay" id="photoModal">
-        <div class="modal-box" style="max-width: 520px; max-height: 80vh; overflow-y: auto;">
+        <div class="modal-box" style="max-width: 560px; max-height: 85vh; overflow-y: auto;">
             <h3 class="modal-title">批量添加照片</h3>
             <div class="form-group"><label class="form-label">目标相册</label>
                 <select class="form-select" id="photoAlbumSelect"></select>
             </div>
             
-            <!-- 批量输入区域 -->
+            <!-- 拖拽上传区域 -->
             <div class="form-group">
-                <label class="form-label">照片列表 <span style="color: var(--text-muted); font-weight: normal;">(每行一张: URL|描述)</span></label>
-                <textarea class="form-input" id="photoBatchInput" rows="6" placeholder="https://example.com/photo1.jpg|海边日落
-https://example.com/photo2.jpg|开心时刻
-https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace; font-size: 0.85rem;"></textarea>
+                <label class="form-label">上传照片 <span style="color: var(--text-muted); font-weight: normal;">(支持拖拽或点击选择)</span></label>
+                <div class="upload-dropzone" id="uploadDropzone">
+                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+                    <div class="upload-icon">📁</div>
+                    <div class="upload-text">拖拽图片到此处，或点击选择文件</div>
+                    <div class="upload-hint">支持 JPG、PNG、GIF、WebP 格式</div>
+                </div>
             </div>
             
-            <!-- 快捷添加单张 -->
-            <div class="form-group" style="border-top: 1px dashed rgba(196,168,162,0.3); padding-top: 16px; margin-top: 16px;">
-                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="document.getElementById('singlePhotoToggle').click()">
-                    <input type="checkbox" id="singlePhotoToggle" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
-                    <span>添加单张照片</span>
+            <!-- 上传进度 -->
+            <div class="form-group" id="uploadProgressArea" style="display: none;">
+                <label class="form-label">上传进度</label>
+                <div class="upload-progress-list" id="uploadProgressList"></div>
+            </div>
+            
+            <!-- 已上传照片列表 -->
+            <div class="form-group" id="uploadedPhotosArea" style="display: none;">
+                <label class="form-label">已添加照片 <span id="uploadedCount" style="color: var(--accent-primary);"></span></label>
+                <div class="uploaded-photos-list" id="uploadedPhotosList"></div>
+            </div>
+            
+            <!-- 分割线 -->
+            <div style="border-top: 1px dashed rgba(196,168,162,0.3); padding-top: 16px; margin-top: 16px;">
+                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;" onclick="document.getElementById('urlInputToggle').click()">
+                    <input type="checkbox" id="urlInputToggle" style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
+                    <span>使用图片 URL 添加（高级）</span>
                 </label>
             </div>
             
-            <div id="singlePhotoArea" style="display: none;">
-                <div class="form-group"><label class="form-label">图片 URL</label><input class="form-input" id="photoUrlInput" placeholder="https://..."></div>
-                <div class="form-group"><label class="form-label">照片描述</label><input class="form-input" id="photoCaptionInput" placeholder="这一刻的回忆..." maxlength="100"></div>
-            </div>
-            
-            <!-- 预览区域 -->
-            <div class="form-group" id="batchPreviewArea" style="display: none;">
-                <label class="form-label">预览 <span id="batchCount" style="color: var(--accent-primary);"></span></label>
-                <div id="batchPreviewList" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm);"></div>
+            <!-- URL 输入区域（默认隐藏） -->
+            <div id="urlInputArea" style="display: none; margin-top: 12px;">
+                <div class="form-group">
+                    <label class="form-label">照片列表 <span style="color: var(--text-muted); font-weight: normal;">(每行一张: URL|描述)</span></label>
+                    <textarea class="form-input" id="photoBatchInput" rows="4" placeholder="https://example.com/photo1.jpg|海边日落
+https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-family: monospace; font-size: 0.85rem;"></textarea>
+                </div>
+                
+                <div class="form-group" id="batchPreviewArea" style="display: none;">
+                    <label class="form-label">预览 <span id="batchCount" style="color: var(--accent-primary);"></span></label>
+                    <div id="batchPreviewList" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 120px; overflow-y: auto; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm);"></div>
+                </div>
             </div>
             
             <div class="modal-actions">
@@ -727,24 +774,246 @@ https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace;
             showToast(editId ? '相册已更新' : '相册创建成功');
         }
 
+        // 全局上传队列
+        let uploadedPhotosQueue = [];
+
         function openPhotoModal() {
             const select = document.getElementById('photoAlbumSelect');
             select.innerHTML = albums.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+            
+            // 重置状态
+            uploadedPhotosQueue = [];
             document.getElementById('photoBatchInput').value = '';
-            document.getElementById('photoUrlInput').value = '';
-            document.getElementById('photoCaptionInput').value = '';
-            document.getElementById('singlePhotoToggle').checked = false;
-            document.getElementById('singlePhotoArea').style.display = 'none';
+            document.getElementById('urlInputToggle').checked = false;
+            document.getElementById('urlInputArea').style.display = 'none';
             document.getElementById('batchPreviewArea').style.display = 'none';
+            document.getElementById('uploadProgressArea').style.display = 'none';
+            document.getElementById('uploadedPhotosArea').style.display = 'none';
+            document.getElementById('uploadDropzone').classList.remove('uploading');
+            
             document.getElementById('photoModal').classList.add('active');
+            
+            // 绑定拖拽上传事件
+            setupDragUpload();
+            
+            // 绑定 URL 输入切换
+            document.getElementById('urlInputToggle').addEventListener('change', (e) => {
+                document.getElementById('urlInputArea').style.display = e.target.checked ? 'block' : 'none';
+            });
             
             // 绑定批量输入实时预览
             document.getElementById('photoBatchInput').addEventListener('input', updateBatchPreview);
-            document.getElementById('singlePhotoToggle').addEventListener('change', (e) => {
-                document.getElementById('singlePhotoArea').style.display = e.target.checked ? 'block' : 'none';
-                document.getElementById('batchPreviewArea').style.display = e.target.checked ? 'none' : 'block';
+        }
+        
+        // 设置拖拽上传
+        function setupDragUpload() {
+            const dropzone = document.getElementById('uploadDropzone');
+            const fileInput = document.getElementById('fileInput');
+            
+            // 点击选择文件
+            dropzone.onclick = () => fileInput.click();
+            
+            // 文件选择
+            fileInput.onchange = (e) => {
+                if (e.target.files.length > 0) {
+                    handleFiles(e.target.files);
+                }
+            };
+            
+            // 拖拽事件
+            dropzone.ondragover = (e) => {
+                e.preventDefault();
+                dropzone.classList.add('dragover');
+            };
+            
+            dropzone.ondragleave = () => {
+                dropzone.classList.remove('dragover');
+            };
+            
+            dropzone.ondrop = (e) => {
+                e.preventDefault();
+                dropzone.classList.remove('dragover');
+                if (e.dataTransfer.files.length > 0) {
+                    handleFiles(e.dataTransfer.files);
+                }
+            };
+        }
+        
+        // 处理上传的文件
+        async function handleFiles(files) {
+            const imageFiles = Array.from(files).filter(f => f.type.startsWith('image/'));
+            if (imageFiles.length === 0) {
+                showToast('请选择图片文件');
+                return;
+            }
+            
+            document.getElementById('uploadDropzone').classList.add('uploading');
+            document.getElementById('uploadProgressArea').style.display = 'block';
+            
+            const progressList = document.getElementById('uploadProgressList');
+            progressList.innerHTML = '';
+            
+            // 为每个文件创建进度项
+            const uploadTasks = imageFiles.map((file, index) => {
+                const itemId = `upload-${Date.now()}-${index}`;
+                const div = document.createElement('div');
+                div.className = 'upload-progress-item';
+                div.id = itemId;
+                div.innerHTML = `
+                    <div class="upload-progress-thumb" style="background: var(--bg-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">🖼️</div>
+                    <div class="upload-progress-info">
+                        <div class="upload-progress-name">${file.name}</div>
+                        <div class="upload-progress-bar"><div class="upload-progress-fill" style="width: 0%"></div></div>
+                        <div class="upload-progress-status">准备上传...</div>
+                    </div>
+                    <div class="upload-progress-percent">0%</div>
+                `;
+                progressList.appendChild(div);
+                
+                return uploadFileToGitHub(file, itemId);
+            });
+            
+            // 等待所有上传完成
+            const results = await Promise.all(uploadTasks);
+            
+            // 隐藏进度区域，显示已上传列表
+            document.getElementById('uploadProgressArea').style.display = 'none';
+            
+            // 添加成功的照片到队列
+            const successPhotos = results.filter(r => r.success);
+            if (successPhotos.length > 0) {
+                uploadedPhotosQueue.push(...successPhotos.map(r => ({
+                    src: r.url,
+                    caption: '',
+                    name: r.name
+                })));
+                renderUploadedPhotos();
+                showToast(`成功上传 ${successPhotos.length} 张照片`);
+            }
+            
+            const failedCount = results.length - successPhotos.length;
+            if (failedCount > 0) {
+                showToast(`${failedCount} 张照片上传失败`);
+            }
+            
+            document.getElementById('uploadDropzone').classList.remove('uploading');
+        }
+        
+        // 上传单个文件到 GitHub
+        async function uploadFileToGitHub(file, itemId) {
+            const item = document.getElementById(itemId);
+            const fill = item.querySelector('.upload-progress-fill');
+            const status = item.querySelector('.upload-progress-status');
+            const percent = item.querySelector('.upload-progress-percent');
+            const thumb = item.querySelector('.upload-progress-thumb');
+            
+            // 更新进度
+            const updateProgress = (p, msg) => {
+                fill.style.width = p + '%';
+                percent.textContent = p + '%';
+                if (msg) status.textContent = msg;
+            };
+            
+            try {
+                updateProgress(10, '读取文件...');
+                
+                // 读取文件为 base64
+                const base64 = await readFileAsBase64(file);
+                
+                updateProgress(30, '压缩中...');
+                
+                // 生成文件名
+                const ext = file.name.split('.').pop().toLowerCase();
+                const timestamp = Date.now();
+                const random = Math.random().toString(36).substr(2, 6);
+                const filename = `photos/upload/${timestamp}-${random}.${ext}`;
+                
+                updateProgress(50, '上传到 GitHub...');
+                
+                // 上传到 GitHub
+                const token = 'GITHUB_TOKEN_PLACEHOLDER';
+                const repo = 'Lily1756/love-anniversary';
+                const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Upload photo: ${file.name}`,
+                        content: base64
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '上传失败');
+                }
+                
+                const data = await response.json();
+                updateProgress(100, '完成');
+                
+                // 显示缩略图
+                const objectUrl = URL.createObjectURL(file);
+                thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+                
+                return { success: true, url: data.content.download_url, name: file.name };
+                
+            } catch (err) {
+                updateProgress(0, '失败: ' + err.message);
+                item.style.opacity = '0.5';
+                return { success: false, error: err.message, name: file.name };
+            }
+        }
+        
+        // 读取文件为 base64
+        function readFileAsBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    const base64 = reader.result.split(',')[1];
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
             });
         }
+        
+        // 渲染已上传照片列表
+        function renderUploadedPhotos() {
+            const area = document.getElementById('uploadedPhotosArea');
+            const list = document.getElementById('uploadedPhotosList');
+            const count = document.getElementById('uploadedCount');
+            
+            if (uploadedPhotosQueue.length === 0) {
+                area.style.display = 'none';
+                return;
+            }
+            
+            area.style.display = 'block';
+            count.textContent = `(${uploadedPhotosQueue.length}张)`;
+            
+            list.innerHTML = uploadedPhotosQueue.map((photo, index) => `
+                <div class="uploaded-photo-item" data-index="${index}">
+                    <img src="${photo.src}" alt="">
+                    <button class="remove-btn" onclick="removeUploadedPhoto(${index})">×</button>
+                    <input type="text" class="caption-input" placeholder="添加描述..." value="${photo.caption}" onchange="updatePhotoCaption(${index}, this.value)">
+                </div>
+            `).join('');
+        }
+        
+        // 移除已上传照片
+        window.removeUploadedPhoto = function(index) {
+            uploadedPhotosQueue.splice(index, 1);
+            renderUploadedPhotos();
+        };
+        
+        // 更新照片描述
+        window.updatePhotoCaption = function(index, caption) {
+            uploadedPhotosQueue[index].caption = caption;
+        };
         
         function updateBatchPreview() {
             const input = document.getElementById('photoBatchInput').value.trim();
@@ -789,46 +1058,42 @@ https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace;
             if (!album) { showToast('相册不存在'); return; }
             if (!album.photos) album.photos = [];
             
-            const isSingleMode = document.getElementById('singlePhotoToggle').checked;
+            let addedCount = 0;
             
-            if (isSingleMode) {
-                // 单张模式
-                const url = document.getElementById('photoUrlInput').value.trim();
-                const caption = document.getElementById('photoCaptionInput').value.trim();
-                if (!url) { showToast('请输入图片 URL'); return; }
-                album.photos.push({ src: url, caption });
-                if (!album.cover) album.cover = url;
-                saveAndRender();
-                showToast('照片添加成功');
-            } else {
-                // 批量模式
-                const input = document.getElementById('photoBatchInput').value.trim();
-                if (!input) { showToast('请输入照片列表'); return; }
-                
-                const lines = input.split('\n').filter(line => line.trim());
-                let addedCount = 0;
-                
-                lines.forEach(line => {
-                    const parts = line.split('|');
-                    const url = parts[0].trim();
-                    const caption = parts[1] ? parts[1].trim() : '';
-                    if (url) {
-                        album.photos.push({ src: url, caption });
-                        addedCount++;
-                    }
+            // 1. 处理拖拽上传的照片队列
+            if (uploadedPhotosQueue.length > 0) {
+                uploadedPhotosQueue.forEach(photo => {
+                    album.photos.push({ src: photo.src, caption: photo.caption });
+                    addedCount++;
                 });
-                
-                if (addedCount > 0) {
-                    if (!album.cover) album.cover = album.photos[0].src;
-                    saveAndRender();
-                    showToast(`成功添加 ${addedCount} 张照片`);
-                } else {
-                    showToast('没有有效的照片 URL');
-                    return;
+            }
+            
+            // 2. 处理 URL 批量输入（如果开启了 URL 输入模式）
+            const isUrlMode = document.getElementById('urlInputToggle').checked;
+            if (isUrlMode) {
+                const input = document.getElementById('photoBatchInput').value.trim();
+                if (input) {
+                    const lines = input.split('\n').filter(line => line.trim());
+                    lines.forEach(line => {
+                        const parts = line.split('|');
+                        const url = parts[0].trim();
+                        const caption = parts[1] ? parts[1].trim() : '';
+                        if (url) {
+                            album.photos.push({ src: url, caption });
+                            addedCount++;
+                        }
+                    });
                 }
             }
             
-            closeModal('photoModal');
+            if (addedCount > 0) {
+                if (!album.cover) album.cover = album.photos[0].src;
+                saveAndRender();
+                showToast(`成功添加 ${addedCount} 张照片`);
+                closeModal('photoModal');
+            } else {
+                showToast('没有要添加的照片，请先上传或输入图片 URL');
+            }
         }
 
         function openDeleteModal(type, id, title) {
