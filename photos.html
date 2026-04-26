@@ -198,6 +198,23 @@
         .uploaded-photo-item:hover .remove-btn { opacity: 1; }
         .uploaded-photo-item .caption-input { position: absolute; bottom: 0; left: 0; right: 0; padding: 4px 6px; border: none; background: rgba(0,0,0,0.6); color: white; font-size: 10px; width: 100%; outline: none; }
         .uploaded-photo-item .caption-input::placeholder { color: rgba(255,255,255,0.6); }
+
+        /* ── 封面上传区域 ── */
+        .cover-upload-area { position: relative; border: 2px dashed var(--accent-primary); border-radius: var(--radius-md); overflow: hidden; background: var(--bg-secondary); transition: all 0.3s ease; cursor: pointer; min-height: 160px; }
+        .cover-upload-area:hover { background: var(--accent-soft); border-color: #a08080; }
+        .cover-upload-area.dragover { background: var(--accent-soft); border-color: var(--accent-primary); border-style: solid; }
+        .cover-upload-area.uploading { pointer-events: none; }
+        .cover-upload-placeholder { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 32px 20px; text-align: center; }
+        .cover-upload-placeholder .upload-icon { font-size: 2rem; margin-bottom: 8px; }
+        .cover-upload-placeholder .upload-text { color: var(--text-muted); font-size: 0.9rem; }
+        .cover-preview { position: relative; width: 100%; height: 160px; }
+        .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+        .cover-remove-btn { position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; border-radius: 50%; background: rgba(255,255,255,0.95); border: none; color: #e74c3c; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.2); transition: all 0.2s; }
+        .cover-remove-btn:hover { transform: scale(1.1); background: white; }
+        .cover-upload-progress { position: absolute; inset: 0; background: rgba(255,255,255,0.95); display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+        .cover-upload-progress .progress-bar { width: 80%; height: 6px; background: rgba(196,168,162,0.2); border-radius: 3px; overflow: hidden; margin-bottom: 12px; }
+        .cover-upload-progress .progress-fill { height: 100%; background: var(--accent-primary); border-radius: 3px; transition: width 0.3s ease; }
+        .cover-upload-progress .progress-text { color: var(--text-dark); font-size: 0.9rem; }
     </style>
 </head>
 <body>
@@ -287,7 +304,7 @@
 
     <!-- 新建/编辑相册模态框 -->
     <div class="modal-overlay" id="albumModal">
-        <div class="modal-box">
+        <div class="modal-box" style="max-width: 480px;">
             <h3 class="modal-title" id="modalTitle">新建相册</h3>
             <div class="form-group"><label class="form-label">相册名称</label><input class="form-input" id="albumTitleInput" placeholder="给相册起个名字" maxlength="30"></div>
             <div class="form-group"><label class="form-label">标签分类</label>
@@ -295,7 +312,36 @@
                     <option value="daily">日常</option><option value="date">约会</option><option value="travel">旅行</option><option value="anniversary">纪念日</option>
                 </select>
             </div>
-            <div class="form-group"><label class="form-label">封面图片 URL</label><input class="form-input" id="albumCoverInput" placeholder="https://..."></div>
+            
+            <!-- 封面上传区域 -->
+            <div class="form-group">
+                <label class="form-label">相册封面 <span style="color: var(--text-muted); font-weight: normal;">(拖拽或点击上传)</span></label>
+                <div class="cover-upload-area" id="coverUploadArea">
+                    <input type="file" id="coverFileInput" accept="image/*" style="display: none;">
+                    <div class="cover-upload-placeholder" id="coverPlaceholder">
+                        <div class="upload-icon">🖼️</div>
+                        <div class="upload-text">点击或拖拽上传封面</div>
+                    </div>
+                    <div class="cover-preview" id="coverPreview" style="display: none;">
+                        <img id="coverPreviewImg" src="" alt="封面预览">
+                        <button type="button" class="cover-remove-btn" id="coverRemoveBtn" title="更换封面">×</button>
+                    </div>
+                    <div class="cover-upload-progress" id="coverUploadProgress" style="display: none;">
+                        <div class="progress-bar"><div class="progress-fill" id="coverProgressFill"></div></div>
+                        <div class="progress-text" id="coverProgressText">上传中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 封面 URL 输入（可选，高级用法） -->
+            <div class="form-group" style="border-top: 1px dashed rgba(196,168,162,0.3); padding-top: 12px; margin-top: 12px;">
+                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--text-muted); font-size: 0.85rem;" onclick="document.getElementById('coverUrlToggle').click()">
+                    <input type="checkbox" id="coverUrlToggle" style="width: 16px; height: 16px; accent-color: var(--accent-primary);">
+                    <span>使用图片 URL（高级）</span>
+                </label>
+                <input class="form-input" id="albumCoverInput" placeholder="https://..." style="display: none; margin-top: 8px;">
+            </div>
+            
             <div class="form-group"><label class="form-label">创建日期</label><input class="form-input" type="date" id="albumDateInput"></div>
             <div class="modal-actions">
                 <button class="btn-modal btn-cancel" id="modalCancel">取消</button>
@@ -738,27 +784,190 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
         }
 
         // ── 模态框 ──
+        let albumCoverUrl = ''; // 存储上传的封面 URL
+
         function openAlbumModal(album = null) {
             document.getElementById('modalTitle').textContent = album ? '编辑相册' : '新建相册';
             document.getElementById('albumTitleInput').value = album?.title || '';
             document.getElementById('albumTagSelect').value = album?.tag || 'daily';
-            document.getElementById('albumCoverInput').value = album?.cover || '';
             document.getElementById('albumDateInput').value = album?.date || new Date().toISOString().split('T')[0];
             document.getElementById('modalConfirm').textContent = album ? '保存' : '创建';
             document.getElementById('albumModal').dataset.editId = album?.id || '';
+            
+            // 重置封面上传状态
+            albumCoverUrl = album?.cover || '';
+            resetCoverUploadUI();
+            if (albumCoverUrl) {
+                showCoverPreview(albumCoverUrl);
+            }
+            
+            // 绑定封面上传事件
+            setupCoverUpload();
+            
+            // 绑定 URL 输入切换
+            document.getElementById('coverUrlToggle').addEventListener('change', (e) => {
+                const urlInput = document.getElementById('albumCoverInput');
+                urlInput.style.display = e.target.checked ? 'block' : 'none';
+                if (e.target.checked && albumCoverUrl) {
+                    urlInput.value = albumCoverUrl;
+                }
+            });
+            
             document.getElementById('albumModal').classList.add('active');
             document.getElementById('albumTitleInput').focus();
+        }
+        
+        function resetCoverUploadUI() {
+            document.getElementById('coverPlaceholder').style.display = 'flex';
+            document.getElementById('coverPreview').style.display = 'none';
+            document.getElementById('coverUploadProgress').style.display = 'none';
+            document.getElementById('coverUrlToggle').checked = false;
+            document.getElementById('albumCoverInput').style.display = 'none';
+            document.getElementById('albumCoverInput').value = '';
+            document.getElementById('coverUploadArea').classList.remove('uploading');
+        }
+        
+        function showCoverPreview(url) {
+            document.getElementById('coverPlaceholder').style.display = 'none';
+            document.getElementById('coverPreview').style.display = 'block';
+            document.getElementById('coverPreviewImg').src = url;
+        }
+        
+        function setupCoverUpload() {
+            const uploadArea = document.getElementById('coverUploadArea');
+            const fileInput = document.getElementById('coverFileInput');
+            const removeBtn = document.getElementById('coverRemoveBtn');
+            
+            // 点击上传
+            uploadArea.onclick = (e) => {
+                if (e.target === removeBtn || e.target.closest('.cover-remove-btn')) return;
+                if (document.getElementById('coverPreview').style.display === 'none') {
+                    fileInput.click();
+                }
+            };
+            
+            // 文件选择
+            fileInput.onchange = (e) => {
+                if (e.target.files[0]) {
+                    handleCoverFile(e.target.files[0]);
+                }
+            };
+            
+            // 拖拽事件
+            uploadArea.ondragover = (e) => {
+                e.preventDefault();
+                uploadArea.classList.add('dragover');
+            };
+            
+            uploadArea.ondragleave = () => {
+                uploadArea.classList.remove('dragover');
+            };
+            
+            uploadArea.ondrop = (e) => {
+                e.preventDefault();
+                uploadArea.classList.remove('dragover');
+                const files = e.dataTransfer.files;
+                if (files[0] && files[0].type.startsWith('image/')) {
+                    handleCoverFile(files[0]);
+                }
+            };
+            
+            // 移除封面
+            removeBtn.onclick = () => {
+                albumCoverUrl = '';
+                resetCoverUploadUI();
+            };
+        }
+        
+        async function handleCoverFile(file) {
+            const uploadArea = document.getElementById('coverUploadArea');
+            const progressArea = document.getElementById('coverUploadProgress');
+            const progressFill = document.getElementById('coverProgressFill');
+            const progressText = document.getElementById('coverProgressText');
+            
+            uploadArea.classList.add('uploading');
+            progressArea.style.display = 'flex';
+            
+            const updateProgress = (percent, text) => {
+                progressFill.style.width = percent + '%';
+                progressText.textContent = text;
+            };
+            
+            try {
+                updateProgress(10, '读取文件...');
+                
+                // 获取 token
+                const token = await getGitHubToken();
+                if (!token) {
+                    throw new Error('未配置 GitHub Token');
+                }
+                
+                updateProgress(30, '准备上传...');
+                
+                // 读取文件
+                const base64 = await readFileAsBase64(file);
+                
+                // 生成文件名
+                const ext = file.name.split('.').pop().toLowerCase();
+                const timestamp = Date.now();
+                const random = Math.random().toString(36).substr(2, 6);
+                const filename = `photos/covers/${timestamp}-${random}.${ext}`;
+                
+                updateProgress(60, '上传到服务器...');
+                
+                // 上传到 GitHub
+                const repo = 'Lily1756/love-anniversary';
+                const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
+                
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        message: `Upload album cover: ${file.name}`,
+                        content: base64
+                    })
+                });
+                
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || '上传失败');
+                }
+                
+                const data = await response.json();
+                albumCoverUrl = data.content.download_url;
+                
+                updateProgress(100, '完成！');
+                
+                setTimeout(() => {
+                    showCoverPreview(albumCoverUrl);
+                    progressArea.style.display = 'none';
+                    uploadArea.classList.remove('uploading');
+                }, 500);
+                
+            } catch (err) {
+                progressText.textContent = '上传失败: ' + err.message;
+                progressFill.style.background = '#e74c3c';
+                setTimeout(() => {
+                    resetCoverUploadUI();
+                }, 2000);
+            }
         }
 
         function confirmAlbumModal() {
             const title = document.getElementById('albumTitleInput').value.trim();
             const tag = document.getElementById('albumTagSelect').value;
-            const cover = document.getElementById('albumCoverInput').value.trim();
             const date = document.getElementById('albumDateInput').value;
             const editId = document.getElementById('albumModal').dataset.editId;
+            
+            // 优先使用上传的封面 URL，如果没有则使用手动输入的 URL
+            const manualCover = document.getElementById('albumCoverInput').value.trim();
+            const cover = albumCoverUrl || manualCover;
 
             if (!title) { showToast('请输入相册名称'); return; }
-            if (!cover) { showToast('请输入封面图片 URL'); return; }
+            if (!cover) { showToast('请上传相册封面'); return; }
 
             if (editId) {
                 // 编辑
