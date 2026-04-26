@@ -2650,29 +2650,9 @@
         // 默认预览初始化（不需要解锁也能看到内容）
         async function initDefaultPreview() {
             console.log('[DefaultPreview] 初始化默认预览...');
+            console.log('[DefaultPreview] 使用已加载的数据 diariesData.length:', diariesData.length);
             
-            // 【修复】先加载 diaries.json 数据（与 initContent 相同的逻辑）
-            try {
-                const resp = await fetchWithTimeout('diaries.json?t=' + Date.now(), {}, 5000);
-                if (resp && resp.ok) {
-                    const json = await resp.json();
-                    if (Array.isArray(json) && json.length > 0) {
-                        diariesData = json;
-                        console.log('[DefaultPreview] 加载 diaries.json 成功:', diariesData.length, '条');
-                    }
-                }
-            } catch (e) {
-                console.error('[DefaultPreview] 加载 diaries.json 失败:', e);
-            }
-            
-            // 如果 diaries.json 为空，使用静态示例数据
-            if (diariesData.length === 0) {
-                diariesData = [
-                    { id: 'demo-1', date: '2025-05-17', title: '【2025】因缘际会在一起', content: '抱着还人情的心态吃完了一顿饭，原本以为会各回各家...', tag: '💌' },
-                    { id: 'demo-2', date: '2025-06-09', title: '【2025】我们要开始记录了', content: '喜欢跟志浩在一起的每一天，希望能开始认真记录每一份酸甜苦辣...', tag: '💌' },
-                    { id: 'demo-3', date: '2025-08-19', title: '【2025】祝我们三个月快乐吖～', content: '天呐！我竟然已经和志浩在一起三个月了...', tag: '💌' },
-                ];
-            }
+            // diariesData 已在 loadData() 中加载，直接使用
             
             // 启动计时器（使用默认值）
             if (appData.anniversaryDate) {
@@ -3422,7 +3402,7 @@
             } else {
                 // 如果未解锁，初始化默认数据用于预览（不需要密码也能看到内容）
                 console.log('[Startup] 未解锁状态，初始化默认预览...');
-                initDefaultPreview();
+                await initDefaultPreview();  // 【修复】添加 await 确保异步完成
             }
 
             // 更多菜单
