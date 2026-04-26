@@ -876,25 +876,63 @@
     //  数据持久化
     // ══════════════════════════════════════════════
     async function saveAndRender() {
+        const data = albums;
+        let saved = false;
+
+        // 优先尝试 Cloudflare Pages Function（只传密码，token 在服务端）
         try {
-            const data = JSON.stringify(albums, null, 2);
-            const token = localStorage.getItem('gh_token');
-            if (token) {
-                const owner = 'Lily1756', repo = 'love-anniversary', path = 'data/photos.json';
-                const blob = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-                    headers: { Authorization: `token ${token}` }
-                }).then(r => r.json());
-                await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-                    method: 'PUT',
-                    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: '更新照片数据',
-                        content: btoa(unescape(encodeURIComponent(data))),
-                        sha: blob.sha
-                    })
-                });
+            const functionUrl = '/save-photos';
+            const resp = await fetch(functionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: '2025',
+                    data: data,
+                    path: 'data/photos.json'
+                })
+            });
+            if (resp.ok) {
+                const result = await resp.json();
+                if (result.success) {
+                    saved = true;
+                    showToast('✅ 已保存到云端');
+                }
             }
-        } catch (e) { console.error('保存失败', e); }
+        } catch (e) {
+            // Function 不可用（本地开发或部署未生效），继续 fallback
+            console.log('[save-photos] Function 不可用，尝试 fallback:', e.message);
+        }
+
+        // Fallback：用 localStorage 里的 token 直接调 GitHub API
+        if (!saved) {
+            const token = localStorage.getItem('github_pat');
+            if (token) {
+                try {
+                    const owner = 'Lily1756', repo = 'love-anniversary', path = 'data/photos.json';
+                    const jsonStr = JSON.stringify(data, null, 2);
+                    const blob = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` }
+                    }).then(r => r.json());
+                    await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                        method: 'PUT',
+                        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: '更新照片数据',
+                            content: btoa(unescape(encodeURIComponent(jsonStr))),
+                            sha: blob.sha
+                        })
+                    });
+                    saved = true;
+                    showToast('✅ 已保存到云端');
+                } catch (e) {
+                    console.error('GitHub API 保存失败', e);
+                    showToast('❌ 保存失败，请检查网络或重新登录');
+                }
+            } else {
+                showToast('⚠️ 未配置 Token，数据仅本地有效');
+            }
+        }
+
         renderAlbums();
     }
 
