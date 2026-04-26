@@ -74,6 +74,32 @@
     //  数据加载
     // ══════════════════════════════════════════════
     async function loadAlbums() {
+        // 优先从 GitHub raw 拉取最新数据（绕过 Cloudflare Pages 缓存）
+        const githubRawUrl = 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main/data/photos.json';
+        try {
+            const resp = await fetch(githubRawUrl + '?t=' + Date.now(), { cache: 'no-store' });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    if (data[0] && Array.isArray(data[0].photos)) {
+                        albums = data;
+                        return;
+                    } else {
+                        albums = [{
+                            id: 'migrated', title: '全部照片',
+                            cover: data[0]?.src || '',
+                            date: '2025', tag: 'daily',
+                            photos: data.map(p => ({ src: p.src, caption: p.title || '' }))
+                        }];
+                        return;
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('[loadAlbums] GitHub raw 加载失败，回退到本地:', e.message);
+        }
+
+        // Fallback：从当前域名加载（本地开发时使用）
         try {
             const resp = await fetch('data/photos.json?t=' + Date.now());
             if (resp.ok) {
