@@ -163,6 +163,12 @@
         /* ── Toast 提示 ── */
         .toast { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); background: rgba(74, 74, 74, 0.92); color: white; padding: 12px 24px; border-radius: 50px; font-size: 0.9rem; z-index: 3000; opacity: 0; transition: all 0.3s ease; pointer-events: none; white-space: nowrap; }
         .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* ── 编辑入口按钮 ── */
+        .fab-edit { position: fixed; right: 20px; bottom: 90px; width: 56px; height: 56px; border-radius: 50%; background: linear-gradient(135deg, var(--accent-primary), #a08080); color: white; border: none; font-size: 1.5rem; cursor: pointer; box-shadow: 0 4px 15px rgba(196,168,162,0.4); z-index: 500; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+        .fab-edit:hover { transform: scale(1.1); box-shadow: 0 6px 20px rgba(196,168,162,0.5); }
+        .fab-edit:active { transform: scale(0.95); }
+        .fab-edit.hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -326,6 +332,24 @@ https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace;
     <!-- Toast -->
     <div class="toast" id="toast"></div>
 
+    <!-- 编辑模式入口按钮 -->
+    <button class="fab-edit" id="fabEdit" title="进入编辑模式">✏️</button>
+
+    <!-- 密码验证模态框 -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-box" style="max-width: 320px;">
+            <h3 class="modal-title" style="text-align: center;">🔐 验证身份</h3>
+            <p style="text-align: center; color: var(--text-muted); margin-bottom: 16px; font-size: 0.9rem;">输入密码进入编辑模式</p>
+            <div class="form-group">
+                <input class="form-input" type="password" id="authPassword" placeholder="请输入密码..." maxlength="10" style="text-align: center; font-size: 1.1rem; letter-spacing: 2px;">
+            </div>
+            <div class="modal-actions">
+                <button class="btn-modal btn-cancel" id="authCancel">取消</button>
+                <button class="btn-modal btn-confirm" id="authConfirm">确认</button>
+            </div>
+        </div>
+    </div>
+
     <!-- 导航栏 -->
     <nav class="bottom-nav" id="bottomNav" style="position:fixed;bottom:0;left:0;right:0;background:rgba(255,255,255,0.95);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid rgba(196,168,162,0.2);padding:8px 0;padding-bottom:max(8px,env(safe-area-inset-bottom));z-index:100;display:flex;justify-content:space-around;align-items:center">
         <a href="index.html" style="display:flex;flex-direction:column;align-items:center;gap:4px;text-decoration:none;color:var(--text-muted);font-size:0.7rem;padding:6px 12px;transition:color 0.2s">
@@ -449,6 +473,19 @@ https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace;
             // 添加照片
             document.getElementById('addPhotoBtn').addEventListener('click', () => openPhotoModal());
 
+            // 编辑入口按钮
+            document.getElementById('fabEdit').addEventListener('click', openAuthModal);
+            
+            // 密码验证
+            document.getElementById('authConfirm').addEventListener('click', verifyPassword);
+            document.getElementById('authCancel').addEventListener('click', () => closeModal('authModal'));
+            document.getElementById('authPassword').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') verifyPassword();
+            });
+            document.getElementById('authModal').addEventListener('click', (e) => {
+                if (e.target === document.getElementById('authModal')) closeModal('authModal');
+            });
+
             // 全屏浏览
             document.getElementById('viewerBack').addEventListener('click', closeViewer);
             document.getElementById('viewerPrev').addEventListener('click', () => navigatePhoto(-1));
@@ -493,8 +530,39 @@ https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace;
 
         function checkEditMode() {
             const isAuth = sessionStorage.getItem('auth') === 'true' || localStorage.getItem('auth') === 'true';
+            const fabEdit = document.getElementById('fabEdit');
+            const editModeBtn = document.getElementById('editModeBtn');
+            
             if (isAuth) {
-                document.getElementById('editModeBtn').style.display = 'inline-flex';
+                // 已认证，显示编辑按钮，隐藏 FAB
+                editModeBtn.style.display = 'inline-flex';
+                fabEdit.classList.add('hidden');
+            } else {
+                // 未认证，显示 FAB 入口
+                editModeBtn.style.display = 'none';
+                fabEdit.classList.remove('hidden');
+            }
+        }
+        
+        // 打开密码验证模态框
+        function openAuthModal() {
+            document.getElementById('authPassword').value = '';
+            document.getElementById('authModal').classList.add('active');
+            setTimeout(() => document.getElementById('authPassword').focus(), 100);
+        }
+        
+        // 验证密码
+        function verifyPassword() {
+            const password = document.getElementById('authPassword').value.trim();
+            if (password === '2025') {
+                sessionStorage.setItem('auth', 'true');
+                closeModal('authModal');
+                checkEditMode();
+                showToast('✅ 验证成功，已进入编辑模式');
+            } else {
+                showToast('❌ 密码错误');
+                document.getElementById('authPassword').value = '';
+                document.getElementById('authPassword').focus();
             }
         }
 
