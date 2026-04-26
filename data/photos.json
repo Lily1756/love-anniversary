@@ -1,6 +1,8 @@
 [
   {
-    "id": "test",
-    "title": "test"
+    "id": "test-e2e",
+    "title": "端到端测试",
+    "photos": [],
+    "cover": ""
   }
 ]
