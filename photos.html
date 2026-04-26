@@ -899,6 +899,20 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             document.getElementById('uploadDropzone').classList.remove('uploading');
         }
         
+        // 从配置文件获取 GitHub Token
+        async function getGitHubToken() {
+            try {
+                const response = await fetch('config.json');
+                if (response.ok) {
+                    const config = await response.json();
+                    return config.githubToken;
+                }
+            } catch (e) {
+                console.log('No config file found');
+            }
+            return null;
+        }
+
         // 上传单个文件到 GitHub
         async function uploadFileToGitHub(file, itemId) {
             const item = document.getElementById(itemId);
@@ -917,6 +931,12 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             try {
                 updateProgress(10, '读取文件...');
                 
+                // 获取 token
+                const token = await getGitHubToken();
+                if (!token) {
+                    throw new Error('未配置 GitHub Token，请联系管理员');
+                }
+                
                 // 读取文件为 base64
                 const base64 = await readFileAsBase64(file);
                 
@@ -931,7 +951,6 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
                 updateProgress(50, '上传到 GitHub...');
                 
                 // 上传到 GitHub
-                const token = 'GITHUB_TOKEN_PLACEHOLDER';
                 const repo = 'Lily1756/love-anniversary';
                 const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
                 
