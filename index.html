@@ -2647,6 +2647,64 @@
             document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
         }
 
+        // 默认预览初始化（不需要解锁也能看到内容）
+        async function initDefaultPreview() {
+            console.log('[DefaultPreview] 初始化默认预览...');
+            
+            // 【修复】先加载 diaries.json 数据（与 initContent 相同的逻辑）
+            try {
+                const resp = await fetchWithTimeout('diaries.json?t=' + Date.now(), {}, 5000);
+                if (resp && resp.ok) {
+                    const json = await resp.json();
+                    if (Array.isArray(json) && json.length > 0) {
+                        diariesData = json;
+                        console.log('[DefaultPreview] 加载 diaries.json 成功:', diariesData.length, '条');
+                    }
+                }
+            } catch (e) {
+                console.error('[DefaultPreview] 加载 diaries.json 失败:', e);
+            }
+            
+            // 如果 diaries.json 为空，使用静态示例数据
+            if (diariesData.length === 0) {
+                diariesData = [
+                    { id: 'demo-1', date: '2025-05-17', title: '【2025】因缘际会在一起', content: '抱着还人情的心态吃完了一顿饭，原本以为会各回各家...', tag: '💌' },
+                    { id: 'demo-2', date: '2025-06-09', title: '【2025】我们要开始记录了', content: '喜欢跟志浩在一起的每一天，希望能开始认真记录每一份酸甜苦辣...', tag: '💌' },
+                    { id: 'demo-3', date: '2025-08-19', title: '【2025】祝我们三个月快乐吖～', content: '天呐！我竟然已经和志浩在一起三个月了...', tag: '💌' },
+                ];
+            }
+            
+            // 启动计时器（使用默认值）
+            if (appData.anniversaryDate) {
+                startTimer(appData.anniversaryDate);
+            } else {
+                document.getElementById('timer-days').textContent = '---';
+                document.getElementById('timer-hours').textContent = '--';
+                document.getElementById('timer-mins').textContent = '--';
+                document.getElementById('timer-secs').textContent = '--';
+            }
+            
+            // 渲染情书预览
+            await renderLettersPreview();
+            
+            // 渲染照片预览
+            await renderPhotosPreview();
+            
+            // 渲染足迹预览
+            await renderTravelsPreview();
+            
+            // 渲染愿望清单预览
+            await renderWishesPreview();
+            
+            // 渲染时间胶囊预览
+            await renderCapsulePreview();
+            
+            // 加载统计数据
+            await loadStatsData();
+            
+            console.log('[DefaultPreview] 默认预览初始化完成!');
+        }
+        
         // 渲染内容
         async function initContent() {
             console.log('[Init] 开始初始化内容...');
@@ -3337,8 +3395,15 @@
 
         // 启动
         (async () => {
+            console.log('[Startup] 开始加载数据...');
             const loadedData = await loadData();
             Object.assign(appData, loadedData);
+            
+            console.log('[Startup] 数据加载完成:', {
+                unlocked: appData.unlocked,
+                anniversaryDate: appData.anniversaryDate,
+                diariesCount: appData.diaries?.length || 0
+            });
             
             // 【关键优化】更新 body 的 data-unlocked 属性，CSS 会自动处理显示/隐藏
             document.body.dataset.unlocked = appData.unlocked ? 'true' : 'false';
@@ -3347,12 +3412,17 @@
             document.getElementById('lockBtn').addEventListener('click', checkPassword);
             document.getElementById('lockInput').addEventListener('keydown', (e) => { if (e.key === 'Enter') checkPassword(); });
 
-            // 【修复密码锁闪烁】已由 CSS 和内联脚本处理
-            if (appData.unlocked) {
-                // 已解锁：显示主内容并初始化
+            // 【修复】解锁后立即初始化内容，无论是否已解锁
+            // 如果已解锁状态为 true，直接初始化内容
+            if (appData.unlocked === true) {
+                console.log('[Startup] 已解锁状态，直接初始化内容...');
                 document.getElementById('menuBtn').classList.remove('hidden');
                 document.getElementById('musicIframe').classList.remove('hidden');
                 await initContent();
+            } else {
+                // 如果未解锁，初始化默认数据用于预览（不需要密码也能看到内容）
+                console.log('[Startup] 未解锁状态，初始化默认预览...');
+                initDefaultPreview();
             }
 
             // 更多菜单
