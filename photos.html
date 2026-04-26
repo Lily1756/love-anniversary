@@ -612,6 +612,23 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
                 });
             });
 
+            // 封面 URL 切换（只绑定一次，避免重复）
+            document.getElementById('coverUrlToggle').addEventListener('change', (e) => {
+                const urlInput = document.getElementById('albumCoverInput');
+                urlInput.style.display = e.target.checked ? 'block' : 'none';
+                if (e.target.checked && albumCoverUrl) {
+                    urlInput.value = albumCoverUrl;
+                }
+            });
+
+            // 照片 URL 切换（只绑定一次）
+            document.getElementById('urlInputToggle').addEventListener('change', (e) => {
+                document.getElementById('urlInputArea').style.display = e.target.checked ? 'block' : 'none';
+            });
+
+            // 批量输入实时预览（只绑定一次）
+            document.getElementById('photoBatchInput').addEventListener('input', updateBatchPreview);
+
             // 触摸滑动
             let touchStartX = 0;
             document.getElementById('viewerMain').addEventListener('touchstart', (e) => { touchStartX = e.touches[0].clientX; }, { passive: true });
@@ -803,16 +820,7 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             
             // 绑定封面上传事件
             setupCoverUpload();
-            
-            // 绑定 URL 输入切换
-            document.getElementById('coverUrlToggle').addEventListener('change', (e) => {
-                const urlInput = document.getElementById('albumCoverInput');
-                urlInput.style.display = e.target.checked ? 'block' : 'none';
-                if (e.target.checked && albumCoverUrl) {
-                    urlInput.value = albumCoverUrl;
-                }
-            });
-            
+
             document.getElementById('albumModal').classList.add('active');
             document.getElementById('albumTitleInput').focus();
         }
@@ -838,12 +846,10 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             const fileInput = document.getElementById('coverFileInput');
             const removeBtn = document.getElementById('coverRemoveBtn');
             
-            // 点击上传
+            // 点击上传（始终允许上传新文件来替换）
             uploadArea.onclick = (e) => {
                 if (e.target === removeBtn || e.target.closest('.cover-remove-btn')) return;
-                if (document.getElementById('coverPreview').style.display === 'none') {
-                    fileInput.click();
-                }
+                fileInput.click();
             };
             
             // 文件选择
@@ -884,75 +890,95 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             const progressArea = document.getElementById('coverUploadProgress');
             const progressFill = document.getElementById('coverProgressFill');
             const progressText = document.getElementById('coverProgressText');
-            
+
+            // 隐藏之前的预览，显示进度条
+            document.getElementById('coverPlaceholder').style.display = 'none';
+            document.getElementById('coverPreview').style.display = 'none';
             uploadArea.classList.add('uploading');
             progressArea.style.display = 'flex';
-            
+
             const updateProgress = (percent, text) => {
                 progressFill.style.width = percent + '%';
                 progressText.textContent = text;
             };
-            
+
             try {
                 updateProgress(10, '读取文件...');
-                
-                // 获取 token
-                const token = await getGitHubToken();
-                if (!token) {
-                    throw new Error('未配置 GitHub Token');
-                }
-                
-                updateProgress(30, '准备上传...');
-                
-                // 读取文件
-                const base64 = await readFileAsBase64(file);
-                
+
                 // 生成文件名
                 const ext = file.name.split('.').pop().toLowerCase();
                 const timestamp = Date.now();
                 const random = Math.random().toString(36).substr(2, 6);
-                const filename = `photos/covers/${timestamp}-${random}.${ext}`;
-                
+                const filename = `cover-${timestamp}-${random}.${ext}`;
+
+                updateProgress(30, '准备上传...');
+
+                // 使用 FormData 上传到 Cloudinary
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                formData.append('public_id', filename.split('.')[0]);
+
                 updateProgress(60, '上传到服务器...');
-                
-                // 上传到 GitHub
-                const repo = 'Lily1756/love-anniversary';
-                const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
-                
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Upload album cover: ${file.name}`,
-                        content: base64
-                    })
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '上传失败');
+
+                let response;
+                try {
+                    response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(15000)
+                    });
+                } catch (networkErr) {
+                    throw new Error('UPLOAD_OFFLINE');
                 }
-                
+
+                if (!response.ok) {
+                    let errorMsg = '上传失败';
+                    try {
+                        const errData = await response.json();
+                        errorMsg = errData.error?.message || errData.message || `服务器错误 (${response.status})`;
+                    } catch (e) {
+                        errorMsg = await response.text() || `服务器错误 (${response.status})`;
+                    }
+                    throw new Error(errorMsg);
+                }
+
                 const data = await response.json();
-                albumCoverUrl = data.content.download_url;
-                
+                albumCoverUrl = data.secure_url;
+
                 updateProgress(100, '完成！');
-                
+
                 setTimeout(() => {
                     showCoverPreview(albumCoverUrl);
                     progressArea.style.display = 'none';
                     uploadArea.classList.remove('uploading');
                 }, 500);
-                
+
             } catch (err) {
-                progressText.textContent = '上传失败: ' + err.message;
-                progressFill.style.background = '#e74c3c';
-                setTimeout(() => {
-                    resetCoverUploadUI();
-                }, 2000);
+                if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('Failed to fetch') || err.message.includes('network')) {
+                    // 上传服务不可用，使用 base64 fallback
+                    updateProgress(70, '服务器不可用，转为本地存储...');
+                    try {
+                        const compressed = await compressImage(file, 1200, 0.8);
+                        const base64 = await readFileAsBase64(compressed);
+                        albumCoverUrl = base64;
+                        updateProgress(100, '完成（本地存储）');
+                        setTimeout(() => {
+                            showCoverPreview(albumCoverUrl);
+                            progressArea.style.display = 'none';
+                            uploadArea.classList.remove('uploading');
+                            showToast('上传服务暂不可用，已转为本地存储（页面刷新后需重新上传）');
+                        }, 500);
+                    } catch (compressErr) {
+                        progressText.textContent = '处理失败: ' + compressErr.message;
+                        progressFill.style.background = '#e74c3c';
+                        setTimeout(() => { resetCoverUploadUI(); }, 3000);
+                    }
+                } else {
+                    progressText.textContent = '上传失败: ' + err.message;
+                    progressFill.style.background = '#e74c3c';
+                    setTimeout(() => { resetCoverUploadUI(); }, 3000);
+                }
             }
         }
 
@@ -1004,14 +1030,6 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             
             // 绑定拖拽上传事件
             setupDragUpload();
-            
-            // 绑定 URL 输入切换
-            document.getElementById('urlInputToggle').addEventListener('change', (e) => {
-                document.getElementById('urlInputArea').style.display = e.target.checked ? 'block' : 'none';
-            });
-            
-            // 绑定批量输入实时预览
-            document.getElementById('photoBatchInput').addEventListener('input', updateBatchPreview);
         }
         
         // 设置拖拽上传
@@ -1108,21 +1126,12 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             document.getElementById('uploadDropzone').classList.remove('uploading');
         }
         
-        // 从配置文件获取 GitHub Token
-        async function getGitHubToken() {
-            try {
-                const response = await fetch('config.json');
-                if (response.ok) {
-                    const config = await response.json();
-                    return config.githubToken;
-                }
-            } catch (e) {
-                console.log('No config file found');
-            }
-            return null;
-        }
+        // Cloudinary 配置
+        const CLOUDINARY_CLOUD_NAME = 'dcpzdsdxc';
+        const CLOUDINARY_UPLOAD_PRESET = 'love_site_preset';
+        const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`;
 
-        // 上传单个文件到 GitHub
+        // 上传单个文件（通过 Worker 代理）
         async function uploadFileToGitHub(file, itemId) {
             const item = document.getElementById(itemId);
             const fill = item.querySelector('.upload-progress-fill');
@@ -1139,57 +1148,71 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             
             try {
                 updateProgress(10, '读取文件...');
-                
-                // 获取 token
-                const token = await getGitHubToken();
-                if (!token) {
-                    throw new Error('未配置 GitHub Token，请联系管理员');
-                }
-                
-                // 读取文件为 base64
-                const base64 = await readFileAsBase64(file);
-                
-                updateProgress(30, '压缩中...');
-                
+
                 // 生成文件名
                 const ext = file.name.split('.').pop().toLowerCase();
                 const timestamp = Date.now();
                 const random = Math.random().toString(36).substr(2, 6);
-                const filename = `photos/upload/${timestamp}-${random}.${ext}`;
-                
-                updateProgress(50, '上传到 GitHub...');
-                
-                // 上传到 GitHub
-                const repo = 'Lily1756/love-anniversary';
-                const url = `https://api.github.com/repos/${repo}/contents/${filename}`;
-                
-                const response = await fetch(url, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Upload photo: ${file.name}`,
-                        content: base64
-                    })
-                });
-                
-                if (!response.ok) {
-                    const error = await response.json();
-                    throw new Error(error.message || '上传失败');
+                const filename = `${timestamp}-${random}.${ext}`;
+
+                updateProgress(30, '准备上传...');
+
+                // 使用 FormData 上传到 Cloudinary
+                const formData = new FormData();
+                formData.append('file', file);
+                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                formData.append('public_id', filename.split('.')[0]);
+
+                updateProgress(50, '上传到服务器...');
+
+                let response;
+                try {
+                    response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(15000)
+                    });
+                } catch (networkErr) {
+                    throw new Error('UPLOAD_OFFLINE');
                 }
-                
+
+                if (!response.ok) {
+                    let errorMsg = '上传失败';
+                    try {
+                        const errData = await response.json();
+                        errorMsg = errData.error?.message || errData.message || `服务器错误 (${response.status})`;
+                    } catch (e) {
+                        errorMsg = await response.text() || `服务器错误 (${response.status})`;
+                    }
+                    throw new Error(errorMsg);
+                }
+
                 const data = await response.json();
                 updateProgress(100, '完成');
-                
+
                 // 显示缩略图
                 const objectUrl = URL.createObjectURL(file);
                 thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
-                
-                return { success: true, url: data.content.download_url, name: file.name };
-                
+
+                return { success: true, url: data.secure_url, name: file.name };
+
             } catch (err) {
+                if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('Failed to fetch') || err.message.includes('network')) {
+                    // 上传服务不可用，使用 base64 fallback
+                    updateProgress(60, '服务器不可用，转为本地存储...');
+                    try {
+                        const compressed = await compressImage(file, 1200, 0.8);
+                        const base64 = await readFileAsBase64(compressed);
+                        updateProgress(100, '完成（本地）');
+                        const objectUrl = URL.createObjectURL(file);
+                        thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+                        return { success: true, url: base64, name: file.name, local: true };
+                    } catch (compressErr) {
+                        updateProgress(0, '失败: ' + compressErr.message);
+                        item.style.opacity = '0.5';
+                        return { success: false, error: compressErr.message, name: file.name };
+                    }
+                }
                 updateProgress(0, '失败: ' + err.message);
                 item.style.opacity = '0.5';
                 return { success: false, error: err.message, name: file.name };
@@ -1201,11 +1224,34 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
             return new Promise((resolve, reject) => {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    const base64 = reader.result.split(',')[1];
-                    resolve(base64);
+                    resolve(reader.result);
                 };
                 reader.onerror = reject;
                 reader.readAsDataURL(file);
+            });
+        }
+
+        // 压缩图片
+        function compressImage(file, maxWidth = 1920, quality = 0.85) {
+            return new Promise((resolve) => {
+                if (file.size < 500 * 1024) { resolve(file); return; }
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    URL.revokeObjectURL(url);
+                    let w = img.width, h = img.height;
+                    if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    canvas.toBlob((blob) => {
+                        if (blob) resolve(new File([blob], file.name, { type: 'image/jpeg' }));
+                        else resolve(file);
+                    }, 'image/jpeg', quality);
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+                img.src = url;
             });
         }
         
