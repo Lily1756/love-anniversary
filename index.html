@@ -3103,49 +3103,49 @@
                 if (!capsules || capsules.length === 0) {
                     previewEl.style.display = 'none';
                     emptyEl.style.display = 'flex';
-                emptyEl.textContent = '还没有埋下胶囊，去写一封给未来的信吧 ⏳';
-                return;
-            }
+                    emptyEl.textContent = '还没有埋下胶囊，去写一封给未来的信吧 ⏳';
+                    return;
+                }
 
-            emptyEl.style.display = 'none';
-            previewEl.style.display = 'block';
+                emptyEl.style.display = 'none';
+                previewEl.style.display = 'block';
 
-            const capsule = capsules[0];
-            const unlockDate = new Date(capsule.unlockDate || capsule.date);
-            const now = new Date();
-            const diffDays = Math.ceil((unlockDate - now) / (1000 * 60 * 60 * 24));
-            const isUnlocked = diffDays <= 0;
+                const capsule = capsules[0];
+                const unlockDate = new Date(capsule.unlockDate || capsule.date);
+                const now = new Date();
+                const diffDays = Math.ceil((unlockDate - now) / (1000 * 60 * 60 * 24));
+                const isUnlocked = diffDays <= 0;
 
-            let countdownText;
-            if (isUnlocked) {
-                countdownText = '可以打开啦！';
-            } else {
-                countdownText = `还有 ${diffDays} 天解锁`;
-            }
+                let countdownText;
+                if (isUnlocked) {
+                    countdownText = '可以打开啦！';
+                } else {
+                    countdownText = `还有 ${diffDays} 天解锁`;
+                }
 
-            // SVG锁图标
-            const lockIcon = isUnlocked ? `
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <path d="M7 11V7a5 5 0 0 1 9.9-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-                </svg>
-            ` : `
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
-                    <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-                </svg>
-            `;
+                // SVG锁图标
+                const lockIcon = isUnlocked ? `
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M7 11V7a5 5 0 0 1 9.9-1" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    </svg>
+                ` : `
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <rect x="3" y="11" width="18" height="11" rx="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+                    </svg>
+                `;
 
-            previewEl.innerHTML = `
-                <div class="capsule-preview">
-                    <div class="capsule-preview-card">
-                        <div class="capsule-icon-large">${lockIcon}</div>
-                        <div class="capsule-preview-title">${capsule.title || '神秘胶囊'}</div>
-                        <div class="capsule-preview-date">埋藏于 ${(capsule.date || '').replace(/-/g, '.')}</div>
-                        <div class="capsule-preview-countdown">${countdownText}</div>
+                previewEl.innerHTML = `
+                    <div class="capsule-preview">
+                        <div class="capsule-preview-card">
+                            <div class="capsule-icon-large">${lockIcon}</div>
+                            <div class="capsule-preview-title">${capsule.title || '神秘胶囊'}</div>
+                            <div class="capsule-preview-date">埋藏于 ${(capsule.date || '').replace(/-/g, '.')}</div>
+                            <div class="capsule-preview-countdown">${countdownText}</div>
+                        </div>
                     </div>
-                </div>
-            `;
+                `;
             } catch (e) { console.error('[renderCapsulePreview] 错误:', e); }
         }
 
