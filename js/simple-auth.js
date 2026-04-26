@@ -64,10 +64,10 @@ const SimpleAuth = (function() {
         if (!verifyPassword(password)) {
             return { success: false, error: '密码错误' };
         }
-        if (!pat || pat.trim().length < 10) {
-            return { success: false, error: '请输入有效的 GitHub PAT' };
+        // PAT 可选：如果提供了就保存，不提供也能进入编辑模式（依赖 Cloudflare Function）
+        if (pat && pat.trim().length >= 10) {
+            savePat(pat);
         }
-        savePat(pat);
         localStorage.setItem(ADMIN_MODE_KEY, Date.now().toString());
         return { success: true };
     }
@@ -136,9 +136,9 @@ const SimpleAuth = (function() {
                 </div>
 
                 <div class="form-group">
-                    <label>GitHub PAT</label>
-                    <input type="password" id="adminPat" placeholder="ghp_xxxxxxxxxxxx" />
-                    <small>在 GitHub Settings → Developer settings → Personal access tokens 生成</small>
+                    <label>GitHub PAT <span style="color:#999;font-weight:normal">（可选）</span></label>
+                    <input type="password" id="adminPat" placeholder="不填则使用云端代理保存" />
+                    <small>留空时数据通过 Cloudflare Function 保存，无需配置 Token</small>
                 </div>
 
                 <div class="modal-actions">
@@ -213,11 +213,13 @@ const SimpleAuth = (function() {
             return;
         }
 
-        // 验证 PAT 是否有效
-        const isValid = await validatePat(pat);
-        if (!isValid) {
-            alert('GitHub PAT 无效，请检查后重新输入');
-            return;
+        // 如果提供了 PAT，验证其有效性
+        if (pat && pat.trim().length >= 10) {
+            const isValid = await validatePat(pat);
+            if (!isValid) {
+                alert('GitHub PAT 无效，请检查后重新输入');
+                return;
+            }
         }
 
         closeModal();

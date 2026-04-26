@@ -94,9 +94,12 @@
         .empty-text { font-size: 1rem; margin-bottom: 8px; }
         .empty-sub { font-size: 0.9rem; opacity: 0.8; }
 
-        /* ── 删除按钮（编辑模式） ── */
+        /* ── 编辑/删除按钮（编辑模式） ── */
+        .album-edit { position: absolute; top: 8px; right: 44px; width: 32px; height: 32px; background: rgba(100, 149, 237, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; transition: all 0.2s; }
+        .album-edit:active { transform: scale(0.9); }
         .album-delete { position: absolute; top: 8px; right: 8px; width: 32px; height: 32px; background: rgba(220, 53, 69, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; transition: all 0.2s; }
         .album-delete:active { transform: scale(0.9); }
+        .edit-mode .album-edit { display: flex; }
         .edit-mode .album-delete { display: flex; }
 
         /* ═══════════════════════════════════════════
@@ -468,6 +471,6 @@ https://example.com/photo2.jpg|开心时刻" style="resize: vertical; font-famil
     </nav>
 
     <!-- 照片墙业务逻辑（已提取到外部文件） -->
-    <script src="js/photos.js" defer></script>
+    <script src="js/photos.js?v=2" defer></script>
 </body>
 </html>

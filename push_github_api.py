@@ -9,11 +9,27 @@ import subprocess
 import urllib.request
 import urllib.error
 
-GITHUB_TOKEN = "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"
 GITHUB_API = "https://api.github.com"
 REPO_OWNER = "Lily1756"
 REPO_NAME = "love-anniversary"
 REPO_PATH = "/Users/zhangyi/WorkBuddy/20260423010138/love-site"
+
+# 从 config.json 读取 Token（与 sync-to-github.js 保持一致）
+CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
+
+def get_github_token():
+    try:
+        with open(CONFIG_PATH, "r", encoding="utf-8") as f:
+            config = json.load(f)
+            token = config.get("githubToken", "")
+            if token:
+                return token
+    except Exception:
+        pass
+    # 回退：环境变量
+    return os.environ.get("GH_TOKEN", "")
+
+GITHUB_TOKEN = get_github_token()
 
 # Files to sync (modified + new, excluding node_modules and large files)
 EXCLUDE_PATTERNS = ["node_modules", ".git", ".workbuddy", ".netlify", "__pycache__"]

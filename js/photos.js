@@ -59,9 +59,26 @@
     ];
 
     // ══════════════════════════════════════════════
+    //  动态注入编辑按钮样式（兼容旧版 HTML 缓存）
+    // ══════════════════════════════════════════════
+    function injectEditButtonStyles() {
+        if (document.getElementById('albumEditDynamicStyle')) return;
+        const style = document.createElement('style');
+        style.id = 'albumEditDynamicStyle';
+        style.textContent = `
+            .album-edit { position: absolute; top: 8px; right: 44px; width: 32px; height: 32px; background: rgba(100, 149, 237, 0.9); color: white; border: none; border-radius: 50%; cursor: pointer; display: none; align-items: center; justify-content: center; z-index: 5; transition: all 0.2s; }
+            .album-edit:active { transform: scale(0.9); }
+            .edit-mode .album-edit { display: flex !important; }
+            .edit-mode .album-delete { display: flex !important; }
+        `;
+        document.head.appendChild(style);
+    }
+
+    // ══════════════════════════════════════════════
     //  初始化入口
     // ══════════════════════════════════════════════
     async function init() {
+        injectEditButtonStyles();
         await loadAlbums();
         setupEventListeners();
         renderAlbums();
@@ -74,6 +91,32 @@
     //  数据加载
     // ══════════════════════════════════════════════
     async function loadAlbums() {
+        // 优先从 GitHub raw 拉取最新数据（绕过 Cloudflare Pages 缓存）
+        const githubRawUrl = 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main/data/photos.json';
+        try {
+            const resp = await fetch(githubRawUrl + '?t=' + Date.now(), { cache: 'no-store' });
+            if (resp.ok) {
+                const data = await resp.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    if (data[0] && Array.isArray(data[0].photos)) {
+                        albums = data;
+                        return;
+                    } else {
+                        albums = [{
+                            id: 'migrated', title: '全部照片',
+                            cover: data[0]?.src || '',
+                            date: '2025', tag: 'daily',
+                            photos: data.map(p => ({ src: p.src, caption: p.title || '' }))
+                        }];
+                        return;
+                    }
+                }
+            }
+        } catch (e) {
+            console.log('[loadAlbums] GitHub raw 加载失败，回退到本地:', e.message);
+        }
+
+        // Fallback：从当前域名加载（本地开发时使用）
         try {
             const resp = await fetch('data/photos.json?t=' + Date.now());
             if (resp.ok) {
@@ -274,15 +317,22 @@
                     <img class="album-cover" src="${album.cover}" alt="${album.title}" loading="lazy" onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 400 300%22><rect fill=%22%23F0E6E6%22 width=%22400%22 height=%22300%22/><text x=%22200%22 y=%22160%22 text-anchor=%22middle%22 fill=%22%23C4A8A2%22 font-size=%2240%22>📷</text></svg>'">
                     <span class="album-tag">${getTagLabel(album.tag)}</span>
                     <span class="album-count">${album.photos?.length || 0}张</span>
-                    ${editMode ? `<button class="album-delete" data-id="${album.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>` : ''}
+                    ${editMode ? `<button class="album-edit" data-id="${album.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></button><button class="album-delete" data-id="${album.id}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg></button>` : ''}
                 </div>
                 <div class="album-info">
                     <div class="album-title">${album.title}</div>
-                    <div class="album-date">${album.date}</div>
+                    <div class="album-date">${album.date || ''}</div>
                 </div>
             `;
 
             card.querySelector('.album-cover-wrap').addEventListener('click', () => openAlbum(album));
+            const editBtn = card.querySelector('.album-edit');
+            if (editBtn) {
+                editBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openAlbumModal(album);
+                });
+            }
             const delBtn = card.querySelector('.album-delete');
             if (delBtn) {
                 delBtn.addEventListener('click', (e) => {
@@ -439,77 +489,77 @@
         };
 
         try {
-            updateProgress(10, '读取文件...');
+            // 1. 压缩并转成 base64
+            updateProgress(20, '压缩图片...');
+            const compressed = await compressImage(file, 1200, 0.85);
+            const base64 = await readFileAsBase64(compressed);
 
-            const ext = file.name.split('.').pop().toLowerCase();
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substr(2, 6);
-            const filename = `cover-${timestamp}-${random}.${ext}`;
+            let uploadedUrl = null;
+            let isLocal = false;
 
-            updateProgress(30, '准备上传...');
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-            updateProgress(60, '上传到服务器...');
-
-            let response;
+            // 2. 优先通过 Cloudflare Function 上传（国内网络友好）
+            updateProgress(50, '上传到云端...');
             try {
-                response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                const resp = await fetch('/upload-image', {
                     method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(15000)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: '2025', file: base64 })
                 });
-            } catch {
-                throw new Error('UPLOAD_OFFLINE');
-            }
-
-            if (!response.ok) {
-                let errorMsg = '上传失败';
-                try {
-                    const errData = await response.json();
-                    errorMsg = errData.error?.message || errData.message || `服务器错误 (${response.status})`;
-                } catch {
-                    errorMsg = await response.text() || `服务器错误 (${response.status})`;
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.success) {
+                        uploadedUrl = data.url;
+                    }
                 }
-                throw new Error(errorMsg);
+            } catch (e) {
+                console.log('[upload-image] Function 不可用:', e.message);
             }
 
-            const data = await response.json();
-            albumCoverUrl = data.secure_url;
-            updateProgress(100, '完成！');
+            // 3. Fallback：直连 Cloudinary
+            if (!uploadedUrl) {
+                updateProgress(70, '直连上传...');
+                try {
+                    const formData = new FormData();
+                    formData.append('file', compressed);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        uploadedUrl = data.secure_url;
+                    }
+                } catch (e) {
+                    console.log('[Cloudinary] 直连失败:', e.message);
+                }
+            }
+
+            // 4. 最终 fallback：base64 本地存储
+            if (!uploadedUrl) {
+                updateProgress(80, '转为本地存储...');
+                uploadedUrl = base64;
+                isLocal = true;
+            }
+
+            albumCoverUrl = uploadedUrl; // 保存时用远程 URL
+            const previewUrl = URL.createObjectURL(compressed); // 预览用本地图片（瞬间加载）
+            updateProgress(100, isLocal ? '完成（本地存储）' : '完成！');
             setTimeout(() => {
-                showCoverPreview(albumCoverUrl);
+                showCoverPreview(previewUrl);
                 progressArea.style.display = 'none';
                 uploadArea.classList.remove('uploading');
+                if (isLocal) {
+                    showToast('上传服务暂不可用，已转为本地存储（页面刷新后需重新上传）');
+                }
             }, 500);
 
         } catch (err) {
-            console.error('[Cloudinary Upload Error]', err);
-            if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('network')) {
-                updateProgress(70, '服务器不可用，转为本地存储...');
-                try {
-                    const compressed = await compressImage(file, 1200, 0.8);
-                    const base64 = await readFileAsBase64(compressed);
-                    albumCoverUrl = base64;
-                    updateProgress(100, '完成（本地存储）');
-                    setTimeout(() => {
-                        showCoverPreview(albumCoverUrl);
-                        progressArea.style.display = 'none';
-                        uploadArea.classList.remove('uploading');
-                        showToast('上传服务暂不可用，已转为本地存储（页面刷新后需重新上传）');
-                    }, 500);
-                } catch (compressErr) {
-                    progressText.textContent = '处理失败: ' + compressErr.message;
-                    progressFill.style.background = '#e74c3c';
-                    setTimeout(() => { resetCoverUploadUI(); }, 3000);
-                }
-            } else {
-                progressText.textContent = '上传失败: ' + err.message;
-                progressFill.style.background = '#e74c3c';
-                setTimeout(() => { resetCoverUploadUI(); }, 3000);
-            }
+            console.error('[Upload Error]', err);
+            progressText.textContent = '上传失败: ' + err.message;
+            progressFill.style.background = '#e74c3c';
+            setTimeout(() => { resetCoverUploadUI(); }, 3000);
         }
     }
 
@@ -617,7 +667,7 @@
     }
 
     // ══════════════════════════════════════════════
-    //  Cloudinary 上传（单文件）
+    //  图片上传（三层 fallback：Function → Cloudinary → base64）
     // ══════════════════════════════════════════════
     async function uploadFile(file, itemId) {
         const item = document.getElementById(itemId);
@@ -635,65 +685,65 @@
         };
 
         try {
-            updateProgress(10, '读取文件...');
+            updateProgress(20, '压缩图片...');
+            const compressed = await compressImage(file, 1200, 0.85);
+            const base64 = await readFileAsBase64(compressed);
 
-            const ext = file.name.split('.').pop().toLowerCase();
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substr(2, 6);
-            const filename = `${timestamp}-${random}.${ext}`;
+            let uploadedUrl = null;
+            let isLocal = false;
 
-            updateProgress(30, '准备上传...');
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-            updateProgress(50, '上传到服务器...');
-
-            let response;
+            // 1. 优先通过 Cloudflare Function 上传
+            updateProgress(50, '上传到云端...');
             try {
-                response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                const resp = await fetch('/upload-image', {
                     method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(15000)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: '2025', file: base64 })
                 });
-            } catch {
-                throw new Error('UPLOAD_OFFLINE');
-            }
-
-            if (!response.ok) {
-                let errorMsg = '上传失败';
-                try {
-                    const errData = await response.json();
-                    errorMsg = errData.error?.message || errData.message || `服务器错误 (${response.status})`;
-                } catch {
-                    errorMsg = await response.text() || `服务器错误 (${response.status})`;
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.success) {
+                        uploadedUrl = data.url;
+                    }
                 }
-                throw new Error(errorMsg);
+            } catch (e) {
+                console.log('[upload-image] Function 不可用:', e.message);
             }
 
-            const data = await response.json();
-            updateProgress(100, '完成');
+            // 2. Fallback：直连 Cloudinary
+            if (!uploadedUrl) {
+                updateProgress(70, '直连上传...');
+                try {
+                    const formData = new FormData();
+                    formData.append('file', compressed);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        uploadedUrl = data.secure_url;
+                    }
+                } catch (e) {
+                    console.log('[Cloudinary] 直连失败:', e.message);
+                }
+            }
+
+            // 3. 最终 fallback：base64 本地存储
+            if (!uploadedUrl) {
+                updateProgress(80, '转为本地存储...');
+                uploadedUrl = base64;
+                isLocal = true;
+            }
+
+            updateProgress(100, isLocal ? '完成（本地）' : '完成');
             const objectUrl = URL.createObjectURL(file);
             thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
-            return { success: true, url: data.secure_url, name: file.name };
+            return { success: true, url: uploadedUrl, name: file.name, local: isLocal };
 
         } catch (err) {
-            if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('network')) {
-                updateProgress(60, '服务器不可用，转为本地存储...');
-                try {
-                    const compressed = await compressImage(file, 1200, 0.8);
-                    const base64 = await readFileAsBase64(compressed);
-                    updateProgress(100, '完成（本地）');
-                    const objectUrl = URL.createObjectURL(file);
-                    thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
-                    return { success: true, url: base64, name: file.name, local: true };
-                } catch (compressErr) {
-                    updateProgress(0, '失败: ' + compressErr.message);
-                    item.style.opacity = '0.5';
-                    return { success: false, error: compressErr.message, name: file.name };
-                }
-            }
             updateProgress(0, '失败: ' + err.message);
             item.style.opacity = '0.5';
             return { success: false, error: err.message, name: file.name };
@@ -876,25 +926,63 @@
     //  数据持久化
     // ══════════════════════════════════════════════
     async function saveAndRender() {
+        const data = albums;
+        let saved = false;
+
+        // 优先尝试 Cloudflare Pages Function（只传密码，token 在服务端）
         try {
-            const data = JSON.stringify(albums, null, 2);
-            const token = localStorage.getItem('gh_token');
-            if (token) {
-                const owner = 'Lily1756', repo = 'love-anniversary', path = 'data/photos.json';
-                const blob = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-                    headers: { Authorization: `token ${token}` }
-                }).then(r => r.json());
-                await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
-                    method: 'PUT',
-                    headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        message: '更新照片数据',
-                        content: btoa(unescape(encodeURIComponent(data))),
-                        sha: blob.sha
-                    })
-                });
+            const functionUrl = '/save-photos';
+            const resp = await fetch(functionUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    password: '2025',
+                    data: data,
+                    path: 'data/photos.json'
+                })
+            });
+            if (resp.ok) {
+                const result = await resp.json();
+                if (result.success) {
+                    saved = true;
+                    showToast('✅ 已保存到云端');
+                }
             }
-        } catch (e) { console.error('保存失败', e); }
+        } catch (e) {
+            // Function 不可用（本地开发或部署未生效），继续 fallback
+            console.log('[save-photos] Function 不可用，尝试 fallback:', e.message);
+        }
+
+        // Fallback：用 localStorage 里的 token 直接调 GitHub API
+        if (!saved) {
+            const token = localStorage.getItem('github_pat');
+            if (token) {
+                try {
+                    const owner = 'Lily1756', repo = 'love-anniversary', path = 'data/photos.json';
+                    const jsonStr = JSON.stringify(data, null, 2);
+                    const blob = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                        headers: { Authorization: `token ${token}` }
+                    }).then(r => r.json());
+                    await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${path}`, {
+                        method: 'PUT',
+                        headers: { Authorization: `token ${token}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            message: '更新照片数据',
+                            content: btoa(unescape(encodeURIComponent(jsonStr))),
+                            sha: blob.sha
+                        })
+                    });
+                    saved = true;
+                    showToast('✅ 已保存到云端');
+                } catch (e) {
+                    console.error('GitHub API 保存失败', e);
+                    showToast('❌ 保存失败，请检查网络或重新登录');
+                }
+            } else {
+                showToast('⚠️ 未配置 Token，数据仅本地有效');
+            }
+        }
+
         renderAlbums();
     }
 
