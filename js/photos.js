@@ -439,77 +439,76 @@
         };
 
         try {
-            updateProgress(10, '读取文件...');
+            // 1. 压缩并转成 base64
+            updateProgress(20, '压缩图片...');
+            const compressed = await compressImage(file, 1200, 0.85);
+            const base64 = await readFileAsBase64(compressed);
 
-            const ext = file.name.split('.').pop().toLowerCase();
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substr(2, 6);
-            const filename = `cover-${timestamp}-${random}.${ext}`;
+            let uploadedUrl = null;
+            let isLocal = false;
 
-            updateProgress(30, '准备上传...');
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-            updateProgress(60, '上传到服务器...');
-
-            let response;
+            // 2. 优先通过 Cloudflare Function 上传（国内网络友好）
+            updateProgress(50, '上传到云端...');
             try {
-                response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                const resp = await fetch('/upload-image', {
                     method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(15000)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: '2025', file: base64 })
                 });
-            } catch {
-                throw new Error('UPLOAD_OFFLINE');
-            }
-
-            if (!response.ok) {
-                let errorMsg = '上传失败';
-                try {
-                    const errData = await response.json();
-                    errorMsg = errData.error?.message || errData.message || `服务器错误 (${response.status})`;
-                } catch {
-                    errorMsg = await response.text() || `服务器错误 (${response.status})`;
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.success) {
+                        uploadedUrl = data.url;
+                    }
                 }
-                throw new Error(errorMsg);
+            } catch (e) {
+                console.log('[upload-image] Function 不可用:', e.message);
             }
 
-            const data = await response.json();
-            albumCoverUrl = data.secure_url;
-            updateProgress(100, '完成！');
+            // 3. Fallback：直连 Cloudinary
+            if (!uploadedUrl) {
+                updateProgress(70, '直连上传...');
+                try {
+                    const formData = new FormData();
+                    formData.append('file', compressed);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        uploadedUrl = data.secure_url;
+                    }
+                } catch (e) {
+                    console.log('[Cloudinary] 直连失败:', e.message);
+                }
+            }
+
+            // 4. 最终 fallback：base64 本地存储
+            if (!uploadedUrl) {
+                updateProgress(80, '转为本地存储...');
+                uploadedUrl = base64;
+                isLocal = true;
+            }
+
+            albumCoverUrl = uploadedUrl;
+            updateProgress(100, isLocal ? '完成（本地存储）' : '完成！');
             setTimeout(() => {
                 showCoverPreview(albumCoverUrl);
                 progressArea.style.display = 'none';
                 uploadArea.classList.remove('uploading');
+                if (isLocal) {
+                    showToast('上传服务暂不可用，已转为本地存储（页面刷新后需重新上传）');
+                }
             }, 500);
 
         } catch (err) {
-            console.error('[Cloudinary Upload Error]', err);
-            if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('network')) {
-                updateProgress(70, '服务器不可用，转为本地存储...');
-                try {
-                    const compressed = await compressImage(file, 1200, 0.8);
-                    const base64 = await readFileAsBase64(compressed);
-                    albumCoverUrl = base64;
-                    updateProgress(100, '完成（本地存储）');
-                    setTimeout(() => {
-                        showCoverPreview(albumCoverUrl);
-                        progressArea.style.display = 'none';
-                        uploadArea.classList.remove('uploading');
-                        showToast('上传服务暂不可用，已转为本地存储（页面刷新后需重新上传）');
-                    }, 500);
-                } catch (compressErr) {
-                    progressText.textContent = '处理失败: ' + compressErr.message;
-                    progressFill.style.background = '#e74c3c';
-                    setTimeout(() => { resetCoverUploadUI(); }, 3000);
-                }
-            } else {
-                progressText.textContent = '上传失败: ' + err.message;
-                progressFill.style.background = '#e74c3c';
-                setTimeout(() => { resetCoverUploadUI(); }, 3000);
-            }
+            console.error('[Upload Error]', err);
+            progressText.textContent = '上传失败: ' + err.message;
+            progressFill.style.background = '#e74c3c';
+            setTimeout(() => { resetCoverUploadUI(); }, 3000);
         }
     }
 
@@ -617,7 +616,7 @@
     }
 
     // ══════════════════════════════════════════════
-    //  Cloudinary 上传（单文件）
+    //  图片上传（三层 fallback：Function → Cloudinary → base64）
     // ══════════════════════════════════════════════
     async function uploadFile(file, itemId) {
         const item = document.getElementById(itemId);
@@ -635,65 +634,65 @@
         };
 
         try {
-            updateProgress(10, '读取文件...');
+            updateProgress(20, '压缩图片...');
+            const compressed = await compressImage(file, 1200, 0.85);
+            const base64 = await readFileAsBase64(compressed);
 
-            const ext = file.name.split('.').pop().toLowerCase();
-            const timestamp = Date.now();
-            const random = Math.random().toString(36).substr(2, 6);
-            const filename = `${timestamp}-${random}.${ext}`;
+            let uploadedUrl = null;
+            let isLocal = false;
 
-            updateProgress(30, '准备上传...');
-
-            const formData = new FormData();
-            formData.append('file', file);
-            formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-            updateProgress(50, '上传到服务器...');
-
-            let response;
+            // 1. 优先通过 Cloudflare Function 上传
+            updateProgress(50, '上传到云端...');
             try {
-                response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                const resp = await fetch('/upload-image', {
                     method: 'POST',
-                    body: formData,
-                    signal: AbortSignal.timeout(15000)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ password: '2025', file: base64 })
                 });
-            } catch {
-                throw new Error('UPLOAD_OFFLINE');
-            }
-
-            if (!response.ok) {
-                let errorMsg = '上传失败';
-                try {
-                    const errData = await response.json();
-                    errorMsg = errData.error?.message || errData.message || `服务器错误 (${response.status})`;
-                } catch {
-                    errorMsg = await response.text() || `服务器错误 (${response.status})`;
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.success) {
+                        uploadedUrl = data.url;
+                    }
                 }
-                throw new Error(errorMsg);
+            } catch (e) {
+                console.log('[upload-image] Function 不可用:', e.message);
             }
 
-            const data = await response.json();
-            updateProgress(100, '完成');
+            // 2. Fallback：直连 Cloudinary
+            if (!uploadedUrl) {
+                updateProgress(70, '直连上传...');
+                try {
+                    const formData = new FormData();
+                    formData.append('file', compressed);
+                    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+                    const response = await fetch(CLOUDINARY_UPLOAD_URL, {
+                        method: 'POST',
+                        body: formData,
+                        signal: AbortSignal.timeout(30000)
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        uploadedUrl = data.secure_url;
+                    }
+                } catch (e) {
+                    console.log('[Cloudinary] 直连失败:', e.message);
+                }
+            }
+
+            // 3. 最终 fallback：base64 本地存储
+            if (!uploadedUrl) {
+                updateProgress(80, '转为本地存储...');
+                uploadedUrl = base64;
+                isLocal = true;
+            }
+
+            updateProgress(100, isLocal ? '完成（本地）' : '完成');
             const objectUrl = URL.createObjectURL(file);
             thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
-            return { success: true, url: data.secure_url, name: file.name };
+            return { success: true, url: uploadedUrl, name: file.name, local: isLocal };
 
         } catch (err) {
-            if (err.message === 'UPLOAD_OFFLINE' || err.message.includes('fetch') || err.message.includes('network')) {
-                updateProgress(60, '服务器不可用，转为本地存储...');
-                try {
-                    const compressed = await compressImage(file, 1200, 0.8);
-                    const base64 = await readFileAsBase64(compressed);
-                    updateProgress(100, '完成（本地）');
-                    const objectUrl = URL.createObjectURL(file);
-                    thumb.innerHTML = `<img src="${objectUrl}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
-                    return { success: true, url: base64, name: file.name, local: true };
-                } catch (compressErr) {
-                    updateProgress(0, '失败: ' + compressErr.message);
-                    item.style.opacity = '0.5';
-                    return { success: false, error: compressErr.message, name: file.name };
-                }
-            }
             updateProgress(0, '失败: ' + err.message);
             item.style.opacity = '0.5';
             return { success: false, error: err.message, name: file.name };
