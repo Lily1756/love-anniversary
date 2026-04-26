@@ -127,6 +127,7 @@ python3 sync_diaries.py
 
 ## 版本历史
 
+- **2026-04-26**: Cloudflare Pages Function 代理 GitHub API（编辑照片免 Token）
 - **2026-04-26**: 代码重构（提取 photos.js，清理无用文件），照片上传迁移到 Cloudinary
 - **2026-04-25**: 完成照片上传、图标更新、Cloudflare Pages 部署
 - **2026-04-24**: 完成 GitHub OAuth 编辑系统、滴答同步
