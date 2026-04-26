@@ -179,6 +179,7 @@
             </h1>
             <div class="nav-actions">
                 <button class="btn-add" id="addAlbumBtn" style="display:none">+ 新建相册</button>
+                <button class="btn-add" id="addPhotoBtn" style="display:none; background: var(--accent-soft); color: var(--accent-primary);">+ 添加照片</button>
                 <button class="btn-edit" id="editModeBtn" style="display:none">编辑</button>
             </div>
         </div>
@@ -270,13 +271,39 @@
 
     <!-- 添加照片模态框 -->
     <div class="modal-overlay" id="photoModal">
-        <div class="modal-box">
-            <h3 class="modal-title">添加照片</h3>
+        <div class="modal-box" style="max-width: 520px; max-height: 80vh; overflow-y: auto;">
+            <h3 class="modal-title">批量添加照片</h3>
             <div class="form-group"><label class="form-label">目标相册</label>
                 <select class="form-select" id="photoAlbumSelect"></select>
             </div>
-            <div class="form-group"><label class="form-label">图片 URL</label><input class="form-input" id="photoUrlInput" placeholder="https://..."></div>
-            <div class="form-group"><label class="form-label">照片描述</label><input class="form-input" id="photoCaptionInput" placeholder="这一刻的回忆..." maxlength="100"></div>
+            
+            <!-- 批量输入区域 -->
+            <div class="form-group">
+                <label class="form-label">照片列表 <span style="color: var(--text-muted); font-weight: normal;">(每行一张: URL|描述)</span></label>
+                <textarea class="form-input" id="photoBatchInput" rows="6" placeholder="https://example.com/photo1.jpg|海边日落
+https://example.com/photo2.jpg|开心时刻
+https://example.com/photo3.jpg" style="resize: vertical; font-family: monospace; font-size: 0.85rem;"></textarea>
+            </div>
+            
+            <!-- 快捷添加单张 -->
+            <div class="form-group" style="border-top: 1px dashed rgba(196,168,162,0.3); padding-top: 16px; margin-top: 16px;">
+                <label class="form-label" style="display: flex; align-items: center; gap: 8px; cursor: pointer;" onclick="document.getElementById('singlePhotoToggle').click()">
+                    <input type="checkbox" id="singlePhotoToggle" style="width: 18px; height: 18px; accent-color: var(--accent-primary);">
+                    <span>添加单张照片</span>
+                </label>
+            </div>
+            
+            <div id="singlePhotoArea" style="display: none;">
+                <div class="form-group"><label class="form-label">图片 URL</label><input class="form-input" id="photoUrlInput" placeholder="https://..."></div>
+                <div class="form-group"><label class="form-label">照片描述</label><input class="form-input" id="photoCaptionInput" placeholder="这一刻的回忆..." maxlength="100"></div>
+            </div>
+            
+            <!-- 预览区域 -->
+            <div class="form-group" id="batchPreviewArea" style="display: none;">
+                <label class="form-label">预览 <span id="batchCount" style="color: var(--accent-primary);"></span></label>
+                <div id="batchPreviewList" style="display: flex; flex-wrap: wrap; gap: 8px; max-height: 150px; overflow-y: auto; padding: 10px; background: var(--bg-secondary); border-radius: var(--radius-sm);"></div>
+            </div>
+            
             <div class="modal-actions">
                 <button class="btn-modal btn-cancel" id="photoCancel">取消</button>
                 <button class="btn-modal btn-confirm" id="photoConfirm">添加</button>
@@ -413,10 +440,14 @@
                 document.getElementById('editModeBtn').textContent = editMode ? '完成编辑' : '编辑';
                 document.querySelector('.album-grid').classList.toggle('edit-mode', editMode);
                 document.getElementById('addAlbumBtn').style.display = editMode ? 'inline-flex' : 'none';
+                document.getElementById('addPhotoBtn').style.display = editMode ? 'inline-flex' : 'none';
             });
 
             // 新建相册
             document.getElementById('addAlbumBtn').addEventListener('click', () => openAlbumModal());
+            
+            // 添加照片
+            document.getElementById('addPhotoBtn').addEventListener('click', () => openPhotoModal());
 
             // 全屏浏览
             document.getElementById('viewerBack').addEventListener('click', closeViewer);
@@ -631,26 +662,104 @@
         function openPhotoModal() {
             const select = document.getElementById('photoAlbumSelect');
             select.innerHTML = albums.map(a => `<option value="${a.id}">${a.title}</option>`).join('');
+            document.getElementById('photoBatchInput').value = '';
             document.getElementById('photoUrlInput').value = '';
             document.getElementById('photoCaptionInput').value = '';
+            document.getElementById('singlePhotoToggle').checked = false;
+            document.getElementById('singlePhotoArea').style.display = 'none';
+            document.getElementById('batchPreviewArea').style.display = 'none';
             document.getElementById('photoModal').classList.add('active');
+            
+            // 绑定批量输入实时预览
+            document.getElementById('photoBatchInput').addEventListener('input', updateBatchPreview);
+            document.getElementById('singlePhotoToggle').addEventListener('change', (e) => {
+                document.getElementById('singlePhotoArea').style.display = e.target.checked ? 'block' : 'none';
+                document.getElementById('batchPreviewArea').style.display = e.target.checked ? 'none' : 'block';
+            });
+        }
+        
+        function updateBatchPreview() {
+            const input = document.getElementById('photoBatchInput').value.trim();
+            const previewArea = document.getElementById('batchPreviewArea');
+            const previewList = document.getElementById('batchPreviewList');
+            const countEl = document.getElementById('batchCount');
+            
+            if (!input) {
+                previewArea.style.display = 'none';
+                return;
+            }
+            
+            const lines = input.split('\n').filter(line => line.trim());
+            const photos = [];
+            
+            lines.forEach(line => {
+                const parts = line.split('|');
+                const url = parts[0].trim();
+                const caption = parts[1] ? parts[1].trim() : '';
+                if (url) photos.push({ url, caption });
+            });
+            
+            if (photos.length === 0) {
+                previewArea.style.display = 'none';
+                return;
+            }
+            
+            previewArea.style.display = 'block';
+            countEl.textContent = `(${photos.length}张)`;
+            
+            previewList.innerHTML = photos.map((p, i) => `
+                <div style="position: relative; width: 60px; height: 60px; border-radius: 6px; overflow: hidden; background: var(--bg-primary);">
+                    <img src="${p.url}" style="width: 100%; height: 100%; object-fit: cover;" onerror="this.style.display='none'; this.parentElement.innerHTML='<div style=\\'display:flex;align-items:center;justify-content:center;height:100%;color:#999;font-size:10px;\\'>失效</div>'">
+                    <div style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.6); color: white; font-size: 10px; padding: 2px 4px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${i + 1}</div>
+                </div>
+            `).join('');
         }
 
         function confirmPhotoModal() {
             const albumId = document.getElementById('photoAlbumSelect').value;
-            const url = document.getElementById('photoUrlInput').value.trim();
-            const caption = document.getElementById('photoCaptionInput').value.trim();
-
-            if (!url) { showToast('请输入图片 URL'); return; }
-
             const album = albums.find(a => a.id === albumId);
-            if (album) {
-                if (!album.photos) album.photos = [];
+            if (!album) { showToast('相册不存在'); return; }
+            if (!album.photos) album.photos = [];
+            
+            const isSingleMode = document.getElementById('singlePhotoToggle').checked;
+            
+            if (isSingleMode) {
+                // 单张模式
+                const url = document.getElementById('photoUrlInput').value.trim();
+                const caption = document.getElementById('photoCaptionInput').value.trim();
+                if (!url) { showToast('请输入图片 URL'); return; }
                 album.photos.push({ src: url, caption });
                 if (!album.cover) album.cover = url;
                 saveAndRender();
                 showToast('照片添加成功');
+            } else {
+                // 批量模式
+                const input = document.getElementById('photoBatchInput').value.trim();
+                if (!input) { showToast('请输入照片列表'); return; }
+                
+                const lines = input.split('\n').filter(line => line.trim());
+                let addedCount = 0;
+                
+                lines.forEach(line => {
+                    const parts = line.split('|');
+                    const url = parts[0].trim();
+                    const caption = parts[1] ? parts[1].trim() : '';
+                    if (url) {
+                        album.photos.push({ src: url, caption });
+                        addedCount++;
+                    }
+                });
+                
+                if (addedCount > 0) {
+                    if (!album.cover) album.cover = album.photos[0].src;
+                    saveAndRender();
+                    showToast(`成功添加 ${addedCount} 张照片`);
+                } else {
+                    showToast('没有有效的照片 URL');
+                    return;
+                }
             }
+            
             closeModal('photoModal');
         }
 
