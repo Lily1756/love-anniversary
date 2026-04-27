@@ -1,7 +1,7 @@
 <template>
   <div>
     <!-- 密码锁 -->
-    <LockScreen correct-password="2025" @unlock="onUnlock" />
+    <LockScreen correct-password="2025" />
 
     <!-- 主内容 -->
     <div class="home">
@@ -38,10 +38,6 @@
           <span class="quick-icon">⏳</span>
           <span class="quick-label">时间胶囊</span>
         </router-link>
-        <router-link to="/wedding" class="quick-link">
-          <span class="quick-icon">💍</span>
-          <span class="quick-label">婚礼手册</span>
-        </router-link>
       </section>
 
       <!-- 底部 -->
@@ -53,16 +49,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import LockScreen from '@/components/features/LockScreen.vue'
 import { useAppStore } from '@/stores'
 
 const store = useAppStore()
-const isUnlocked = ref(false)
-
-function onUnlock() {
-  isUnlocked.value = true
-}
 
 onMounted(() => {
   store.loadAll()
@@ -161,7 +152,7 @@ onMounted(() => {
 
 @media (min-width: 768px) {
   .quick-links {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(5, 1fr);
     max-width: 800px;
     margin: 0 auto;
   }
