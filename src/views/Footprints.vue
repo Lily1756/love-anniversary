@@ -7,7 +7,7 @@
         <span class="count">({{ store.footprints.length }})</span>
       </h2>
       <div class="header-actions">
-        <button v-if="!isEditMode" class="edit-btn" @click="showAuth = true">
+        <button v-if="!isEditMode" class="edit-btn" @click="openAuthModal">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
@@ -71,25 +71,13 @@
       </div>
     </div>
 
-    <!-- 认证弹窗 -->
-    <Modal v-model="showAuth" title="编辑认证">
-      <div class="auth-form">
-        <p>请输入密码进入编辑模式</p>
-        <input
-          v-model="authPassword"
-          type="password"
-          class="auth-input"
-          placeholder="请输入密码..."
-          maxlength="20"
-          @keydown.enter="verifyAuth"
-        />
-        <p v-if="authError" class="auth-error">密码错误 💔</p>
-      </div>
-      <template #footer>
-        <button class="btn-text" @click="showAuth = false">取消</button>
-        <button class="btn-primary" @click="verifyAuth">确认</button>
-      </template>
-    </Modal>
+    <EditAuthModal
+      v-model="showAuth"
+      :password="authPassword"
+      :error="authError"
+      @update:password="authPassword = $event"
+      @confirm="verifyAuth"
+    />
 
     <!-- 添加/编辑足迹弹窗 -->
     <Modal v-model="showAddModal" :title="editingFootprint ? '编辑足迹' : '添加足迹'">
@@ -164,7 +152,10 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useAppStore } from '@/stores'
 import Modal from '@/components/common/Modal.vue'
+import EditAuthModal from '@/components/common/EditAuthModal.vue'
 import { useUpload } from '@/composables/useUpload'
+import { useEditAuth } from '@/composables/useEditAuth'
+import { useDebouncedSave } from '@/composables/useDebouncedSave'
 import type { Footprint } from '@/types'
 
 const store = useAppStore()
@@ -177,21 +168,30 @@ let markers: any[] = []
 let L: any = null
 let clickMarker: any = null
 
-/* ---------- 编辑模式 ---------- */
-const isEditMode = ref(false)
-const showAuth = ref(false)
-const authPassword = ref('')
-const authError = ref(false)
 const mapClickHint = ref(false)
+const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
+  password: '2025',
+  onEnterEditMode: () => {
+    mapClickHint.value = true
+  },
+  onExitEditMode: () => {
+    mapClickHint.value = false
+    if (clickMarker && map) {
+      map.removeLayer(clickMarker)
+      clickMarker = null
+    }
+  },
+})
 
 /* ---------- 添加/编辑 ---------- */
 const showAddModal = ref(false)
 const editingFootprint = ref<Footprint | null>(null)
 const photoInput = ref<HTMLInputElement>()
+const getToday = () => new Date().toISOString().split('T')[0] as string
 
 const form = ref({
   name: '',
-  date: new Date().toISOString().split('T')[0],
+  date: getToday(),
   memory: '',
   lng: 121.4737,
   lat: 31.2304,
@@ -215,8 +215,7 @@ const quickLocations = [
 ]
 
 /* ---------- 保存状态 ---------- */
-const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-const saveMessage = ref('')
+const { saveStatus, saveMessage, triggerDebouncedSave } = useDebouncedSave()
 
 const sortedFootprints = computed(() => {
   return [...store.footprints].sort((a, b) =>
@@ -290,35 +289,12 @@ const renderMarkers = () => {
   })
 }
 
-/* ---------- 编辑模式 ---------- */
-function verifyAuth() {
-  if (authPassword.value.trim() === '2025') {
-    isEditMode.value = true
-    showAuth.value = false
-    authPassword.value = ''
-    authError.value = false
-    mapClickHint.value = true
-  } else {
-    authError.value = true
-    authPassword.value = ''
-  }
-}
-
-function exitEditMode() {
-  isEditMode.value = false
-  mapClickHint.value = false
-  if (clickMarker && map) {
-    map.removeLayer(clickMarker)
-    clickMarker = null
-  }
-}
-
 /* ---------- 添加/编辑足迹 ---------- */
 function openAddModal() {
   editingFootprint.value = null
   form.value = {
     name: '',
-    date: new Date().toISOString().split('T')[0],
+    date: getToday(),
     memory: '',
     lng: 121.4737,
     lat: 31.2304,
@@ -398,27 +374,8 @@ function deleteFootprint(id: string) {
   autoSave()
 }
 
-/* ---------- 自动保存 ---------- */
-let saveTimer: ReturnType<typeof setTimeout> | null = null
-
 async function autoSave() {
-  if (saveTimer) clearTimeout(saveTimer)
-  saveStatus.value = 'saving'
-  saveMessage.value = '正在保存...'
-
-  saveTimer = setTimeout(async () => {
-    const result = await store.saveFootprints('2025')
-    if (result.success) {
-      saveStatus.value = 'saved'
-      saveMessage.value = '已保存'
-      setTimeout(() => {
-        if (saveStatus.value === 'saved') saveStatus.value = 'idle'
-      }, 2000)
-    } else {
-      saveStatus.value = 'error'
-      saveMessage.value = '保存失败: ' + result.error
-    }
-  }, 800)
+  triggerDebouncedSave(() => store.saveFootprints('2025'))
 }
 
 /* ---------- 监听足迹变化 ---------- */
@@ -763,61 +720,6 @@ onMounted(() => {
 .upload-photo-btn:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
-}
-
-/* 认证表单 */
-.auth-form {
-  text-align: center;
-  padding: var(--space-lg);
-}
-.auth-form p {
-  color: var(--text-secondary);
-  margin-bottom: var(--space-md);
-}
-.auth-input {
-  width: 100%;
-  max-width: 280px;
-  padding: 12px 16px;
-  border: 2px solid var(--border-base);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  font-size: var(--font-size-base);
-  text-align: center;
-}
-.auth-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-.auth-error {
-  color: #c97070;
-  font-size: var(--font-size-sm);
-  margin-top: var(--space-sm);
-}
-
-/* 弹窗按钮 */
-.btn-text, .btn-primary {
-  padding: 8px 20px;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  border: none;
-  transition: all var(--transition-fast);
-}
-.btn-text {
-  background: transparent;
-  color: var(--text-secondary);
-}
-.btn-text:hover {
-  background: var(--bg-surface);
-}
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-}
-.btn-primary:hover {
-  background: #b8979a;
 }
 
 /* 保存状态提示 */
