@@ -15,7 +15,6 @@
           <polygon v-if="item.icon === 'footprints'" points="1 6 1 22 8 18 16 22 21 18 21 2 16 6 8 2 1 6"/><line v-if="item.icon === 'footprints'" x1="8" y1="2" x2="8" y2="18"/><line v-if="item.icon === 'footprints'" x1="16" y1="6" x2="16" y2="22"/>
           <polygon v-if="item.icon === 'wishlist'" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
           <path v-if="item.icon === 'capsules'" d="M21 8v13H3V8"/><path v-if="item.icon === 'capsules'" d="M1 3h22v5H1z"/><path v-if="item.icon === 'capsules'" d="M10 12h4"/>
-          <path v-if="item.icon === 'wedding'" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
           <circle v-if="item.icon === 'settings'" cx="12" cy="12" r="3"/><path v-if="item.icon === 'settings'" d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
         </svg>
       </span>
@@ -34,7 +33,6 @@ const navItems = [
   { name: 'letters', path: '/letters', label: '情书', icon: 'letters' },
   { name: 'gallery', path: '/gallery', label: '照片', icon: 'gallery' },
   { name: 'footprints', path: '/footprints', label: '足迹', icon: 'footprints' },
-  { name: 'wedding', path: '/wedding', label: '婚礼', icon: 'wedding' },
   { name: 'wishlist', path: '/wishlist', label: '愿望', icon: 'wishlist' },
   { name: 'settings', path: '/settings', label: '设置', icon: 'settings' }
 ]
