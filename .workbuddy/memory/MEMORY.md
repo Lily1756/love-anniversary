@@ -2,7 +2,7 @@
 
 **滴答同步**
 - Token 存储于 `config.json`，GitHub PAT 需定期续期
-- 2026-04-24 更新 GitHub Token（旧 Token ghp_AQPaVio… 已失效）
+- 2026-04-27 更新 GitHub Token（旧 Token ghp_AQPaVio… 已失效）
 
 **工作背景**
 用户正在开发名为 love-site 的情侣纪念网站（仓库：Lily1756/love-anniversary，本地路径：/Users/zhangyi/WorkBuddy/20260423010138/love-site），项目涉及情书博物馆、照片墙、足迹地图、愿望清单、时间胶囊等页面。技术栈基于 Leaflet 和 iframe，采用 GitHub Actions（sync_diaries.py）进行自动化同步，并依赖滴答清单作为数据源。因国内网络环境，习惯使用 GitHub API 进行代码同步操作。

@@ -1,0 +1,104 @@
+/* 全局样式 - 浅色莫兰迪主题 */
+@import './variables.css';
+@import './reset.css';
+
+/* ========== 页面容器 ========== */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  padding-bottom: calc(var(--nav-height) + var(--space-xl));
+}
+
+/* ========== 页面标题 ========== */
+.page-title {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-lg);
+}
+
+.page-title .count {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-tertiary);
+}
+
+/* ========== 网格布局 ========== */
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-md);
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+}
+
+.grid-4 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+}
+
+/* ========== 加载动画 ========== */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+/* ========== 空状态 ========== */
+.empty-state {
+  text-align: center;
+  padding: var(--space-3xl) var(--space-lg);
+  color: var(--text-tertiary);
+}
+
+.empty-state p {
+  font-size: var(--font-size-base);
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 1024px) {
+  .grid-4 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .page-container {
+    padding: var(--space-md);
+    padding-bottom: calc(var(--nav-height-mobile) + var(--space-xl));
+  }
+
+  .page-title {
+    font-size: var(--font-size-2xl);
+  }
+
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-sm);
+  }
+}
+
+@media (max-width: 480px) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: 1fr;
+  }
+}
