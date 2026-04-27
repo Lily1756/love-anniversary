@@ -83,6 +83,56 @@ export const useAppStore = defineStore('app', () => {
     ])
   }
 
+  /**
+   * 保存相册数据到 GitHub（通过 Cloudflare Function 代理）
+   */
+  async function saveAlbums(password: string) {
+    try {
+      const response = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          data: albums.value,
+          path: 'data/photos.json'
+        })
+      })
+      const result = await response.json()
+      if (!response.ok || result.error) {
+        throw new Error(result.error || `保存失败: ${response.status}`)
+      }
+      return { success: true, message: result.message }
+    } catch (err: any) {
+      console.error('保存相册失败:', err)
+      return { success: false, error: err.message }
+    }
+  }
+
+  /**
+   * 保存足迹数据到 GitHub（通过 Cloudflare Function 代理）
+   */
+  async function saveFootprints(password: string) {
+    try {
+      const response = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          data: footprints.value,
+          path: 'data/travels.json'
+        })
+      })
+      const result = await response.json()
+      if (!response.ok || result.error) {
+        throw new Error(result.error || `保存失败: ${response.status}`)
+      }
+      return { success: true, message: result.message }
+    } catch (err: any) {
+      console.error('保存足迹失败:', err)
+      return { success: false, error: err.message }
+    }
+  }
+
   return {
     letters,
     albums,
@@ -100,6 +150,8 @@ export const useAppStore = defineStore('app', () => {
     loadAlbums,
     loadFootprints,
     loadWishes,
-    loadAll
+    loadAll,
+    saveAlbums,
+    saveFootprints
   }
 })

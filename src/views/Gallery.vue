@@ -24,6 +24,20 @@
       </div>
     </div>
 
+    <!-- 隐藏的文件输入：修改封面 -->
+    <input
+      ref="coverUploadInput"
+      type="file"
+      accept="image/*"
+      class="hidden"
+      @change="handleCoverChange"
+    />
+
+    <!-- 保存状态提示 -->
+    <div v-if="saveStatus !== 'idle'" class="save-toast" :class="saveStatus">
+      <span>{{ saveMessage }}</span>
+    </div>
+
     <!-- 相册网格 -->
     <div class="albums-grid">
       <div
@@ -38,11 +52,19 @@
           <div class="album-overlay">
             <span class="album-count">{{ album.photos.length }} 张</span>
           </div>
-          <button v-if="isEditMode" class="album-delete" @click.stop="deleteAlbum(album.id)">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-            </svg>
-          </button>
+          <!-- 编辑模式按钮组 -->
+          <template v-if="isEditMode">
+            <button class="album-edit" @click.stop="triggerCoverUpload(album)" title="修改封面">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+              </svg>
+            </button>
+            <button class="album-delete" @click.stop="deleteAlbum(album.id)" title="删除相册">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+              </svg>
+            </button>
+          </template>
         </div>
         <div class="album-info">
           <h3 class="album-title">{{ album.title }}</h3>
@@ -195,6 +217,11 @@ const showAlbumModal = ref(false)
 const newAlbum = ref({ title: '', tag: 'daily', date: new Date().toISOString().split('T')[0] })
 
 const uploadInput = ref<HTMLInputElement>()
+const coverUploadInput = ref<HTMLInputElement>()
+const currentEditAlbum = ref<Album | null>(null)
+
+const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
+const saveMessage = ref('')
 
 const totalPhotos = computed(() => {
   return store.albums.reduce((sum, a) => sum + a.photos.length, 0)
@@ -243,11 +270,13 @@ function createAlbum() {
   store.albums.push(album)
   showAlbumModal.value = false
   newAlbum.value = { title: '', tag: 'daily', date: new Date().toISOString().split('T')[0] }
+  autoSave()
 }
 
 function deleteAlbum(id: string) {
   if (!confirm('确定要删除这个相册吗？相册内的所有照片也会被删除。')) return
   store.albums = store.albums.filter((a) => a.id !== id)
+  autoSave()
 }
 
 async function handleUpload(e: Event) {
@@ -265,6 +294,7 @@ async function handleUpload(e: Event) {
 
   // 重置input
   if (uploadInput.value) uploadInput.value.value = ''
+  autoSave()
 }
 
 function deleteCurrentPhoto() {
@@ -278,6 +308,58 @@ function deleteCurrentPhoto() {
     currentAlbum.value.cover = ''
     showViewer.value = false
   }
+  autoSave()
+}
+
+/* ---------- 修改封面 ---------- */
+function triggerCoverUpload(album: Album) {
+  currentEditAlbum.value = album
+  coverUploadInput.value?.click()
+}
+
+async function handleCoverChange(e: Event) {
+  const files = (e.target as HTMLInputElement).files
+  if (!files || files.length === 0 || !currentEditAlbum.value) return
+
+  try {
+    saveStatus.value = 'saving'
+    saveMessage.value = '正在上传封面...'
+    const urls = await upload.uploadFiles(files)
+    if (urls.length > 0 && currentEditAlbum.value) {
+      currentEditAlbum.value.cover = urls[0]!
+      saveMessage.value = '封面已更新'
+      await autoSave()
+    }
+  } catch (err: any) {
+    saveStatus.value = 'error'
+    saveMessage.value = '封面上传失败: ' + err.message
+  } finally {
+    if (coverUploadInput.value) coverUploadInput.value.value = ''
+    currentEditAlbum.value = null
+  }
+}
+
+/* ---------- 自动保存 ---------- */
+let saveTimer: ReturnType<typeof setTimeout> | null = null
+
+async function autoSave() {
+  if (saveTimer) clearTimeout(saveTimer)
+  saveStatus.value = 'saving'
+  saveMessage.value = '正在保存...'
+
+  saveTimer = setTimeout(async () => {
+    const result = await store.saveAlbums('2025')
+    if (result.success) {
+      saveStatus.value = 'saved'
+      saveMessage.value = '已保存'
+      setTimeout(() => {
+        if (saveStatus.value === 'saved') saveStatus.value = 'idle'
+      }, 2000)
+    } else {
+      saveStatus.value = 'error'
+      saveMessage.value = '保存失败: ' + result.error
+    }
+  }, 800)
 }
 
 function taskStatusText(status: string): string {
@@ -486,10 +568,31 @@ onMounted(() => {
 .album-card.edit-mode {
   position: relative;
 }
-.album-delete {
+.album-edit {
   position: absolute;
   top: 8px;
   right: 8px;
+  width: 32px;
+  height: 32px;
+  background: rgba(80, 140, 200, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: all var(--transition-fast);
+}
+.album-edit:hover {
+  background: rgba(80, 140, 200, 1);
+  transform: scale(1.1);
+}
+.album-delete {
+  position: absolute;
+  top: 8px;
+  left: 8px;
   width: 32px;
   height: 32px;
   background: rgba(220, 100, 100, 0.9);
@@ -501,6 +604,47 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   z-index: 5;
+  transition: all var(--transition-fast);
+}
+.album-delete:hover {
+  background: rgba(220, 100, 100, 1);
+  transform: scale(1.1);
+}
+
+/* 保存状态提示 */
+.save-toast {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 24px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  z-index: 1000;
+  animation: fadeInDown 0.3s ease;
+}
+.save-toast.saving {
+  background: var(--color-primary);
+  color: white;
+}
+.save-toast.saved {
+  background: #5a7050;
+  color: white;
+}
+.save-toast.error {
+  background: #c97070;
+  color: white;
+}
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
 }
 
 /* 认证表单 */
