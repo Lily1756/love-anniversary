@@ -54,15 +54,6 @@ export function useUpload() {
     })
   }
 
-  function readFileAsBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-  }
-
   async function uploadFile(file: File): Promise<string> {
     const task: UploadTask = {
       id: `upload-${Date.now()}-${Math.random().toString(36).slice(2)}`,
