@@ -47,12 +47,6 @@ const router = createRouter({
       meta: { title: '时间胶囊' }
     },
     {
-      path: '/wedding',
-      name: 'Wedding',
-      component: () => import('@/views/Wedding.vue'),
-      meta: { title: '婚礼手册' }
-    },
-    {
       path: '/settings',
       name: 'Settings',
       component: () => import('@/views/Settings.vue'),
