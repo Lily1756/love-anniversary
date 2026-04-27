@@ -13,7 +13,6 @@ const CORS_HEADERS = {
 const GITHUB_API = 'https://api.github.com';
 const REPO_OWNER = 'Lily1756';
 const REPO_NAME = 'love-anniversary';
-const SITE_PASSWORD = '2025';
 
 function jsonResponse(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -36,7 +35,11 @@ export async function onRequestPost(context) {
   const { password, data, path } = body;
 
   // 2. 验证密码
-  if (password !== SITE_PASSWORD) {
+  const sitePassword = env.SITE_PASSWORD;
+  if (!sitePassword) {
+    return jsonResponse({ error: '服务器未配置 SITE_PASSWORD' }, 500);
+  }
+  if (password !== sitePassword) {
     return jsonResponse({ error: '密码错误' }, 403);
   }
 
