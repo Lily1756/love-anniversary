@@ -6,7 +6,7 @@
         <span class="count">({{ totalPhotos }})</span>
       </h2>
       <div class="header-actions">
-        <button v-if="!isEditMode" class="edit-btn" @click="showAuth = true">
+        <button v-if="!isEditMode" class="edit-btn" @click="openAuthModal">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
           </svg>
@@ -19,7 +19,7 @@
             </svg>
             相册
           </button>
-          <button class="done-btn" @click="isEditMode = false">完成</button>
+          <button class="done-btn" @click="exitEditMode">完成</button>
         </template>
       </div>
     </div>
@@ -145,25 +145,13 @@
       </div>
     </Modal>
 
-    <!-- 认证弹窗 -->
-    <Modal v-model="showAuth" title="编辑认证">
-      <div class="auth-form">
-        <p>请输入密码进入编辑模式</p>
-        <input
-          v-model="authPassword"
-          type="password"
-          class="auth-input"
-          placeholder="请输入密码..."
-          maxlength="20"
-          @keydown.enter="verifyAuth"
-        />
-        <p v-if="authError" class="auth-error">密码错误 💔</p>
-      </div>
-      <template #footer>
-        <button class="btn-text" @click="showAuth = false">取消</button>
-        <button class="btn-primary" @click="verifyAuth">确认</button>
-      </template>
-    </Modal>
+    <EditAuthModal
+      v-model="showAuth"
+      :password="authPassword"
+      :error="authError"
+      @update:password="authPassword = $event"
+      @confirm="verifyAuth"
+    />
 
     <!-- 新建相册弹窗 -->
     <Modal v-model="showAlbumModal" title="新建相册">
@@ -198,7 +186,10 @@
 import { ref, computed, onMounted } from 'vue'
 import { useAppStore } from '@/stores'
 import Modal from '@/components/common/Modal.vue'
+import EditAuthModal from '@/components/common/EditAuthModal.vue'
 import { useUpload } from '@/composables/useUpload'
+import { useEditAuth } from '@/composables/useEditAuth'
+import { useDebouncedSave } from '@/composables/useDebouncedSave'
 import type { Album } from '@/types'
 
 const store = useAppStore()
@@ -208,10 +199,9 @@ const showViewer = ref(false)
 const currentAlbum = ref<Album | null>(null)
 const currentPhotoIndex = ref(0)
 
-const isEditMode = ref(false)
-const showAuth = ref(false)
-const authPassword = ref('')
-const authError = ref(false)
+const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
+  password: '2025',
+})
 
 const showAlbumModal = ref(false)
 const newAlbum = ref({ title: '', tag: 'daily', date: new Date().toISOString().split('T')[0] })
@@ -220,8 +210,7 @@ const uploadInput = ref<HTMLInputElement>()
 const coverUploadInput = ref<HTMLInputElement>()
 const currentEditAlbum = ref<Album | null>(null)
 
-const saveStatus = ref<'idle' | 'saving' | 'saved' | 'error'>('idle')
-const saveMessage = ref('')
+const { saveStatus, saveMessage, setSaveState, triggerDebouncedSave } = useDebouncedSave()
 
 const totalPhotos = computed(() => {
   return store.albums.reduce((sum, a) => sum + a.photos.length, 0)
@@ -242,18 +231,6 @@ const prevPhoto = () => {
 const nextPhoto = () => {
   if (currentAlbum.value && currentPhotoIndex.value < currentAlbum.value.photos.length - 1) {
     currentPhotoIndex.value++
-  }
-}
-
-function verifyAuth() {
-  if (authPassword.value.trim() === '2025') {
-    isEditMode.value = true
-    showAuth.value = false
-    authPassword.value = ''
-    authError.value = false
-  } else {
-    authError.value = true
-    authPassword.value = ''
   }
 }
 
@@ -322,44 +299,23 @@ async function handleCoverChange(e: Event) {
   if (!files || files.length === 0 || !currentEditAlbum.value) return
 
   try {
-    saveStatus.value = 'saving'
-    saveMessage.value = '正在上传封面...'
+    setSaveState('saving', '正在上传封面...')
     const urls = await upload.uploadFiles(files)
     if (urls.length > 0 && currentEditAlbum.value) {
       currentEditAlbum.value.cover = urls[0]!
-      saveMessage.value = '封面已更新'
+      setSaveState('saved', '封面已更新')
       await autoSave()
     }
   } catch (err: any) {
-    saveStatus.value = 'error'
-    saveMessage.value = '封面上传失败: ' + err.message
+    setSaveState('error', '封面上传失败: ' + err.message)
   } finally {
     if (coverUploadInput.value) coverUploadInput.value.value = ''
     currentEditAlbum.value = null
   }
 }
 
-/* ---------- 自动保存 ---------- */
-let saveTimer: ReturnType<typeof setTimeout> | null = null
-
 async function autoSave() {
-  if (saveTimer) clearTimeout(saveTimer)
-  saveStatus.value = 'saving'
-  saveMessage.value = '正在保存...'
-
-  saveTimer = setTimeout(async () => {
-    const result = await store.saveAlbums('2025')
-    if (result.success) {
-      saveStatus.value = 'saved'
-      saveMessage.value = '已保存'
-      setTimeout(() => {
-        if (saveStatus.value === 'saved') saveStatus.value = 'idle'
-      }, 2000)
-    } else {
-      saveStatus.value = 'error'
-      saveMessage.value = '保存失败: ' + result.error
-    }
-  }, 800)
+  triggerDebouncedSave(() => store.saveAlbums('2025'))
 }
 
 function taskStatusText(status: string): string {
@@ -647,36 +603,6 @@ onMounted(() => {
   }
 }
 
-/* 认证表单 */
-.auth-form {
-  text-align: center;
-  padding: var(--space-lg);
-}
-.auth-form p {
-  color: var(--text-secondary);
-  margin-bottom: var(--space-md);
-}
-.auth-input {
-  width: 100%;
-  max-width: 280px;
-  padding: 12px 16px;
-  border: 2px solid var(--border-base);
-  border-radius: var(--radius-md);
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  font-size: var(--font-size-base);
-  text-align: center;
-}
-.auth-input:focus {
-  outline: none;
-  border-color: var(--color-primary);
-}
-.auth-error {
-  color: #c97070;
-  font-size: var(--font-size-sm);
-  margin-top: var(--space-sm);
-}
-
 /* 相册表单 */
 .album-form {
   display: flex;
@@ -708,31 +634,6 @@ onMounted(() => {
   outline: none;
   border-color: var(--border-focus);
   box-shadow: var(--shadow-focus);
-}
-
-/* 弹窗按钮 */
-.btn-text, .btn-primary {
-  padding: 8px 20px;
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  border: none;
-  transition: all var(--transition-fast);
-}
-.btn-text {
-  background: transparent;
-  color: var(--text-secondary);
-}
-.btn-text:hover {
-  background: var(--bg-surface);
-}
-.btn-primary {
-  background: var(--color-primary);
-  color: white;
-}
-.btn-primary:hover {
-  background: #b8979a;
 }
 
 /* 查看器操作 */
