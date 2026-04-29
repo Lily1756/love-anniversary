@@ -125,6 +125,7 @@ export function useUpload() {
   return {
     tasks,
     isUploading,
+    compressImage,
     uploadFile,
     uploadFiles,
     clearTasks,
