@@ -185,15 +185,24 @@ onMounted(() => {
 }
 
 /* Transitions */
-.lock-enter-active,
-.lock-leave-active {
+.lock-enter-active {
   transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
-.lock-enter-from,
+.lock-leave-active {
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
+}
+
+.lock-enter-from {
+  opacity: 0;
+  transform: scale(1.05);
+}
+
 .lock-leave-to {
   opacity: 0;
   transform: scale(1.05);
+  pointer-events: none;
 }
 
 .shake-enter-active,
