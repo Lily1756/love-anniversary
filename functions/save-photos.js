@@ -1,7 +1,12 @@
 /**
  * Cloudflare Pages Function
  * 代理 GitHub API 保存照片数据
- * 前端只需传密码，token 藏在 Cloudflare 环境变量里
+ * 
+ * 需要在 Cloudflare Pages 控制台设置环境变量：
+ * - SITE_PASSWORD: 编辑密码
+ * - GITHUB_TOKEN: GitHub Personal Access Token
+ * 
+ * 如果未设置环境变量，将返回配置错误提示
  */
 
 const CORS_HEADERS = {
@@ -37,16 +42,16 @@ export async function onRequestPost(context) {
   // 2. 验证密码
   const sitePassword = env.SITE_PASSWORD;
   if (!sitePassword) {
-    return jsonResponse({ error: '服务器未配置 SITE_PASSWORD' }, 500);
+    return jsonResponse({ error: '请在 Cloudflare 控制台设置环境变量 SITE_PASSWORD（值设为你的编辑密码）' }, 500);
   }
   if (password !== sitePassword) {
     return jsonResponse({ error: '密码错误' }, 403);
   }
 
-  // 3. 读取 GitHub Token（环境变量）
+  // 3. 读取 GitHub Token
   const token = env.GITHUB_TOKEN;
   if (!token) {
-    return jsonResponse({ error: '服务器未配置 GITHUB_TOKEN' }, 500);
+    return jsonResponse({ error: '请在 Cloudflare 控制台设置环境变量 GITHUB_TOKEN' }, 500);
   }
 
   const filePath = path || 'data/photos.json';
@@ -70,7 +75,7 @@ export async function onRequestPost(context) {
       sha = shaData.sha;
     }
   } catch {
-    // 文件不存在，sha 保持 null（会创建新文件）
+    // 文件不存在，sha 保持 null
   }
 
   // 5. 推送到 GitHub
