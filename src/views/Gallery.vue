@@ -76,7 +76,7 @@
         @click="openAlbum(album)"
       >
         <div class="album-cover">
-          <img :src="album.cover || fallbackCover" :alt="album.title" loading="lazy" />
+          <img :src="album.cover || fallbackCover" :alt="album.title" loading="lazy" @error="($event.target as HTMLImageElement).src=fallbackCover" />
           <span class="album-tag-badge">{{ getTagLabel(album.tag) }}</span>
           <div class="album-overlay">
             <span class="album-count">{{ album.photos.length }} 张</span>
@@ -147,6 +147,7 @@
           class="viewer-image"
           :class="{ zoomed: isZoomed }"
           @click.stop="toggleZoom"
+          @error="($event.target as HTMLImageElement).src=fallbackCover"
         />
 
         <button class="viewer-nav next" @click.stop="nextPhoto">
@@ -173,7 +174,7 @@
           :class="{ active: idx === currentPhotoIndex }"
           @click="currentPhotoIndex = idx"
         >
-          <img :src="photo.src" :alt="photo.caption" loading="lazy" />
+          <img :src="photo.src" :alt="photo.caption" loading="lazy" @error="($event.target as HTMLImageElement).style.opacity='0.2'" />
         </div>
       </div>
 
@@ -389,7 +390,7 @@
           <label>已添加照片 <span class="count-badge">({{ uploadedPhotosQueue.length }}张)</span></label>
           <div class="uploaded-photos-list">
             <div v-for="(photo, idx) in uploadedPhotosQueue" :key="idx" class="uploaded-photo-item">
-              <img :src="photo.src" alt="" />
+              <img :src="photo.src" alt="" @error="($event.target as HTMLImageElement).style.opacity='0.2'" />
               <button class="remove-btn" @click="removeUploadedPhoto(idx)" title="移除">
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
@@ -513,7 +514,13 @@ const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth
 const { saveStatus, saveMessage, setSaveState, triggerDebouncedSave } = useDebouncedSave()
 
 async function autoSave() {
-  triggerDebouncedSave(() => store.saveAlbums('2025'))
+  setSaveState('saving', '正在保存...')
+  const result = await store.saveAlbums('2025')
+  if (result.success) {
+    setSaveState('saved', '保存成功')
+  } else {
+    setSaveState('error', '保存失败: ' + (result.error || '未知错误'))
+  }
 }
 
 // ==================== 照片查看器 ====================
