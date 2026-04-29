@@ -2,11 +2,7 @@
   <div class="app">
     <PasswordLock />
     <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition name="page" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <router-view />
     </main>
     <FooterNav />
   </div>
