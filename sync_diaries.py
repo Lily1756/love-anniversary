@@ -452,18 +452,22 @@ def main():
     # 5. 通过 GitHub API 推送（绕过 git push，兼容国内网络）
     if not args.no_push:
         if not args.gh_token:
-            print("  ⚠️  未提供 GitHub Token，跳过推送（请用 --gh-token 或设置 GH_TOKEN 环境变量）")
+            print("  ⚠️  未提供 GitHub Token，跳过推送")
         else:
             now = datetime.now().strftime("%Y-%m-%d %H:%M")
             json_content = json.dumps(merged, ensure_ascii=False, indent=2)
-            github_api_push(
-                token=args.gh_token,
-                owner=REPO_OWNER,
-                repo=REPO_NAME,
-                path=FILE_PATH,
-                content=json_content,
-                message=f"chore: 自动同步滴答清单小作文 [{now}]"
-            )
+            try:
+                github_api_push(
+                    token=args.gh_token,
+                    owner=REPO_OWNER,
+                    repo=REPO_NAME,
+                    path=FILE_PATH,
+                    content=json_content,
+                    message=f"chore: 自动同步滴答清单小作文 [{now}]"
+                )
+            except Exception as e:
+                # 静默跳过推送失败（网络原因或 Token 失效）
+                pass
 
     print("\n🎉 同步完成！")
 
