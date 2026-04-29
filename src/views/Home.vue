@@ -1,12 +1,7 @@
 <template>
-  <div>
-    <!-- 密码锁 -->
-    <LockScreen correct-password="2025" />
-
-    <!-- 主内容 -->
-    <div class="home">
-      <!-- 顶部区域 -->
-      <header class="home-header">
+  <div class="home">
+    <!-- 顶部区域 -->
+    <header class="home-header">
         <div class="couple-avatars">
           <div class="avatar">
             <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80" alt="我们的合照" />
@@ -43,14 +38,12 @@
       <!-- 底部 -->
       <footer class="home-footer">
         <span>每天都是更爱你的一天 ❤️</span>
-      </footer>
-    </div>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import LockScreen from '@/components/features/LockScreen.vue'
 import { useAppStore } from '@/stores'
 
 const store = useAppStore()
