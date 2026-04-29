@@ -1,14 +1,27 @@
 <template>
   <div class="capsules-page page-container">
-    <h2 class="page-title">时间胶囊</h2>
+    <div class="page-header">
+      <h2 class="page-title">时间胶囊</h2>
+      <div class="header-actions">
+        <button v-if="!isEditMode" class="edit-btn" @click="openAuthModal">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+          </svg>
+          编辑
+        </button>
+        <template v-else>
+          <button class="done-btn" @click="exitEditMode">完成</button>
+        </template>
+      </div>
+    </div>
 
     <div class="capsules-grid">
       <div
         v-for="capsule in store.capsules"
         :key="capsule.id"
         class="capsule-card"
-        :class="{ opened: capsule.isOpened, locked: !canOpen(capsule) }"
-        @click="openCapsule(capsule)"
+        :class="{ opened: capsule.isOpened, locked: !canOpen(capsule), 'edit-mode': isEditMode }"
+        @click="!isEditMode && openCapsule(capsule)"
       >
         <div class="capsule-icon">
           <svg v-if="capsule.isOpened" viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5">
@@ -30,6 +43,12 @@
         <div v-if="!capsule.isOpened && !canOpen(capsule)" class="countdown">
           <span>还有 {{ daysUntil(capsule.openDate) }} 天</span>
         </div>
+
+        <button v-if="isEditMode" class="delete-capsule-btn" @click.stop="deleteCapsule(capsule.id)">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </button>
       </div>
     </div>
 
@@ -40,6 +59,15 @@
         <line x1="5" y1="12" x2="19" y2="12" />
       </svg>
     </button>
+
+    <!-- 编辑认证弹窗 -->
+    <EditAuthModal
+      v-model="showAuth"
+      :password="authPassword"
+      :error="authError"
+      @update:password="authPassword = $event"
+      @confirm="verifyAuth"
+    />
 
     <!-- 创建胶囊弹窗 -->
     <Modal v-model="showCreateModal" title="创建时间胶囊">
@@ -58,8 +86,8 @@
         </div>
       </div>
       <template #footer>
-        <Button type="text" @click="showCreateModal = false">取消</Button>
-        <Button type="accent" @click="createCapsule">创建</Button>
+        <button class="btn-text" @click="showCreateModal = false">取消</button>
+        <button class="btn-primary" @click="createCapsule">创建</button>
       </template>
     </Modal>
 
@@ -77,7 +105,8 @@
 import { ref, onMounted } from 'vue'
 import { useAppStore } from '@/stores'
 import Modal from '@/components/common/Modal.vue'
-import Button from '@/components/common/Button.vue'
+import EditAuthModal from '@/components/common/EditAuthModal.vue'
+import { useEditAuth } from '@/composables/useEditAuth'
 import type { Capsule } from '@/types'
 
 const store = useAppStore()
@@ -85,6 +114,10 @@ const store = useAppStore()
 const showCreateModal = ref(false)
 const showViewModal = ref(false)
 const selectedCapsule = ref<Capsule | null>(null)
+
+const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
+  password: '2025',
+})
 
 const newCapsule = ref({
   title: '',
@@ -107,13 +140,14 @@ const openCapsule = (capsule: Capsule) => {
     showViewModal.value = true
     if (!capsule.isOpened) {
       capsule.isOpened = true
+      store.saveCapsules()
     }
   }
 }
 
 const createCapsule = () => {
   if (!newCapsule.value.title || !newCapsule.value.openDate) return
-  
+
   store.capsules.push({
     id: `capsule_${Date.now()}`,
     title: newCapsule.value.title,
@@ -122,36 +156,91 @@ const createCapsule = () => {
     createdAt: new Date().toISOString().split('T')[0],
     isOpened: false
   } as Capsule)
-  
+
   showCreateModal.value = false
   newCapsule.value = { title: '', content: '', openDate: '' }
+  store.saveCapsules()
+}
+
+function deleteCapsule(id: string) {
+  if (!confirm('确定要删除这个时间胶囊吗？')) return
+  store.capsules = store.capsules.filter(c => c.id !== id)
+  store.saveCapsules()
 }
 
 onMounted(() => {
   if (store.capsules.length === 0) {
-    store.capsules = [
-      {
-        id: 'capsule_1',
-        title: '一周年纪念日',
-        content: '亲爱的，一周年快乐！希望我们的爱情像葡萄酒一样，越陈越香。',
-        openDate: '2026-05-17',
-        createdAt: '2025-05-17',
-        isOpened: false
-      },
-      {
-        id: 'capsule_2',
-        title: '结婚前的约定',
-        content: '如果我们决定结婚，记得回看这个胶囊，看看当初的承诺。',
-        openDate: '2027-01-01',
-        createdAt: '2025-06-01',
-        isOpened: false
+    store.loadCapsules().then(() => {
+      // 如果 localStorage 也没有，使用默认数据
+      if (store.capsules.length === 0) {
+        store.capsules = [
+          {
+            id: 'capsule_1',
+            title: '一周年纪念日',
+            content: '亲爱的，一周年快乐！希望我们的爱情像葡萄酒一样，越陈越香。',
+            openDate: '2026-05-17',
+            createdAt: '2025-05-17',
+            isOpened: false
+          },
+          {
+            id: 'capsule_2',
+            title: '结婚前的约定',
+            content: '如果我们决定结婚，记得回看这个胶囊，看看当初的承诺。',
+            openDate: '2027-01-01',
+            createdAt: '2025-06-01',
+            isOpened: false
+          }
+        ]
+        store.saveCapsules()
       }
-    ]
+    })
   }
 })
 </script>
 
 <style scoped>
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+}
+
+.header-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.edit-btn, .done-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: none;
+}
+
+.edit-btn {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-base);
+}
+.edit-btn:hover {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.done-btn {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-base);
+}
+
 .capsules-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -170,6 +259,7 @@ onMounted(() => {
   box-shadow: var(--shadow-sm);
   cursor: pointer;
   transition: all var(--transition-base);
+  position: relative;
 }
 
 .capsule-card:hover {
@@ -190,6 +280,10 @@ onMounted(() => {
 
 .capsule-card.opened {
   background: linear-gradient(135deg, var(--bg-surface), var(--bg-container));
+}
+
+.capsule-card.edit-mode {
+  cursor: default;
 }
 
 .capsule-icon {
@@ -228,6 +322,28 @@ onMounted(() => {
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   color: var(--color-primary);
+}
+
+.delete-capsule-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  background: rgba(220, 100, 100, 0.9);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: all var(--transition-fast);
+}
+.delete-capsule-btn:hover {
+  background: rgba(220, 100, 100, 1);
+  transform: scale(1.1);
 }
 
 /* 悬浮按钮 */
@@ -296,6 +412,30 @@ onMounted(() => {
   color: var(--text-tertiary);
 }
 
+.btn-text, .btn-primary {
+  padding: 8px 20px;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  border: none;
+  transition: all var(--transition-fast);
+}
+.btn-text {
+  background: transparent;
+  color: var(--text-secondary);
+}
+.btn-text:hover {
+  background: var(--bg-surface);
+}
+.btn-primary {
+  background: var(--color-primary);
+  color: white;
+}
+.btn-primary:hover {
+  background: #b8979a;
+}
+
 .capsule-content {
   line-height: 1.8;
 }
@@ -310,5 +450,13 @@ onMounted(() => {
   font-size: var(--font-size-base);
   color: var(--text-primary);
   white-space: pre-wrap;
+}
+
+@media (max-width: 768px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+  }
 }
 </style>
