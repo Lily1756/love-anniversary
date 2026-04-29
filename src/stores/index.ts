@@ -112,86 +112,49 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /**
-   * 保存相册数据到 GitHub（通过 Cloudflare Function 代理）
+   * 通用保存函数 — 通过 Cloudflare Function 代理
+   * Function 内置了密码验证和 GitHub Token，无需前端处理
+   */
+  async function saveViaGithub(data: unknown[], path: string, password: string) {
+    try {
+      const response = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, data, path })
+      })
+      const result = await response.json()
+      if (result.success) {
+        return { success: true, message: result.message }
+      }
+      return { success: false, error: result.error || '保存失败' }
+    } catch (err: any) {
+      console.error(`保存 ${path} 失败:`, err)
+      return { success: false, error: err.message || '网络错误' }
+    }
+  }
+
+  /**
+   * 保存相册数据到 GitHub
    */
   async function saveAlbums(password: string) {
-    try {
-      const response = await fetch('/save-photos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password,
-          data: albums.value,
-          path: 'data/photos.json'
-        })
-      })
-      const result = await response.json()
-      if (!response.ok || result.error) {
-        throw new Error(result.error || `保存失败: ${response.status}`)
-      }
-      return { success: true, message: result.message }
-    } catch (err: any) {
-      console.error('保存相册失败:', err)
-      return { success: false, error: err.message }
-    }
+    return saveViaGithub(albums.value, 'data/photos.json', password)
   }
 
   /**
-   * 保存足迹数据到 GitHub（通过 Cloudflare Function 代理）
+   * 保存足迹数据到 GitHub
    */
   async function saveFootprints(password: string) {
-    try {
-      const response = await fetch('/save-photos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password,
-          data: footprints.value,
-          path: 'data/travels.json'
-        })
-      })
-      const result = await response.json()
-      if (!response.ok || result.error) {
-        throw new Error(result.error || `保存失败: ${response.status}`)
-      }
-      return { success: true, message: result.message }
-    } catch (err: any) {
-      console.error('保存足迹失败:', err)
-      return { success: false, error: err.message }
-    }
+    return saveViaGithub(footprints.value, 'data/travels.json', password)
   }
 
   /**
-   * 保存情书数据到 GitHub（通过 Cloudflare Function 代理）
+   * 保存情书数据到 GitHub
    */
   async function saveLetters(password: string) {
-    try {
-      // 情书数据需要适配回 diaries.json 的格式
-      const dataToSave = letters.value.map(l => ({
-        id: l.id,
-        title: l.title,
-        content: l.content,
-        date: l.date,
-        tag: l.tag
-      }))
-      const response = await fetch('/save-photos', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          password,
-          data: dataToSave,
-          path: 'data/diaries.json'
-        })
-      })
-      const result = await response.json()
-      if (!response.ok || result.error) {
-        throw new Error(result.error || `保存失败: ${response.status}`)
-      }
-      return { success: true, message: result.message }
-    } catch (err: any) {
-      console.error('保存情书失败:', err)
-      return { success: false, error: err.message }
-    }
+    const dataToSave = letters.value.map(l => ({
+      id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag
+    }))
+    return saveViaGithub(dataToSave, 'data/diaries.json', password)
   }
 
   return {
