@@ -67,6 +67,12 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadWishes() {
     try {
+      // 优先从 localStorage 读取
+      const saved = localStorage.getItem('love_site_wishes')
+      if (saved) {
+        wishes.value = JSON.parse(saved)
+        return
+      }
       const response = await fetch('./data/wishes.json')
       wishes.value = await response.json()
     } catch (err) {
@@ -74,12 +80,34 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  function saveWishes() {
+    localStorage.setItem('love_site_wishes', JSON.stringify(wishes.value))
+  }
+
+  async function loadCapsules() {
+    try {
+      // 优先从 localStorage 读取
+      const saved = localStorage.getItem('love_site_capsules')
+      if (saved) {
+        capsules.value = JSON.parse(saved)
+        return
+      }
+    } catch (err) {
+      console.error('加载胶囊失败:', err)
+    }
+  }
+
+  function saveCapsules() {
+    localStorage.setItem('love_site_capsules', JSON.stringify(capsules.value))
+  }
+
   async function loadAll() {
     await Promise.all([
       loadLetters(),
       loadAlbums(),
       loadFootprints(),
-      loadWishes()
+      loadWishes(),
+      loadCapsules()
     ])
   }
 
@@ -133,6 +161,39 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
+  /**
+   * 保存情书数据到 GitHub（通过 Cloudflare Function 代理）
+   */
+  async function saveLetters(password: string) {
+    try {
+      // 情书数据需要适配回 diaries.json 的格式
+      const dataToSave = letters.value.map(l => ({
+        id: l.id,
+        title: l.title,
+        content: l.content,
+        date: l.date,
+        tag: l.tag
+      }))
+      const response = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          password,
+          data: dataToSave,
+          path: 'data/diaries.json'
+        })
+      })
+      const result = await response.json()
+      if (!response.ok || result.error) {
+        throw new Error(result.error || `保存失败: ${response.status}`)
+      }
+      return { success: true, message: result.message }
+    } catch (err: any) {
+      console.error('保存情书失败:', err)
+      return { success: false, error: err.message }
+    }
+  }
+
   return {
     letters,
     albums,
@@ -150,8 +211,12 @@ export const useAppStore = defineStore('app', () => {
     loadAlbums,
     loadFootprints,
     loadWishes,
+    loadCapsules,
     loadAll,
     saveAlbums,
-    saveFootprints
+    saveFootprints,
+    saveLetters,
+    saveWishes,
+    saveCapsules
   }
 })
