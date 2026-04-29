@@ -513,14 +513,30 @@ const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth
 // ==================== 保存状态 ====================
 const { saveStatus, saveMessage, setSaveState, triggerDebouncedSave } = useDebouncedSave()
 
+let _saveTimer: ReturnType<typeof setTimeout> | null = null
+let _errorAutoHideTimer: ReturnType<typeof setTimeout> | null = null
+
 async function autoSave() {
-  setSaveState('saving', '正在保存...')
-  const result = await store.saveAlbums('2025')
-  if (result.success) {
-    setSaveState('saved', '保存成功')
-  } else {
-    setSaveState('error', '保存失败: ' + (result.error || '未知错误'))
-  }
+  // 防抖：800ms 内只执行最后一次
+  if (_saveTimer) clearTimeout(_saveTimer)
+  _saveTimer = setTimeout(async () => {
+    // 清除之前的错误自动隐藏计时器
+    if (_errorAutoHideTimer) clearTimeout(_errorAutoHideTimer)
+
+    setSaveState('saving', '正在保存到云端...')
+    const result = await store.saveAlbums('2025')
+    if (result.success) {
+      setSaveState('saved', '云端保存成功')
+    } else {
+      setSaveState('error', result.error || '保存失败，请稍后重试')
+      // 错误状态 5 秒后自动消失
+      _errorAutoHideTimer = setTimeout(() => {
+        if (saveStatus.value === 'error') {
+          saveStatus.value = 'idle'
+        }
+      }, 5000)
+    }
+  }, 800)
 }
 
 // ==================== 照片查看器 ====================
