@@ -30,9 +30,9 @@ DEFAULT_GH_TOKEN    = os.environ.get("GH_TOKEN",         "")
 GH_API_BASE         = "https://api.github.com"
 REPO_OWNER          = "Lily1756"
 REPO_NAME           = "love-anniversary"
-FILE_PATH           = "diaries.json"
+FILE_PATH           = "data/diaries.json"
 API_BASE            = "https://api.dida365.com/open/v1"
-DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "diaries.json")
+DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "data", "diaries.json")
 
 
 def parse_year_from_title(title: str) -> Optional[int]:
