@@ -242,8 +242,11 @@ const initMap = async () => {
 
   map = L.map(mapRef.value).setView([31.2304, 121.4737], 5)
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors'
+  // 高德地图瓦片（国内可直接访问，无需 Key）
+  L.tileLayer('https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}', {
+    subdomains: ['1', '2', '3', '4'],
+    attribution: '© 高德地图',
+    maxZoom: 18
   }).addTo(map)
 
   renderMarkers()
