@@ -33,10 +33,6 @@ jobs:
       - name: Build
         run: npx vite build
 
-      - name: Copy data files to dist
-        run: |
-          cp -r data/* dist/data/ 2>/dev/null || true
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
