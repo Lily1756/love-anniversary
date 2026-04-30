@@ -27,6 +27,14 @@
             </svg>
           </div>
         </div>
+        <!-- 生成电子书按钮（非编辑模式可见） -->
+        <button v-if="!isEditMode" class="yearbook-btn" @click="openYearbookModal">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          电子书
+        </button>
         <!-- 编辑按钮 -->
         <button v-if="!isEditMode" class="edit-btn" @click="openAuthModal">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
@@ -85,6 +93,27 @@
       @confirm="verifyAuth"
     />
 
+    <!-- 电子书生成弹窗 -->
+    <Modal v-model="showYearbookModal" title="生成年度电子书">
+      <div class="yearbook-form">
+        <p class="yearbook-desc">将该年所有情书生成精美的电子书，可在浏览器中直接保存为 PDF 💌</p>
+        <div class="form-group">
+          <label>选择年份</label>
+          <select v-model="yearbookYear" class="filter-select" style="width:100%">
+            <option v-for="y in store.letterYears" :key="y" :value="y">{{ y }}年（{{ getYearLetterCount(y) }}封）</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>署名</label>
+          <input v-model="yearbookAuthor" type="text" placeholder="例如：你和我 / 志浩和小丽" />
+        </div>
+      </div>
+      <template #footer>
+        <button class="btn-text" @click="showYearbookModal = false">取消</button>
+        <button class="btn-primary" @click="generateYearbook">生成并预览</button>
+      </template>
+    </Modal>
+
     <!-- 添加/编辑情书弹窗 -->
     <Modal v-model="showLetterModal" :title="editingLetter ? '编辑情书' : '写一封情书'">
       <div class="letter-form">
@@ -122,6 +151,7 @@ import Modal from '@/components/common/Modal.vue'
 import EditAuthModal from '@/components/common/EditAuthModal.vue'
 import { useEditAuth } from '@/composables/useEditAuth'
 import { useDebouncedSave } from '@/composables/useDebouncedSave'
+import { useYearbookGenerator } from '@/composables/useYearbookGenerator'
 import type { Letter } from '@/types'
 
 const router = useRouter()
@@ -135,13 +165,42 @@ const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth
 })
 
 const { saveStatus, saveMessage, triggerDebouncedSave } = useDebouncedSave()
+const { openYearbook } = useYearbookGenerator()
+
+/* ---------- 年度电子书 ---------- */
+const showYearbookModal = ref(false)
+const yearbookYear = ref<number>(new Date().getFullYear())
+const yearbookAuthor = ref('你和我')
+
+function openYearbookModal() {
+  // 默认选最近一年
+  const firstYear = store.letterYears[0]
+  if (firstYear !== undefined) {
+    yearbookYear.value = firstYear
+  }
+  showYearbookModal.value = true
+}
+
+function getYearLetterCount(year: number) {
+  return store.letters.filter(l => l.year === year).length
+}
+
+function generateYearbook() {
+  const letters = store.letters.filter(l => l.year === yearbookYear.value)
+  if (letters.length === 0) {
+    alert('该年暂无情书')
+    return
+  }
+  showYearbookModal.value = false
+  openYearbook(yearbookYear.value, letters, yearbookAuthor.value || '你和我')
+}
 
 /* ---------- 添加/编辑情书 ---------- */
 const showLetterModal = ref(false)
 const editingLetter = ref<Letter | null>(null)
-const letterForm = ref({ title: '', date: '', tag: '', content: '' })
+const letterForm = ref<{ title: string; date: string; tag: string; content: string }>({ title: '', date: '', tag: '', content: '' })
 
-const getToday = () => new Date().toISOString().split('T')[0]
+const getToday = (): string => new Date().toISOString().split('T')[0] ?? new Date().toISOString().slice(0, 10)
 
 function openLetterModal(letter?: Letter) {
   if (letter) {
@@ -149,7 +208,7 @@ function openLetterModal(letter?: Letter) {
     letterForm.value = {
       title: letter.title,
       date: letter.date,
-      tag: letter.tag || '',
+      tag: letter.tag ?? '',
       content: letter.content
     }
   } else {
@@ -336,7 +395,7 @@ onMounted(() => {
 }
 
 /* 编辑按钮 */
-.edit-btn, .add-btn, .done-btn {
+.edit-btn, .add-btn, .done-btn, .yearbook-btn {
   display: flex;
   align-items: center;
   gap: 6px;
@@ -348,6 +407,34 @@ onMounted(() => {
   transition: all var(--transition-fast);
   border: none;
   flex-shrink: 0;
+}
+
+.yearbook-btn {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-base);
+}
+.yearbook-btn:hover {
+  background: var(--morandi-deep, #9B7B76);
+  color: white;
+  border-color: transparent;
+}
+
+/* 电子书弹窗 */
+.yearbook-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  padding: var(--space-md) 0;
+}
+.yearbook-desc {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  line-height: 1.6;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-md);
+  border-left: 3px solid var(--color-primary);
 }
 
 .edit-btn {
