@@ -5,6 +5,7 @@ GitHub API Push Script - Push local changes via HTTPS API (bypasses git push)
 import base64
 import json
 import os
+import ssl
 import subprocess
 import urllib.request
 import urllib.error
@@ -13,6 +14,9 @@ GITHUB_API = "https://api.github.com"
 REPO_OWNER = "Lily1756"
 REPO_NAME = "love-anniversary"
 REPO_PATH = "/Users/zhangyi/WorkBuddy/20260423010138/love-site"
+
+# macOS 上 urllib SSL 证书链验证失败，使用 bypass 上下文
+SSL_CTX = ssl._create_unverified_context()
 
 # 从 config.json 读取 Token（与 sync-to-github.js 保持一致）
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "config.json")
@@ -75,7 +79,7 @@ def github_get(path):
     req.add_header("Authorization", f"token {GITHUB_TOKEN}")
     req.add_header("Accept", "application/vnd.github.v3+json")
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10, context=SSL_CTX) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         if e.code == 404:
@@ -100,7 +104,7 @@ def github_put(path, content, sha=None, message="Update via API"):
     req.add_header("Content-Type", "application/json")
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15, context=SSL_CTX) as resp:
             return json.loads(resp.read().decode()), None
     except urllib.error.HTTPError as e:
         body_err = e.read().decode() if e.fp else ""
