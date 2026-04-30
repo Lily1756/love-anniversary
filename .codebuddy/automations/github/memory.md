@@ -14,3 +14,4 @@
 - 2026-04-27 06:39: 检测到 5 个文件改动（README.md、js/photos.js、js/simple-auth.js、photos.html、push_github_api.py）；commit 成功；API 推送 4/5 成功（photos.js SSL 超时跳过）。任务提供的 Token ghp_AQPaVio… 已失效，使用 config.json 中 ghp_LXWDHv… 推送成功。
 - 2026-04-27 08:20: 无已跟踪文件改动，仅有未跟踪的调试文件（debug-*.py、test-e2e.py、verify-fix.py、functions/、scripts/），无需推送。
 - 2026-04-27 09:30: 滴答清单同步成功，32 篇小作文已同步至 diaries.json，GitHub API 推送成功（Token ghp_LXWDH…）。Netlify 自动部署已触发。
+- 2026-04-29 08:16: 检测到 50 个文件 commit 改动；对比远程 tree 发现 28 个文件需推送（19 新增 + 9 更新）；API 推送 27/28 成功，1 个含中文路径的图片跳过。push_github_api.py 仅检测未 commit 文件，已 commit 的需额外对比远程 tree。
