@@ -518,8 +518,18 @@ async function autoSave() {
   const result = await store.saveAlbums('2025')
   if (result.success) {
     setSaveState('saved', '保存成功')
+    setTimeout(() => {
+      if (saveStatus.value === 'saved') {
+        saveStatus.value = 'idle'
+      }
+    }, 2000)
   } else {
     setSaveState('error', '保存失败: ' + (result.error || '未知错误'))
+    setTimeout(() => {
+      if (saveStatus.value === 'error') {
+        saveStatus.value = 'idle'
+      }
+    }, 3000)
   }
 }
 
