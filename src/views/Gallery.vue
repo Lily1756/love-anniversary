@@ -274,8 +274,18 @@
             </div>
             <!-- 预览状态 -->
             <div v-else-if="albumForm.cover && !coverUploading" class="cover-preview">
-              <img :src="albumForm.cover" alt="封面预览" />
-              <button type="button" class="cover-remove-btn" @click.stop="albumForm.cover = ''" title="更换封面">
+              <img v-if="!coverPreviewFailed" :src="albumForm.cover" alt="封面预览" @error="handleCoverPreviewError" loading="lazy" />
+              <div v-else class="cover-preview-failed">
+                <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5">
+                  <rect x="3" y="3" width="18" height="18" rx="2"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="M21 15l-5-5L5 21"/>
+                  <line x1="2" y1="2" x2="22" y2="22" stroke="var(--color-danger, #e74c3c)" stroke-width="2"/>
+                </svg>
+                <span>图片加载失败</span>
+                <button type="button" class="cover-retry-btn" @click.stop="coverPreviewFailed = false">重试</button>
+              </div>
+              <button type="button" class="cover-remove-btn" @click.stop="albumForm.cover = ''; coverPreviewFailed = false" title="更换封面">
                 <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                   <line x1="18" y1="6" x2="6" y2="18"/>
                   <line x1="6" y1="6" x2="18" y2="18"/>
@@ -613,6 +623,7 @@ const albumForm = ref<{ title: string; tag: string; date: string; cover: string 
 const showCoverUrl = ref(false)
 const coverDragover = ref(false)
 const coverUploading = ref(false)
+const coverPreviewFailed = ref(false)
 const coverProgress = ref(0)
 const coverProgressText = ref('')
 const coverFileInput = ref<HTMLInputElement>()
@@ -627,6 +638,7 @@ function openAlbumModal(album?: Album) {
   }
   showCoverUrl.value = false
   coverUploading.value = false
+  coverPreviewFailed.value = false
   coverProgress.value = 0
   showAlbumModal.value = true
 }
@@ -644,6 +656,10 @@ async function handleCoverDrop(e: DragEvent) {
   if (!files || files.length === 0) return
   const imageFile = Array.from(files).find(f => f.type.startsWith('image/'))
   if (imageFile) await uploadCover(imageFile)
+}
+
+function handleCoverPreviewError() {
+  coverPreviewFailed.value = true
 }
 
 async function uploadCover(file: File) {
@@ -669,6 +685,7 @@ async function uploadCover(file: File) {
     if (!response.ok) throw new Error('Upload failed')
     const data = await response.json()
     albumForm.value.cover = data.secure_url
+    coverPreviewFailed.value = false
     coverProgress.value = 100
     coverProgressText.value = '完成！'
   } catch (err: any) {
@@ -1534,6 +1551,37 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+.cover-preview-failed {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 8px;
+  color: var(--text-tertiary);
+}
+
+.cover-preview-failed svg {
+  opacity: 0.5;
+}
+
+.cover-retry-btn {
+  font-size: 12px;
+  color: var(--color-primary);
+  background: none;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 12px;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.cover-retry-btn:hover {
+  background: var(--color-primary);
+  color: white;
 }
 
 .cover-remove-btn {
