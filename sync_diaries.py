@@ -23,16 +23,28 @@ except ImportError:
     subprocess.check_call([sys.executable, "-m", "pip", "install", "requests", "-q"])
     import requests
 
-# ── 默认配置（可被命令行参数覆盖，也可用环境变量）──────────────────────
+# ── 默认配置（可被命令行参数覆盖，也可用环境变量或 config.json）───────────
 DEFAULT_TOKEN       = os.environ.get("DIDA_TOKEN",      "f8d74bb2-8e63-408d-b80c-9cb4148ff87b")
 DEFAULT_PROJECT_ID  = os.environ.get("DIDA_PROJECT_ID", "6845963d432211b6777fcb65")
-DEFAULT_GH_TOKEN    = os.environ.get("GH_TOKEN",         "")
 GH_API_BASE         = "https://api.github.com"
 REPO_OWNER          = "Lily1756"
 REPO_NAME           = "love-anniversary"
-FILE_PATH           = "data/diaries.json"
+FILE_PATH           = "diaries.json"
 API_BASE            = "https://api.dida365.com/open/v1"
-DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "data", "diaries.json")
+DIARIES_PATH        = os.path.join(os.path.dirname(__file__), "diaries.json")
+
+# ── 从 config.json 读取 GitHub Token（优先级：命令行 > 环境变量 > config.json）──
+def _load_gh_token_from_config():
+    """从 config.json 读取 githubToken"""
+    config_path = os.path.join(os.path.dirname(__file__), "config.json")
+    try:
+        with open(config_path, "r", encoding="utf-8") as f:
+            config = json.load(f)
+            return config.get("githubToken", "") or config.get("ghToken", "")
+    except (FileNotFoundError, json.JSONDecodeError, IOError):
+        return ""
+
+DEFAULT_GH_TOKEN = os.environ.get("GH_TOKEN") or _load_gh_token_from_config()
 
 
 def parse_year_from_title(title: str) -> Optional[int]:
