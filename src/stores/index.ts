@@ -117,34 +117,83 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /**
-   * 通用保存函数 — 直接通过 GitHub API 保存
-   * 同时保存到两个路径：仓库根目录 data/ 和 dist/data/（网页读取的是 dist/）
+   * 通用保存函数 — 通过 GitHub API 保存，带防覆盖保护
+   * 保护策略：保存前先拉取远程最新版本，智能合并后写入
+   * 同时保存到两个路径：data/（本地开发）和 public/（Cloudflare Pages 构建）
    */
-  async function saveViaGithub(data: unknown[], path: string, _password: string) {
+  async function saveViaGithub(localData: any[], path: string, _password: string) {
     try {
-      // Token 分段存储，避免被 GitHub Secret Scanning 拦截
       const _g = ['ghp_','LXWDH','vA1EK','TaCqh','ujU9tq','wMdFA7','BM34eL','5is'].join('')
       const owner = 'Lily1756'
       const repo = 'love-anniversary'
 
-      const jsonStr = JSON.stringify(data, null, 2)
+      // --- 第一步：从远程拉取最新版本，进行智能合并 ---
+      const primaryApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
+      const shaResp = await fetch(primaryApiUrl, {
+        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
+      })
+
+      let mergedData = localData
+      let primarySha: string | null = null
+
+      if (shaResp.ok) {
+        const shaData = await shaResp.json()
+        primarySha = shaData.sha
+        const remoteContent = atob(shaData.content)
+        const remoteData: any[] = JSON.parse(remoteContent)
+
+        // 智能合并：以本地数据为基础，补充远程独有的条目
+        const localIds = new Set(localData.map((item: any) => item.id))
+        let addedCount = 0
+        const remoteOnly = remoteData.filter(item => !localIds.has(item.id))
+
+        if (remoteOnly.length > 0) {
+          mergedData = [...localData, ...remoteOnly]
+          addedCount = remoteOnly.length
+          console.warn(`[saveViaGithub] 合并了 ${addedCount} 条远程独有条目到 ${path}`)
+        }
+
+        // 对于相册数据（photos.json），还要检查每个相册的照片是否被遗漏
+        if (path === 'data/photos.json') {
+          const remoteAlbumMap = new Map(remoteData.map((a: any) => [a.id, a]))
+          mergedData = mergedData.map((localAlbum: any) => {
+            const remoteAlbum = remoteAlbumMap.get(localAlbum.id)
+            if (remoteAlbum && remoteAlbum.photos && localAlbum.photos) {
+              const localPhotoSrcs = new Set(localAlbum.photos.map((p: any) => p.src))
+              const missingPhotos = remoteAlbum.photos.filter(
+                (p: any) => !localPhotoSrcs.has(p.src)
+              )
+              if (missingPhotos.length > 0) {
+                console.warn(`[saveViaGithub] 相册 "${localAlbum.title}" 补充了 ${missingPhotos.length} 张远程独有照片`)
+                return {
+                  ...localAlbum,
+                  photos: [...localAlbum.photos, ...missingPhotos]
+                }
+              }
+            }
+            return localAlbum
+          })
+        }
+      }
+
+      // --- 第二步：写入两个路径 ---
+      const jsonStr = JSON.stringify(mergedData, null, 2)
       const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
 
-      // 需要保存的两个路径：仓库根目录（用于本地开发）和 public/（用于 Cloudflare Pages 构建）
       const paths = [path, `public/${path}`]
       let lastError = ''
 
       for (const p of paths) {
         const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${p}`
 
-        // 获取当前文件 SHA
-        const shaResp = await fetch(apiUrl, {
+        // 获取目标文件的当前 SHA
+        const targetShaResp = await fetch(apiUrl, {
           headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
         })
         let sha: string | null = null
-        if (shaResp.ok) {
-          const shaData = await shaResp.json()
-          sha = shaData.sha
+        if (targetShaResp.ok) {
+          const targetShaData = await targetShaResp.json()
+          sha = targetShaData.sha
         }
 
         // 推送数据
@@ -172,6 +221,18 @@ export const useAppStore = defineStore('app', () => {
       if (lastError) {
         throw new Error(lastError)
       }
+
+      // 如果合并了新数据，同步更新本地状态
+      if (mergedData.length > localData.length) {
+        if (path === 'data/photos.json') {
+          albums.value = mergedData
+        } else if (path === 'data/travels.json') {
+          footprints.value = mergedData
+        } else if (path === 'data/diaries.json') {
+          letters.value = mergedData
+        }
+      }
+
       return { success: true, message: '保存成功' }
     } catch (err: any) {
       console.error(`保存 ${path} 失败:`, err)
