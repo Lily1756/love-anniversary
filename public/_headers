@@ -1,3 +1,4 @@
+# cache-bust 1777994284
 /assets/*
   Cache-Control: public, max-age=31536000, immutable
   X-Content-Type-Options: nosniff
