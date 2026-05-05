@@ -130,8 +130,8 @@ export const useAppStore = defineStore('app', () => {
       const jsonStr = JSON.stringify(data, null, 2)
       const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
 
-      // 需要保存的两个路径
-      const paths = [path, `dist/${path}`]
+      // 需要保存的两个路径：仓库根目录（用于本地开发）和 public/（用于 Cloudflare Pages 构建）
+      const paths = [path, `public/${path}`]
       let lastError = ''
 
       for (const p of paths) {
