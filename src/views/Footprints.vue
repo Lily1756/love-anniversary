@@ -231,6 +231,8 @@ const selectedFootprint = computed(() => {
 const selectFootprint = (fp: Footprint) => {
   selectedId.value = fp.id
   if (map) {
+    // 先通知 Leaflet 重新计算容器尺寸，再移动视图，避免瓦片分块/连不上
+    map.invalidateSize()
     map.setView([fp.location[1], fp.location[0]], 12)
   }
 }
@@ -238,9 +240,16 @@ const selectFootprint = (fp: Footprint) => {
 const initMap = async () => {
   if (!mapRef.value) return
 
+  // 必须先导入 Leaflet CSS，否则瓦片出现空白块/间隙
+  await import('leaflet/dist/leaflet.css')
   L = await import('leaflet')
 
-  map = L.map(mapRef.value).setView([31.2304, 121.4737], 5)
+  map = L.map(mapRef.value, {
+    // 禁用动画可避免缩放时的闪动
+    zoomAnimation: true,
+    fadeAnimation: true,
+    markerZoomAnimation: true,
+  }).setView([31.2304, 121.4737], 5)
 
   // 高德地图瓦片（国内可直接访问，无需 Key）
   L.tileLayer('https://wprd0{s}.is.autonavi.com/appmaptile?x={x}&y={y}&z={z}&lang=zh_cn&size=1&scl=1&style=7', {
@@ -251,6 +260,16 @@ const initMap = async () => {
   }).addTo(map)
 
   renderMarkers()
+
+  // 延迟调用 invalidateSize，确保 DOM 完全渲染后 Leaflet 能正确计算容器尺寸
+  // 避免初始加载时出现空白块
+  setTimeout(() => {
+    if (map) map.invalidateSize()
+  }, 100)
+  // 再延迟一次保险（字体/布局可能触发重排）
+  setTimeout(() => {
+    if (map) map.invalidateSize()
+  }, 500)
 
   // 编辑模式下监听地图点击
   map.on('click', (e: any) => {
@@ -390,10 +409,14 @@ watch(() => store.footprints.length, () => {
 onMounted(() => {
   if (store.footprints.length === 0) {
     store.loadFootprints().then(() => {
-      nextTick(() => initMap())
+      nextTick(() => {
+        setTimeout(() => initMap(), 50)
+      })
     })
   } else {
-    nextTick(() => initMap())
+    nextTick(() => {
+      setTimeout(() => initMap(), 50)
+    })
   }
 })
 </script>
@@ -495,9 +518,15 @@ onMounted(() => {
 .map {
   flex: 1;
   border-radius: var(--radius-md);
-  overflow: hidden;
+  /* 不能用 overflow:hidden，Leaflet 瓦片渲染需要溢出边界 */
+  overflow: visible;
   min-height: 300px;
   border: 1px solid var(--border-light);
+  /* 用 clip-path 代替 overflow:hidden 实现圆角裁切，不影响 Leaflet 渲染 */
+  clip-path: inset(0 round var(--radius-md));
+  /* 确保 Leaflet 容器尺寸确定 */
+  position: relative;
+  z-index: 0;
 }
 
 .footprint-detail {
