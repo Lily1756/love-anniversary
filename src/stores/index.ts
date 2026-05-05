@@ -24,11 +24,16 @@ export const useAppStore = defineStore('app', () => {
   const openedCapsules = computed(() => capsules.value.filter(c => c.isOpened).length)
   const totalCapsules = computed(() => capsules.value.length)
 
+  // 生成缓存破坏参数（每次都用当前时间戳，绕过 CDN 缓存）
+  function cacheBust(url: string): string {
+    return `${url}?v=${Date.now()}`
+  }
+
   // Actions
   async function loadLetters() {
     try {
       isLoading.value = true
-      const response = await fetch('./data/diaries.json')
+      const response = await fetch(cacheBust('./data/diaries.json'))
       const data = await response.json()
       letters.value = data.map((item: any) => ({
         id: item.id,
@@ -49,7 +54,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      const response = await fetch('./data/photos.json')
+      const response = await fetch(cacheBust('./data/photos.json'))
       albums.value = await response.json()
     } catch (err) {
       console.error('加载照片失败:', err)
@@ -58,7 +63,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
-      const response = await fetch('./data/travels.json')
+      const response = await fetch(cacheBust('./data/travels.json'))
       footprints.value = await response.json()
     } catch (err) {
       console.error('加载足迹失败:', err)
@@ -73,7 +78,7 @@ export const useAppStore = defineStore('app', () => {
         wishes.value = JSON.parse(saved)
         return
       }
-      const response = await fetch('./data/wishes.json')
+      const response = await fetch(cacheBust('./data/wishes.json'))
       wishes.value = await response.json()
     } catch (err) {
       console.error('加载愿望失败:', err)
