@@ -1,0 +1,2 @@
+# Cloudflare Pages: 只有 HTML 页面走 SPA fallback，静态资源直接 404
+/*  /index.html  200  # 所有不匹配的路径返回 index.html（SPA fallback）
