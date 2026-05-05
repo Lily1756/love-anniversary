@@ -873,9 +873,8 @@ function taskStatusText(status: string): string {
 
 // ==================== 初始化 ====================
 onMounted(() => {
-  if (store.albums.length === 0) {
-    store.loadAlbums()
-  }
+  // 每次进入页面都强制重新加载，确保拿到最新数据（绕过 CDN 缓存）
+  store.loadAlbums()
 })
 </script>
 
