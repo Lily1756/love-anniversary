@@ -9,3 +9,7 @@
 /*.css
   Content-Type: text/css
   Cache-Control: public, max-age=31536000, immutable
+
+/data/*
+  Cache-Control: no-cache
+  X-Content-Type-Options: nosniff
