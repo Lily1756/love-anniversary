@@ -1,1 +1,7 @@
-/*    /index.html   200
+# Cloudflare Pages SPA fallback - 只对无扩展名的路由生效
+# 静态资源（.js/.css/.json/.png 等）不会被此规则匹配
+
+# 如果将来需要更精细的控制，可以用以下格式：
+# /:path*  /index.html  200
+
+# 目前 Cloudflare Pages 会自动处理 SPA fallback，此文件暂时留空
