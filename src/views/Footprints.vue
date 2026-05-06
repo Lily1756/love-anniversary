@@ -61,7 +61,22 @@
 
         <!-- 选中地点详情 -->
         <div v-if="selectedFootprint && !isEditMode" class="footprint-detail">
-          <img :src="selectedFootprint.photo" :alt="selectedFootprint.name" class="detail-photo" />
+          <div class="detail-photo-wrapper">
+            <img
+              v-if="selectedFootprint.photo && !photoLoadError"
+              :src="selectedFootprint.photo"
+              :alt="selectedFootprint.name"
+              class="detail-photo"
+              @error="photoLoadError = true"
+            />
+            <div v-else class="photo-placeholder">
+              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
+                <rect x="3" y="3" width="18" height="18" rx="2"/>
+                <circle cx="8.5" cy="8.5" r="1.5"/>
+                <path d="M21 15l-5-5L5 21"/>
+              </svg>
+            </div>
+          </div>
           <div class="detail-content">
             <h3>{{ selectedFootprint.name }}</h3>
             <p class="detail-date">{{ selectedFootprint.date }}</p>
@@ -163,6 +178,7 @@ const upload = useUpload()
 
 const mapRef = ref<HTMLElement>()
 const selectedId = ref('')
+const photoLoadError = ref(false)
 let map: any = null
 let markers: any[] = []
 let L: any = null
@@ -230,6 +246,7 @@ const selectedFootprint = computed(() => {
 /* ---------- 地图 ---------- */
 const selectFootprint = (fp: Footprint) => {
   selectedId.value = fp.id
+  photoLoadError.value = false
   if (map) {
     // 先通知 Leaflet 重新计算容器尺寸，再移动视图，避免瓦片分块/连不上
     map.invalidateSize()
@@ -539,11 +556,28 @@ onMounted(() => {
   box-shadow: var(--shadow-sm);
 }
 
+.detail-photo-wrapper {
+  position: relative;
+  flex-shrink: 0;
+}
+
 .detail-photo {
   width: 120px;
   height: 90px;
   object-fit: cover;
   border-radius: var(--radius-sm);
+}
+
+.photo-placeholder {
+  width: 120px;
+  height: 90px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg-surface);
+  border: 1px dashed var(--border-base);
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
