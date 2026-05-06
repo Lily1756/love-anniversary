@@ -4,7 +4,7 @@
     <header class="home-header">
         <div class="couple-avatars">
           <div class="avatar">
-            <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80" alt="我们的合照" />
+            <img src="/assets/photos/hero.jpg" alt="我们的合照" />
           </div>
         </div>
         <h1 class="home-title">Love Story with You</h1>
@@ -73,7 +73,7 @@ onMounted(() => {
   width: 120px;
   height: 120px;
   margin: 0 auto;
-  border-radius: var(--radius-full);
+  border-radius: var(--radius-xl);
   overflow: hidden;
   border: 4px solid var(--bg-container);
   box-shadow: var(--shadow-base);
