@@ -24,17 +24,38 @@ export const useAppStore = defineStore('app', () => {
   const openedCapsules = computed(() => capsules.value.filter(c => c.isOpened).length)
   const totalCapsules = computed(() => capsules.value.length)
 
-  // 生成缓存破坏参数（每次都用当前时间戳，绕过 CDN 缓存）
-  function cacheBust(url: string): string {
-    return `${url}?v=${Date.now()}`
+  // GitHub raw 地址（每次带时间戳绕过 CDN/GitHub 缓存）
+  const _g = ['ghp_','LXWDH','vA1EK','TaCqh','ujU9tq','wMdFA7','BM34eL','5is'].join('')
+  const GH_RAW_BASE = 'https://api.github.com/repos/Lily1756/love-anniversary/contents'
+
+  /**
+   * 从 GitHub API 读取最新文件内容（实时，不依赖 Cloudflare 构建）
+   * 失败时回退到本地构建文件（带缓存破坏参数）
+   */
+  async function fetchLatest(ghPath: string, localPath: string): Promise<any> {
+    // 1. 优先从 GitHub API 实时读取
+    try {
+      const resp = await fetch(`${GH_RAW_BASE}/${ghPath}?v=${Date.now()}`, {
+        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
+      })
+      if (resp.ok) {
+        const data = await resp.json()
+        const content = atob(data.content.replace(/\n/g, ''))
+        return JSON.parse(content)
+      }
+    } catch (e) {
+      console.warn(`[fetchLatest] GitHub 读取失败，回退本地: ${ghPath}`, e)
+    }
+    // 2. 回退：从本地构建文件读取（带缓存破坏参数）
+    const resp2 = await fetch(`${localPath}?v=${Date.now()}`)
+    return resp2.json()
   }
 
   // Actions
   async function loadLetters() {
     try {
       isLoading.value = true
-      const response = await fetch(cacheBust('./data/diaries.json'))
-      const data = await response.json()
+      const data = await fetchLatest('data/diaries.json', './data/diaries.json')
       letters.value = data.map((item: any) => ({
         id: item.id,
         title: item.title,
@@ -54,8 +75,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      const response = await fetch(cacheBust('./data/photos.json'))
-      albums.value = await response.json()
+      albums.value = await fetchLatest('data/photos.json', './data/photos.json')
     } catch (err) {
       console.error('加载照片失败:', err)
     }
@@ -63,8 +83,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
-      const response = await fetch(cacheBust('./data/travels.json'))
-      footprints.value = await response.json()
+      footprints.value = await fetchLatest('data/travels.json', './data/travels.json')
     } catch (err) {
       console.error('加载足迹失败:', err)
     }
@@ -123,7 +142,6 @@ export const useAppStore = defineStore('app', () => {
    */
   async function saveViaGithub(localData: any[], path: string, _password: string) {
     try {
-      const _g = ['ghp_','LXWDH','vA1EK','TaCqh','ujU9tq','wMdFA7','BM34eL','5is'].join('')
       const owner = 'Lily1756'
       const repo = 'love-anniversary'
 
