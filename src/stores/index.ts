@@ -55,7 +55,7 @@ export const useAppStore = defineStore('app', () => {
   async function loadLetters() {
     try {
       isLoading.value = true
-      const data = await fetchLatest('data/diaries.json', './data/diaries.json')
+      const data = await fetchLatest('public/data/diaries.json', './data/diaries.json')
       letters.value = data.map((item: any) => ({
         id: item.id,
         title: item.title,
@@ -98,7 +98,7 @@ export const useAppStore = defineStore('app', () => {
         wishes.value = JSON.parse(saved)
         return
       }
-      const response = await fetch(cacheBust('./data/wishes.json'))
+      const response = await fetch(`./data/wishes.json?v=${Date.now()}`)
       wishes.value = await response.json()
     } catch (err) {
       console.error('加载愿望失败:', err)
@@ -139,15 +139,18 @@ export const useAppStore = defineStore('app', () => {
   /**
    * 通用保存函数 — 通过 GitHub API 保存，带防覆盖保护
    * 保护策略：保存前先拉取远程最新版本，智能合并后写入
-   * 同时保存到两个路径：data/（本地开发）和 public/（Cloudflare Pages 构建）
+   * 只保存到 public/data/（唯一数据源，Cloudflare 构建时读取）
    */
   async function saveViaGithub(localData: any[], path: string, _password: string) {
     try {
       const owner = 'Lily1756'
       const repo = 'love-anniversary'
 
+      // 统一使用 public/data/ 作为唯一数据路径
+      const ghPath = path.startsWith('public/') ? path : `public/${path}`
+
       // --- 第一步：从远程拉取最新版本，进行智能合并 ---
-      const primaryApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${path}`
+      const primaryApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
       const shaResp = await fetch(primaryApiUrl, {
         headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
       })
@@ -158,7 +161,7 @@ export const useAppStore = defineStore('app', () => {
       if (shaResp.ok) {
         const shaData = await shaResp.json()
         primarySha = shaData.sha
-        const remoteContent = atob(shaData.content)
+        const remoteContent = atob(shaData.content.replace(/\n/g, ''))
         const remoteData: any[] = JSON.parse(remoteContent)
 
         // 智能合并：以本地数据为基础，补充远程独有的条目
@@ -169,11 +172,11 @@ export const useAppStore = defineStore('app', () => {
         if (remoteOnly.length > 0) {
           mergedData = [...localData, ...remoteOnly]
           addedCount = remoteOnly.length
-          console.warn(`[saveViaGithub] 合并了 ${addedCount} 条远程独有条目到 ${path}`)
+          console.warn(`[saveViaGithub] 合并了 ${addedCount} 条远程独有条目到 ${ghPath}`)
         }
 
         // 对于相册数据（photos.json），还要检查每个相册的照片是否被遗漏
-        if (path === 'data/photos.json') {
+        if (ghPath === 'public/data/photos.json') {
           const remoteAlbumMap = new Map(remoteData.map((a: any) => [a.id, a]))
           mergedData = mergedData.map((localAlbum: any) => {
             const remoteAlbum = remoteAlbumMap.get(localAlbum.id)
@@ -195,59 +198,39 @@ export const useAppStore = defineStore('app', () => {
         }
       }
 
-      // --- 第二步：写入两个路径 ---
+      // --- 第二步：写入 public/data/（唯一路径）---
       const jsonStr = JSON.stringify(mergedData, null, 2)
       const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
 
-      const paths = [path, `public/${path}`]
-      let lastError = ''
+      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
 
-      for (const p of paths) {
-        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${p}`
-
-        // 获取目标文件的当前 SHA
-        const targetShaResp = await fetch(apiUrl, {
-          headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
-        })
-        let sha: string | null = null
-        if (targetShaResp.ok) {
-          const targetShaData = await targetShaResp.json()
-          sha = targetShaData.sha
-        }
-
-        // 推送数据
-        const payload: Record<string, unknown> = {
-          message: `update: ${p}`,
-          content: b64,
-        }
-        if (sha) payload.sha = sha
-
-        const updateResp = await fetch(apiUrl, {
-          method: 'PUT',
-          headers: {
-            Authorization: `token ${_g}`,
-            Accept: 'application/vnd.github.v3+json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        })
-
-        if (!updateResp.ok) {
-          lastError = `${p}: ${updateResp.status}`
-        }
+      const payload: Record<string, unknown> = {
+        message: `update: ${ghPath}`,
+        content: b64,
       }
+      if (primarySha) payload.sha = primarySha
 
-      if (lastError) {
-        throw new Error(lastError)
+      const updateResp = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          Authorization: `token ${_g}`,
+          Accept: 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      if (!updateResp.ok) {
+        throw new Error(`${ghPath}: ${updateResp.status}`)
       }
 
       // 如果合并了新数据，同步更新本地状态
       if (mergedData.length > localData.length) {
-        if (path === 'data/photos.json') {
+        if (ghPath === 'public/data/photos.json') {
           albums.value = mergedData
-        } else if (path === 'data/travels.json') {
+        } else if (ghPath === 'public/data/travels.json') {
           footprints.value = mergedData
-        } else if (path === 'data/diaries.json') {
+        } else if (ghPath === 'public/data/diaries.json') {
           letters.value = mergedData
         }
       }
