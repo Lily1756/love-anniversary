@@ -75,7 +75,8 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      albums.value = await fetchLatest('data/photos.json', './data/photos.json')
+      // saveViaGithub 写入 public/data/，所以这里也从 public/data/ 读取最新数据
+      albums.value = await fetchLatest('public/data/photos.json', './data/photos.json')
     } catch (err) {
       console.error('加载照片失败:', err)
     }
@@ -83,7 +84,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
-      footprints.value = await fetchLatest('data/travels.json', './data/travels.json')
+      footprints.value = await fetchLatest('public/data/travels.json', './data/travels.json')
     } catch (err) {
       console.error('加载足迹失败:', err)
     }
