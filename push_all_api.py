@@ -5,6 +5,7 @@
 import base64
 import json
 import os
+import ssl
 import urllib.request
 import urllib.error
 
@@ -12,6 +13,9 @@ GITHUB_API = "https://api.github.com"
 REPO_OWNER = "Lily1756"
 REPO_NAME = "love-anniversary"
 REPO_PATH = "/Users/zhangyi/WorkBuddy/20260423010138/love-site"
+
+# macOS SSL 修复
+SSL_CONTEXT = ssl._create_unverified_context()
 
 # 从 config.json 读取 Token
 CONFIG_PATH = os.path.join(REPO_PATH, "config.json")
@@ -21,16 +25,10 @@ with open(CONFIG_PATH, "r", encoding="utf-8") as f:
 
 # 需要推送的文件列表（本地路径, 仓库路径）
 FILES_TO_PUSH = [
-    ("dist/index.html", "dist/index.html"),
-    ("dist/_redirects", "dist/_redirects"),
-    ("dist/assets", "dist/assets"),  # 这是个目录，需要特殊处理
-    ("src/views/Home.vue", "src/views/Home.vue"),
-    ("src/components/features/LockScreen.vue", "src/components/features/LockScreen.vue"),
-    ("src/views/Footprints.vue", "src/views/Footprints.vue"),
-    ("src/stores/index.ts", "src/stores/index.ts"),
-    ("src/views/Gallery.vue", "src/views/Gallery.vue"),
-    ("index.html", "index.html"),
-    (".gitignore", ".gitignore"),
+    ("dist", "dist"),
+    ("vite.config.ts", "vite.config.ts"),
+    ("public/_redirects", "public/_redirects"),
+    ("public/_headers", "public/_headers"),
 ]
 
 def github_get(path):
@@ -40,7 +38,7 @@ def github_get(path):
     req.add_header("Authorization", f"token {GITHUB_TOKEN}")
     req.add_header("Accept", "application/vnd.github.v3+json")
     try:
-        with urllib.request.urlopen(req, timeout=10) as resp:
+        with urllib.request.urlopen(req, timeout=10, context=SSL_CONTEXT) as resp:
             return json.loads(resp.read().decode())
     except urllib.error.HTTPError as e:
         if e.code == 404:
@@ -64,7 +62,7 @@ def github_put(path, content, sha=None, message="Update via API"):
     req.add_header("Content-Type", "application/json")
 
     try:
-        with urllib.request.urlopen(req, timeout=15) as resp:
+        with urllib.request.urlopen(req, timeout=15, context=SSL_CONTEXT) as resp:
             return json.loads(resp.read().decode()), None
     except urllib.error.HTTPError as e:
         body_err = e.read().decode() if e.fp else ""
