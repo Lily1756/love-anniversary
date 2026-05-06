@@ -29,6 +29,18 @@ export const useAppStore = defineStore('app', () => {
   const GH_RAW_BASE = 'https://api.github.com/repos/Lily1756/love-anniversary/contents'
 
   /**
+   *  Base64 UTF-8 解码（兼容中文等非ASCII字符）
+   */
+  function base64DecodeUTF8(base64: string): string {
+    const binaryString = atob(base64)
+    const bytes = new Uint8Array(binaryString.length)
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i)
+    }
+    return new TextDecoder('utf-8').decode(bytes)
+  }
+
+  /**
    * 从 GitHub API 读取最新文件内容（实时，不依赖 Cloudflare 构建）
    * 失败时回退到本地构建文件（带缓存破坏参数）
    */
@@ -40,7 +52,8 @@ export const useAppStore = defineStore('app', () => {
       })
       if (resp.ok) {
         const data = await resp.json()
-        const content = atob(data.content.replace(/\n/g, ''))
+        // 使用 UTF-8 安全的 Base64 解码
+        const content = base64DecodeUTF8(data.content.replace(/\n/g, ''))
         return JSON.parse(content)
       }
     } catch (e) {
@@ -48,6 +61,7 @@ export const useAppStore = defineStore('app', () => {
     }
     // 2. 回退：从本地构建文件读取（带缓存破坏参数）
     const resp2 = await fetch(`${localPath}?v=${Date.now()}`)
+    if (!resp2.ok) throw new Error(`无法加载 ${localPath}`)
     return resp2.json()
   }
 
@@ -200,7 +214,11 @@ export const useAppStore = defineStore('app', () => {
 
       // --- 第二步：写入 public/data/（唯一路径）---
       const jsonStr = JSON.stringify(mergedData, null, 2)
-      const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
+      // UTF-8 安全的 Base64 编码（兼容微信浏览器）
+      const bytes = new TextEncoder().encode(jsonStr)
+      let binary = ''
+      bytes.forEach(b => binary += String.fromCharCode(b))
+      const b64 = btoa(binary)
 
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
 
