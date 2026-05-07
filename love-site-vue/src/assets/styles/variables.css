@@ -1,0 +1,91 @@
+/* 浅色莫兰迪配色系统 */
+:root {
+  /* ========== 背景色 ========== */
+  --bg-body: #FAF8F5;
+  --bg-container: #FFFFFF;
+  --bg-surface: #F5F1EC;
+  --bg-secondary: #F9F7F3;
+  --bg-hover: #F0ECE5;
+  --bg-overlay: rgba(255, 255, 255, 0.9);
+
+  /* ========== 文字色 ========== */
+  --text-primary: #4A4A4A;
+  --text-secondary: #7A7A7A;
+  --text-tertiary: #A8A8A8;
+  --text-inverse: #FFFFFF;
+  --text-disabled: #CCCCCC;
+  --text-link: #B8979A;
+  --text-accent: #C9A8A9;
+
+  /* ========== 品牌/强调色 ========== */
+  --color-primary: #C9A8A9;
+  --color-primary-light: #E6D6D7;
+  --color-primary-dark: #B8979A;
+  --color-secondary: #B5C2B7;
+  --color-secondary-light: #D8E0DA;
+  --color-accent: #D8C4B6;
+  --color-accent-light: #EEE6E1;
+  --color-danger: #E8B4B8;
+  --color-success: #B5C2B7;
+  --color-warning: #E6D3B8;
+  --color-info: #A8C6C1;
+
+  /* ========== 边框色 ========== */
+  --border-light: #F0EBE6;
+  --border-base: #E5DED8;
+  --border-dark: #D9D1C9;
+  --border-focus: #C9A8A9;
+  --border-disabled: #E8E3DE;
+
+  /* ========== 阴影 ========== */
+  --shadow-sm: 0 2px 8px rgba(140, 120, 115, 0.06);
+  --shadow-base: 0 4px 20px rgba(140, 120, 115, 0.08);
+  --shadow-md: 0 6px 24px rgba(140, 120, 115, 0.1);
+  --shadow-lg: 0 12px 40px rgba(140, 120, 115, 0.12);
+  --shadow-inner: inset 0 2px 4px rgba(140, 120, 115, 0.05);
+  --shadow-focus: 0 0 0 3px rgba(201, 168, 169, 0.15);
+
+  /* ========== 圆角 ========== */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 30px;
+  --radius-full: 9999px;
+
+  /* ========== 间距 ========== */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+  --space-xl: 48px;
+  --space-2xl: 64px;
+  --space-3xl: 96px;
+
+  /* ========== 字体 ========== */
+  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  --font-family-heading: var(--font-family-base);
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 20px;
+  --font-size-2xl: 24px;
+  --font-size-3xl: 28px;
+  --font-size-4xl: 32px;
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* ========== 动效 ========== */
+  --transition-fast: 150ms ease;
+  --transition-base: 300ms ease;
+  --transition-slow: 500ms ease;
+  --animation-duration: 300ms;
+
+  /* ========== 导航栏高度 ========== */
+  --nav-height: 64px;
+  --nav-height-mobile: 56px;
+}
