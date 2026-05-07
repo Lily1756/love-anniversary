@@ -26,40 +26,29 @@ export const useAppStore = defineStore('app', () => {
 
   // GitHub raw 地址（每次带时间戳绕过 CDN/GitHub 缓存）
   const _g = ['ghp_','LXWDH','vA1EK','TaCqh','ujU9tq','wMdFA7','BM34eL','5is'].join('')
-  const GH_RAW_BASE = 'https://api.github.com/repos/Lily1756/love-anniversary/contents'
+  const RAW_BASE = 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main'
 
   /**
-   *  Base64 UTF-8 解码（兼容中文等非ASCII字符）
-   */
-  function base64DecodeUTF8(base64: string): string {
-    const binaryString = atob(base64)
-    const bytes = new Uint8Array(binaryString.length)
-    for (let i = 0; i < binaryString.length; i++) {
-      bytes[i] = binaryString.charCodeAt(i)
-    }
-    return new TextDecoder('utf-8').decode(bytes)
-  }
-
-  /**
-   * 从 GitHub API 读取最新文件内容（实时，不依赖 Cloudflare 构建）
+   * 从 GitHub raw 读取最新文件内容（实时，不依赖 Cloudflare 构建）
+   * 使用 raw.githubusercontent.com 直接获取 UTF-8 内容，无需 Base64 解码
    * 失败时回退到本地构建文件（带缓存破坏参数）
    */
   async function fetchLatest(ghPath: string, localPath: string): Promise<any> {
-    // 1. 优先从 GitHub API 实时读取
+    // 1. 优先从 GitHub raw 实时读取（直接返回 UTF-8 JSON，最可靠）
     try {
-      const resp = await fetch(`${GH_RAW_BASE}/${ghPath}?v=${Date.now()}`, {
-        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
+      const resp = await fetch(`${RAW_BASE}/${ghPath}?v=${Date.now()}`, {
+        headers: { Accept: 'application/json' }
       })
       if (resp.ok) {
-        const data = await resp.json()
-        // 使用 UTF-8 安全的 Base64 解码
-        const content = base64DecodeUTF8(data.content.replace(/\n/g, ''))
-        return JSON.parse(content)
+        const parsed = await resp.json()
+        console.log(`[fetchLatest] GitHub raw 成功读取 ${ghPath}`)
+        return parsed
       }
     } catch (e) {
-      console.warn(`[fetchLatest] GitHub 读取失败，回退本地: ${ghPath}`, e)
+      console.warn(`[fetchLatest] GitHub raw 读取失败，回退本地: ${ghPath}`, e)
     }
     // 2. 回退：从本地构建文件读取（带缓存破坏参数）
+    console.log(`[fetchLatest] 回退本地: ${localPath}`)
     const resp2 = await fetch(`${localPath}?v=${Date.now()}`)
     if (!resp2.ok) throw new Error(`无法加载 ${localPath}`)
     return resp2.json()
