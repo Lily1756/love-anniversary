@@ -1,124 +1,132 @@
 [
   {
+    "id": "album-1778120776245",
+    "title": "大同之行",
+    "tag": "travel",
+    "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778120768/e1qmjc6kyvuldok3lkam.jpg",
+    "date": "2026-05-07",
+    "photos": []
+  },
+  {
     "id": "album-1",
-    "title": "甜蜜日常",
+    "title": "çèæ¥å¸¸",
     "cover": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
     "date": "2025",
     "tag": "daily",
     "photos": [
       {
         "src": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-        "caption": "在一起的每一天，都是最珍贵的礼物"
+        "caption": "å¨ä¸èµ·çæ¯ä¸å¤©ï¼é½æ¯æçè´µçç¤¼ç©"
       },
       {
         "src": "https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?w=600&q=80",
-        "caption": "日常的甜蜜，不需要特别的理由"
+        "caption": "æ¥å¸¸ççèï¼ä¸éè¦ç¹å«ççç±"
       },
       {
         "src": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-        "caption": "温暖陪伴，是最长情的告白"
+        "caption": "æ¸©æéªä¼´ï¼æ¯æé¿æçåç½"
       },
       {
         "src": "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=600&q=80",
-        "caption": "平凡的日子，因为有你而不平凡"
+        "caption": "å¹³å¡çæ¥å­ï¼å ä¸ºæä½ èä¸å¹³å¡"
       }
     ]
   },
   {
     "id": "album-2",
-    "title": "浪漫约会",
+    "title": "æµªæ¼«çº¦ä¼",
     "cover": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
     "date": "2025",
     "tag": "date",
     "photos": [
       {
         "src": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-        "caption": "第一次约会，心跳加速的感觉"
+        "caption": "ç¬¬ä¸æ¬¡çº¦ä¼ï¼å¿è·³å éçæè§"
       },
       {
         "src": "https://images.unsplash.com/photo-1515023115689-589c33041d3c?w=600&q=80",
-        "caption": "生日惊喜，为你准备的浪漫"
+        "caption": "çæ¥æåï¼ä¸ºä½ åå¤çæµªæ¼«"
       },
       {
         "src": "https://images.unsplash.com/photo-1511405946472-a37e3b5ccd47?w=600&q=80",
-        "caption": "烛光晚餐，浪漫满溢"
+        "caption": "çåæé¤ï¼æµªæ¼«æ»¡æº¢"
       },
       {
         "src": "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=600&q=80",
-        "caption": "约会时光，每一刻都值得珍藏"
+        "caption": "çº¦ä¼æ¶åï¼æ¯ä¸å»é½å¼å¾çè"
       }
     ]
   },
   {
     "id": "album-3",
-    "title": "旅途风景",
+    "title": "æéé£æ¯",
     "cover": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80",
     "date": "2025",
     "tag": "travel",
     "photos": [
       {
         "src": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80",
-        "caption": "一起看日落，余晖洒在你脸上"
+        "caption": "ä¸èµ·çæ¥è½ï¼ä½ææ´å¨ä½ è¸ä¸"
       },
       {
         "src": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
-        "caption": "山顶的风景，只有和你一起才有意义"
+        "caption": "å±±é¡¶çé£æ¯ï¼åªæåä½ ä¸èµ·æææä¹"
       },
       {
         "src": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=80",
-        "caption": "湖边的宁静，岁月静好"
+        "caption": "æ¹è¾¹çå®éï¼å²æéå¥½"
       },
       {
         "src": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80",
-        "caption": "大自然的怀抱，有你更温暖"
+        "caption": "å¤§èªç¶çææ±ï¼æä½ æ´æ¸©æ"
       }
     ]
   },
   {
     "id": "album-4",
-    "title": "纪念时刻",
+    "title": "çºªå¿µæ¶å»",
     "cover": "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=600&q=80",
     "date": "2025",
     "tag": "anniversary",
     "photos": [
       {
         "src": "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=600&q=80",
-        "caption": "周年纪念日，感谢一路有你"
+        "caption": "å¨å¹´çºªå¿µæ¥ï¼æè°¢ä¸è·¯æä½ "
       },
       {
         "src": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-        "caption": "特殊的日子，特别的庆祝"
+        "caption": "ç¹æ®çæ¥å­ï¼ç¹å«çåºç¥"
       },
       {
         "src": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-        "caption": "每一个纪念日，都是爱情的里程碑"
+        "caption": "æ¯ä¸ä¸ªçºªå¿µæ¥ï¼é½æ¯ç±æçéç¨ç¢"
       }
     ]
   },
   {
     "id": "album-5",
-    "title": "生活点滴",
+    "title": "çæ´»ç¹æ»´",
     "cover": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80",
     "date": "2024",
     "tag": "daily",
     "photos": [
       {
         "src": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80",
-        "caption": "一起做饭的温馨时光"
+        "caption": "ä¸èµ·åé¥­çæ¸©é¦¨æ¶å"
       },
       {
         "src": "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=600&q=80",
-        "caption": "周末的午后，慵懒又惬意"
+        "caption": "å¨æ«çååï¼æµæåæ¬æ"
       },
       {
         "src": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80",
-        "caption": "和朋友们在一起的欢乐时光"
+        "caption": "åæåä»¬å¨ä¸èµ·çæ¬¢ä¹æ¶å"
       }
     ]
   },
   {
     "id": "album-1777592217805",
-    "title": "大同之行",
+    "title": "å¤§åä¹è¡",
     "tag": "travel",
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1777592201/bvujdkxwbgbgtjv90zbw.jpg",
     "date": "2025-07-26",
