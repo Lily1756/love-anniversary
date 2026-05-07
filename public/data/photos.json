@@ -5,7 +5,20 @@
     "tag": "travel",
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778120768/e1qmjc6kyvuldok3lkam.jpg",
     "date": "2026-05-07",
-    "photos": []
+    "photos": [
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778121050/xd7gjj5qj9e1dkoi806o.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778121052/jigg94x7uuozmoyiperv.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778121053/q45d9orqciwyan2a6vur.jpg",
+        "caption": ""
+      }
+    ]
   },
   {
     "id": "album-1",
