@@ -57,12 +57,19 @@
     <StarryNightChart
       :letters="store.letters"
       @date-selected="handleDateSelect"
+      @month-selected="handleMonthSelect"
     />
 
     <!-- 筛选状态提示 -->
-    <div v-if="selectedDate !== null" class="filter-hint">
-      <span>📅 正在查看 {{ selectedDate }} 的情书</span>
-      <button class="clear-filter" @click="handleDateSelect(null)">清除筛选</button>
+    <div v-if="selectedDate !== null || selectedYear !== 'all' || selectedMonth !== 'all'" class="filter-hint">
+      <span v-if="selectedDate !== null">📅 正在查看 {{ selectedDate }} 的情书</span>
+      <span v-else>
+        正在查看
+        <template v-if="selectedYear !== 'all'">{{ selectedYear }}年</template>
+        <template v-if="selectedMonth !== 'all'">{{ selectedMonth }}月</template>
+        的情书
+      </span>
+      <button class="clear-filter" @click="clearFilters">清除筛选</button>
     </div>
 
     <!-- 情书网格 -->
@@ -77,7 +84,11 @@
 
     <!-- 空状态 -->
     <div v-if="filteredLetters.length === 0" class="empty-state">
-      <p>{{ selectedDate !== null ? '这一天还没有情书记录' : '暂无情书，写下第一封吧 💌' }}</p>
+      <p v-if="selectedDate !== null">这一天还没有情书记录</p>
+      <p v-else-if="selectedYear !== 'all' || selectedMonth !== 'all'">
+        {{ selectedYear !== 'all' ? selectedYear + '年' : '' }}{{ selectedMonth !== 'all' ? selectedMonth + '月' : '' }}暂无情书记录
+      </p>
+      <p v-else>暂无情书，写下第一封吧 💌</p>
     </div>
   </div>
 </template>
@@ -95,6 +106,7 @@ const router = useRouter()
 const store = useAppStore()
 
 const selectedYear = ref('all')
+const selectedMonth: any = ref('all')
 const searchQuery = ref('')
 const selectedDate = ref<string | null>(null)
 const showEbookPicker = ref(false)
@@ -110,6 +122,15 @@ const filteredLetters = computed(() => {
 
   if (selectedYear.value !== 'all') {
     result = result.filter(l => l.year === Number(selectedYear.value))
+  }
+
+  // 月份筛选（可按所有年份筛选某个月）
+  if (selectedMonth.value !== 'all') {
+    result = result.filter(l => {
+      const parts = l.date.split('-')
+      const month = parts[1] ? parseInt(parts[1]) : 0
+      return month === Number(selectedMonth.value)
+    })
   }
 
   if (searchQuery.value.trim()) {
@@ -133,8 +154,26 @@ const handleDateSelect = (payload: { date: string } | null) => {
   } else {
     selectedDate.value = payload.date
     selectedYear.value = 'all'
+    selectedMonth.value = 'all'  // 清除月份筛选
     searchQuery.value = ''
   }
+}
+
+const handleMonthSelect = (month: number | string | null) => {
+  if (month === null) {
+    selectedMonth.value = 'all'
+  } else {
+    selectedMonth.value = String(month)
+    selectedDate.value = null  // 清除日期筛选
+    searchQuery.value = ''     // 清除搜索词
+  }
+}
+
+const clearFilters = () => {
+  selectedDate.value = null
+  selectedYear.value = 'all'
+  selectedMonth.value = 'all'
+  searchQuery.value = ''
 }
 
 const generateEbook = (year: number) => {
@@ -155,13 +194,14 @@ const generateEbook = (year: number) => {
 
   // 罗马数字转换（用于目录页码）
   const toRoman = (n: number): string => {
-    const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
-    const syms = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i']
+    const vals: number[] = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    const syms: string[] = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i']
     let s = ''
     let num = n
-    for (let i = 0; i < vals.length; i++) {
-      while (num >= vals[i]) { s += syms[i]; num -= vals[i] }
-    }
+    vals.forEach((val, i) => {
+      const sym = syms[i]!
+      while (num >= val) { s += sym; num -= val }
+    })
     return s
   }
 
