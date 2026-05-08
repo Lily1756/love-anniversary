@@ -46,6 +46,7 @@
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useAppStore } from '@/stores'
 import type { Footprint } from '@/types'
+import 'leaflet/dist/leaflet.css'
 
 const store = useAppStore()
 const mapRef = ref<HTMLElement>()
@@ -89,6 +90,9 @@ const initMap = async () => {
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors'
   }).addTo(map)
+  
+  // 确保地图容器尺寸正确（flex 布局下可能需要）
+  setTimeout(() => map.invalidateSize(), 100)
   
   markers = store.footprints.map(fp => {
     const marker = L.marker([fp.location[1], fp.location[0]]).addTo(map)
