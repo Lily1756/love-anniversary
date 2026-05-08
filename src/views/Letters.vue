@@ -53,16 +53,16 @@
       </Teleport>
     </div>
 
-    <!-- 时间脉络 DNA 组件 -->
-    <TimeDNA
+    <!-- 年度星光图组件 -->
+    <StarryNightChart
       :letters="store.letters"
-      @month-selected="handleMonthSelect"
+      @date-selected="handleDateSelect"
     />
 
     <!-- 筛选状态提示 -->
-    <div v-if="selectedMonth !== null && selectedMonth >= 0" class="filter-hint">
-      <span>正在查看 {{ selectedMonth + 1 }} 月的情书</span>
-      <button class="clear-filter" @click="handleMonthSelect(-1)">清除筛选</button>
+    <div v-if="selectedDate !== null" class="filter-hint">
+      <span>📅 正在查看 {{ selectedDate }} 的情书</span>
+      <button class="clear-filter" @click="handleDateSelect(null)">清除筛选</button>
     </div>
 
     <!-- 情书网格 -->
@@ -77,7 +77,7 @@
 
     <!-- 空状态 -->
     <div v-if="filteredLetters.length === 0" class="empty-state">
-      <p>{{ selectedMonth !== null ? '该月份暂无情书记录' : '暂无情书，写下第一封吧 💌' }}</p>
+      <p>{{ selectedDate !== null ? '这一天还没有情书记录' : '暂无情书，写下第一封吧 💌' }}</p>
     </div>
   </div>
 </template>
@@ -88,7 +88,7 @@ import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import LoveLetterCard from '@/components/features/LoveLetterCard.vue'
 // @ts-ignore
-import TimeDNA from '@/components/features/TimeDNA.vue'
+import StarryNightChart from '@/components/features/StarryNightChart.vue'
 import type { Letter } from '@/types'
 
 const router = useRouter()
@@ -96,18 +96,15 @@ const store = useAppStore()
 
 const selectedYear = ref('all')
 const searchQuery = ref('')
-const selectedMonth = ref<number | null>(null)
+const selectedDate = ref<string | null>(null)
 const showEbookPicker = ref(false)
 
 const filteredLetters = computed(() => {
   let result = store.letters
 
-  // 月份筛选优先
-  if (selectedMonth.value !== null && selectedMonth.value >= 0) {
-    result = result.filter(letter => {
-      const letterDate = new Date(letter.date)
-      return letterDate.getMonth() === selectedMonth.value
-    })
+  // 日期筛选优先（星光图点击触发）
+  if (selectedDate.value !== null) {
+    result = result.filter(letter => letter.date === selectedDate.value)
     return result
   }
 
@@ -130,11 +127,11 @@ const viewLetter = (id: string) => {
   router.push(`/letters/${id}`)
 }
 
-const handleMonthSelect = (month: number) => {
-  if (month < 0) {
-    selectedMonth.value = null
+const handleDateSelect = (payload: { date: string } | null) => {
+  if (payload === null) {
+    selectedDate.value = null
   } else {
-    selectedMonth.value = month
+    selectedDate.value = payload.date
     selectedYear.value = 'all'
     searchQuery.value = ''
   }
