@@ -233,51 +233,41 @@ const generateEbook = (year: number) => {
       print-color-adjust: exact !important;
     }
     .no-print { display: none !important; }
-    .print-tips-bar { display: none !important; }
+    .print-toolbar { display: none !important; }
     .letter-page { page-break-inside: avoid; }
     .page-break { page-break-before: always; }
   }
 
 
-  /* ---------- 打印设置提示条 ---------- */
-  .print-tips-bar {
+  /* ---------- 打印工具栏 ---------- */
+  .print-toolbar {
     position: fixed;
     top: 0; left: 0; right: 0;
     z-index: 9999;
     background: linear-gradient(135deg, #FDF6EC, #FFF5F5);
-    border-bottom: 2px solid #E8D4C8;
-    padding: 16px 24px;
+    border-bottom: 1px solid #E8D4C8;
+    padding: 10px 20px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 14px;
     font-family: "Noto Sans SC", sans-serif;
-    box-shadow: 0 4px 20px rgba(184,151,154,0.25);
+    box-shadow: 0 2px 12px rgba(184,151,154,0.18);
   }
-  .print-tips-bar .tips-icon {
-    font-size: 22px;
-    line-height: 1.4;
+  .print-tips-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 0;
+  }
+  .print-toolbar .tips-icon {
+    font-size: 16px;
     flex-shrink: 0;
   }
-  .print-tips-bar .tips-content {
-    font-size: 13px;
-    color: #5A4A48;
-    line-height: 1.7;
-  }
-  .print-tips-bar .tips-content strong {
-    color: #B8979A;
-    font-size: 14px;
-  }
-  .print-tips-bar .tips-content ol {
-    margin: 6px 0 0 18px;
-    padding: 0;
-  }
-  .print-tips-bar .tips-content li {
-    margin-bottom: 3px;
-  }
-  .print-tips-bar .tips-content em {
-    color: #C9A8A9;
-    font-style: normal;
-    font-weight: 600;
+  .print-tips-bar span:last-child {
+    font-size: 12.5px;
+    color: #7A6058;
+    white-space: nowrap;
   }
 
   /* ---------- 页码 ---------- */
@@ -586,27 +576,19 @@ const generateEbook = (year: number) => {
       });
     })();
   <\/script>
-<!-- 打印提示条（仅屏幕显示） -->
-  <div class="print-tips-bar">
-    <div class="tips-icon">💡</div>
-    <div class="tips-content">
-      <strong>打印前必读：</strong>点击打印后，请在弹出的对话框中：
-      <ol>
-        <li>找到「更多设置」或「更多选项」</li>
-        <li>将「页眉和页脚」改为 <em>空白</em></li>
-        <li>将「背景图形」设为 <em>开启</em>（如有）</li>
-        <li>选择「保存为 PDF」即可获得干净的电子书 📖</li>
-      </ol>
+<!-- 顶部操作栏（仅屏幕显示） -->
+  <div class="print-toolbar">
+    <div class="print-tips-bar">
+      <span class="tips-icon">💡</span>
+      <span>打印时请关闭「页眉和页脚」→ 选「保存为 PDF」</span>
     </div>
+    <button onclick="window.print()" style="padding:8px 18px;background:#B8979A;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;box-shadow:0 3px 10px rgba(184,151,154,0.35);white-space:nowrap">
+      🖨️ 打印 / PDF
+    </button>
+    <button onclick="document.querySelector('.print-toolbar').style.display='none'" style="padding:8px 12px;background:#F0EBE6;color:#9A7A7C;border:none;border-radius:8px;font-size:13px;cursor:pointer;">
+      ✕
+    </button>
   </div>
-<!-- 打印按钮（仅屏幕显示） -->
-  <div class="no-print" style="position:fixed;top:16px;right:16px;z-index:999;display:flex;gap:8px;">
-    <button onclick="(function(){document.querySelector('.print-tips-bar').style.display='none';setTimeout(function(){window.print()},300)})()" style="padding:10px 20px;background:#B8979A;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;box-shadow:0 4px 12px rgba(184,151,154,0.4)">
-      🖨️ 打印 / 保存 PDF
-    </button>
-    <button onclick="document.querySelector('.no-print').style.display='none';document.querySelector('.print-tips-bar').style.display='none'" style="padding:10px 14px;background:#F0EBE6;color:#9A7A7C;border:none;border-radius:8px;font-size:13px;cursor:pointer;">
-      ✕ 关闭提示
-    </button>
   </div>
 </body>
 </html>`
