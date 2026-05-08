@@ -153,18 +153,26 @@ const generateEbook = (year: number) => {
     return `${parts[0]}年${Number(parts[1])}月${Number(parts[2])}日`
   }
 
-  // 首字下沉处理：取正文第一个非空白字符，剩余部分包裹在 <span> 内
+  // 罗马数字转换（用于目录页码）
+  const toRoman = (n: number): string => {
+    const vals = [1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1]
+    const syms = ['m', 'cm', 'd', 'cd', 'c', 'xc', 'l', 'xl', 'x', 'ix', 'v', 'iv', 'i']
+    let s = ''
+    let num = n
+    for (let i = 0; i < vals.length; i++) {
+      while (num >= vals[i]) { s += syms[i]; num -= vals[i] }
+    }
+    return s
+  }
+
+  // 首字下沉处理
   const makeDropCap = (content: string) => {
     const trimmed = content.trim()
     if (trimmed.length === 0) return content
-    // 如果内容以常见称呼开头（亲爱的/致/Hi等），从称呼后开始
     const salutations = ['亲爱的', '致', 'Hi', '你好', '宝贝']
     let start = 0
     for (const s of salutations) {
-      if (trimmed.startsWith(s)) {
-        start = s.length
-        break
-      }
+      if (trimmed.startsWith(s)) { start = s.length; break }
     }
     const firstChar = trimmed[start]
     const rest = trimmed.slice(start + 1)
@@ -173,24 +181,20 @@ const generateEbook = (year: number) => {
 
   const lettersHTML = yearLetters.map((letter, index) => `
     <div class="letter-page">
-      <div class="page-number"></div>
-      <!-- 日期抬头 -->
       <div class="letter-date-head">
         <span class="date-line"></span>
         <span class="date-text">${formatDate(letter.date)}</span>
         <span class="date-line"></span>
       </div>
-      <!-- 标题 -->
       <h2 class="letter-title">${letter.title}</h2>
-      <!-- 正文 -->
       <div class="letter-body">${makeDropCap(letter.content)}</div>
-      ${index < yearLetters.length - 1 ? '<div class="page-break"></div>' : ''}
+      <div class="page-num-print"></div>
     </div>
+    ${index < yearLetters.length - 1 ? '<div class="page-break"></div>' : ''}
   `).join('')
 
   const tocHTML = yearLetters.map((l, i) => {
     const dateStr = formatDate(l.date)
-    // 虚线填充：计算需要多长的虚线
     const nameLen = l.title.length
     const dateLen = dateStr.length
     const dotCount = Math.max(4, 28 - nameLen - dateLen)
@@ -213,33 +217,109 @@ const generateEbook = (year: number) => {
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
 <style>
   /* ============================================
-     A5 出版物级电子书样式
+     A5 出版物级电子书样式 v3
+     - @page margin:0 解决白边问题
+     - CSS counter 分层控制页码
+     - 封面无页码、目录罗马数字、正文从 1 开始
      ============================================ */
 
-  /* ---------- 打印设置：A5 + 边距 ---------- */
+  /* ---------- @page 核心规则 ---------- */
   @page {
-    size: A5;
-    margin: 20mm;
+    size: A5 portrait;
+    margin: 0;
+  }
+  /* 封面页：无页码 */
+  @page :first {
+    margin: 0;
   }
 
-  /* 覆盖：去掉浏览器自带页眉页脚（URL/日期等） */
+  /* ---------- 打印行为 ---------- */
   @media print {
-    @page {
-      /* Chromium 隐藏浏览器默认页眉页脚的关键 */
-      margin: 20mm;
-    }
-    body {
+    * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
-    .no-print { display: none !important; }
-    .print-toolbar { display: none !important; }
+    .no-print, .print-toolbar { display: none !important; }
     .letter-page { page-break-inside: avoid; }
     .page-break { page-break-before: always; }
+    .cover { page-break-after: always; }
+    .toc { page-break-after: always; }
+    .colophon { page-break-before: always; }
+    /* 打印时显示页码，隐藏模拟页码 */
+    .page-num-print { display: block !important; }
   }
 
+  /* ---------- 屏幕：隐藏打印页码 ---------- */
+  @media screen {
+    .page-num-print { display: none; }
+  }
 
-  /* ---------- 打印工具栏 ---------- */
+  /* ---------- 页码：CSS counter 分层控制 ---------- */
+  /* 目录页：罗马数字 (i, ii, iii...) */
+  .toc {
+    counter-reset: toc-page;
+  }
+  .toc .page-num-print {
+    position: absolute;
+    bottom: 12mm;
+    left: 0; right: 0;
+    text-align: center;
+    counter-increment: toc-page;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 8pt;
+    color: #A8A8A8;
+  }
+  .toc .page-num-print::after {
+    content: counter(toc-page, lower-roman);
+  }
+
+  /* 正文容器：重置页码计数器，从 1 开始 */
+  .content-body {
+    counter-reset: page 1;
+  }
+  .letter-page .page-num-print {
+    position: absolute;
+    bottom: 12mm;
+    left: 0; right: 0;
+    text-align: center;
+    counter-increment: page;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 8pt;
+    color: #A8A8A8;
+  }
+  .letter-page .page-num-print::after {
+    content: counter(page);
+  }
+
+  /* 尾页：继续正文页码 */
+  .colophon .page-num-print {
+    position: absolute;
+    bottom: 12mm;
+    left: 0; right: 0;
+    text-align: center;
+    counter-increment: page;
+    font-family: "Noto Sans SC", sans-serif;
+    font-size: 8pt;
+    color: #A8A8A8;
+  }
+  .colophon .page-num-print::after {
+    content: counter(page);
+  }
+
+  /* ---------- 全局重置 ---------- */
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 148mm;
+    margin: 0 auto;
+    background: #FEFBF6;
+    color: #3A3A3A;
+    font-family: "Noto Serif SC", "Ma Shan Zheng", "Source Han Serif SC", serif;
+    font-size: 11pt;
+    line-height: 1.8;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- 打印工具栏（仅屏幕显示） ---------- */
   .print-toolbar {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -260,56 +340,25 @@ const generateEbook = (year: number) => {
     flex: 1;
     min-width: 0;
   }
-  .print-toolbar .tips-icon {
-    font-size: 16px;
-    flex-shrink: 0;
-  }
+  .print-toolbar .tips-icon { font-size: 16px; flex-shrink: 0; }
   .print-tips-bar span:last-child {
-    font-size: 12.5px;
-    color: #7A6058;
-    white-space: nowrap;
-  }
-
-  /* ---------- 页码 ---------- */
-  .page-number {
-    position: absolute;
-    bottom: -15mm;
-    left: 0;
-    right: 0;
-    text-align: center;
-    font-family: "Noto Sans SC", sans-serif;
-    font-size: 8pt;
-    color: #A8A8A8;
-  }
-  /* ---------- 全局重置 ---------- */
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-
-  html, body {
-    width: 148mm;
-    min-height: 210mm;
-    margin: 0 auto;
-    background: #FEFBF6;
-    color: #3A3A3A;
-    font-family: "Noto Serif SC", "Ma Shan Zheng", "Source Han Serif SC", serif;
-    font-size: 11pt;
-    line-height: 1.8;
-    -webkit-font-smoothing: antialiased;
+    font-size: 12.5px; color: #7A6058; white-space: nowrap;
   }
 
   /* ---------- 封面 ---------- */
   .cover {
+    height: 210mm;
+    padding: 20mm;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 210mm;          /* A5 高度 */
     text-align: center;
-    page-break-after: always;
     background: #FEFBF6;
     position: relative;
     overflow: hidden;
+    box-sizing: border-box;
   }
-  /* 装饰纹理背景 */
   .cover::before {
     content: "";
     position: absolute;
@@ -319,124 +368,103 @@ const generateEbook = (year: number) => {
       radial-gradient(circle at 80% 70%, rgba(216,196,182,0.10) 0%, transparent 50%);
     pointer-events: none;
   }
-  .cover-ornament {
-    font-size: 48px;
-    margin-bottom: 36px;
-    position: relative;
-  }
+  .cover-ornament { font-size: 48px; margin-bottom: 36px; position: relative; }
   .cover-year {
     font-family: "Ma Shan Zheng", "Noto Serif SC", serif;
-    font-size: 48pt;
-    font-weight: 400;
+    font-size: 48pt; font-weight: 400;
     color: #B8979A;
-    letter-spacing: 4px;
-    line-height: 1.1;
-    margin-bottom: 12px;
-    position: relative;
+    letter-spacing: 4px; line-height: 1.1;
+    margin-bottom: 12px; position: relative;
   }
   .cover-subtitle {
     font-family: "Noto Serif SC", serif;
-    font-size: 14pt;
-    color: #9A7A7C;
-    font-style: italic;
-    margin-bottom: 32px;
-    position: relative;
+    font-size: 14pt; color: #9A7A7C;
+    font-style: italic; margin-bottom: 32px; position: relative;
   }
   .cover-divider {
-    width: 60px;
-    height: 1px;
+    width: 60px; height: 1px;
     background: linear-gradient(90deg, transparent, #C9A8A9, transparent);
-    margin-bottom: 20px;
-    position: relative;
+    margin-bottom: 20px; position: relative;
   }
   .cover-meta {
     font-family: "Noto Sans SC", sans-serif;
-    font-size: 10pt;
-    color: #A8A8A8;
-    position: relative;
+    font-size: 10pt; color: #A8A8A8; position: relative;
   }
   .cover-count {
-    display: inline-block;
-    margin-top: 16px;
+    display: inline-block; margin-top: 16px;
     padding: 6px 20px;
     border: 1px solid rgba(201,168,169,0.4);
     border-radius: 20px;
     font-family: "Noto Sans SC", sans-serif;
-    font-size: 9pt;
-    color: #B8979A;
+    font-size: 9pt; color: #B8979A;
     background: rgba(201,168,169,0.06);
     position: relative;
   }
 
   /* ---------- 目录 ---------- */
   .toc {
-    page-break-after: always;
-    padding-top: 10mm;
+    padding: 20mm 20mm 15mm 20mm;
+    position: relative;
+    min-height: 210mm;
+    box-sizing: border-box;
   }
   .toc-title {
     font-family: "Noto Sans SC", sans-serif;
-    font-weight: 700;
-    font-size: 16pt;
+    font-weight: 700; font-size: 16pt;
     color: #B8979A;
     text-align: center;
     margin-bottom: 8mm;
     letter-spacing: 4px;
   }
   .toc-entry {
-    display: flex;
-    align-items: baseline;
-    padding: 7px 0;
-    gap: 6px;
+    display: flex; align-items: baseline;
+    padding: 7px 0; gap: 6px;
   }
   .toc-num {
     font-family: "Noto Sans SC", sans-serif;
-    font-size: 9pt;
-    color: #C9A8A9;
-    min-width: 28px;
-    flex-shrink: 0;
+    font-size: 9pt; color: #C9A8A9;
+    min-width: 28px; flex-shrink: 0;
   }
   .toc-name {
     font-family: "Noto Serif SC", serif;
-    font-size: 10.5pt;
-    color: #4A4A4A;
+    font-size: 10.5pt; color: #4A4A4A;
     flex-shrink: 0;
   }
   .toc-dots {
-    flex: 1;
-    font-size: 8pt;
+    flex: 1; font-size: 8pt;
     color: #D5CFC8;
     letter-spacing: 2px;
-    overflow: hidden;
-    white-space: nowrap;
+    overflow: hidden; white-space: nowrap;
   }
   .toc-date {
     font-family: "Noto Sans SC", sans-serif;
-    font-size: 8.5pt;
-    color: #A8A8A8;
+    font-size: 8.5pt; color: #A8A8A8;
     flex-shrink: 0;
+  }
+
+  /* ---------- 正文容器 ---------- */
+  .content-body {
+    /* counter-reset: page 1; 已在上方 CSS 定义 */
   }
 
   /* ---------- 正文页 ---------- */
   .letter-page {
+    padding: 20mm 20mm 18mm 20mm;
+    min-height: 210mm;
+    position: relative;
+    box-sizing: border-box;
     page-break-inside: avoid;
-    padding-top: 5mm;
-    padding-bottom: 5mm;
   }
-  .page-break {
-    page-break-before: always;
-  }
+  .page-break { page-break-before: always; }
 
   /* 日期抬头 */
   .letter-date-head {
-    display: flex;
-    align-items: center;
+    display: flex; align-items: center;
     justify-content: center;
-    gap: 12px;
-    margin-bottom: 6mm;
+    gap: 12px; margin-bottom: 6mm;
   }
   .date-line {
-    flex: 0 0 40px;
-    height: 1px;
+    flex: 0 0 40px; height: 1px;
     background: linear-gradient(90deg, transparent, #D5CFC8);
   }
   .date-line:last-child {
@@ -444,101 +472,72 @@ const generateEbook = (year: number) => {
   }
   .date-text {
     font-family: "Noto Sans SC", sans-serif;
-    font-size: 9pt;
-    color: #A8A8A8;
-    letter-spacing: 1px;
-    white-space: nowrap;
+    font-size: 9pt; color: #A8A8A8;
+    letter-spacing: 1px; white-space: nowrap;
   }
 
   /* 信件标题 */
   .letter-title {
     font-family: "Noto Serif SC", serif;
-    font-weight: 700;
-    font-size: 13pt;
+    font-weight: 700; font-size: 13pt;
     color: #4A4A4A;
     text-align: center;
-    margin-bottom: 6mm;
-    line-height: 1.5;
+    margin-bottom: 6mm; line-height: 1.5;
   }
 
   /* 信件正文 + 首字下沉 */
   .letter-body {
     font-family: "Noto Serif SC", "Ma Shan Zheng", serif;
-    font-size: 11pt;
-    line-height: 1.9;
+    font-size: 11pt; line-height: 1.9;
     color: #3A3A3A;
     text-align: justify;
-    
-    /* 首字下沉 */
     text-indent: 0;
   }
   .drop-cap {
     font-family: "Ma Shan Zheng", "Noto Serif SC", serif;
-    font-size: 2.4em;
-    line-height: 1;
+    font-size: 2.4em; line-height: 1;
     float: left;
-    margin-right: 6px;
-    margin-top: 2px;
-    color: #B8979A;
-    font-weight: 400;
+    margin-right: 6px; margin-top: 2px;
+    color: #B8979A; font-weight: 400;
   }
 
   /* ---------- 尾页 ---------- */
   .colophon {
+    height: 210mm;
+    padding: 20mm;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 210mm;
     text-align: center;
-    page-break-before: always;
+    position: relative;
+    box-sizing: border-box;
+    background: #FEFBF6;
   }
-  .colophon-flower {
-    font-size: 28px;
-    margin-bottom: 16px;
-  }
+  .colophon-flower { font-size: 28px; margin-bottom: 16px; }
   .colophon-text {
     font-family: "Noto Serif SC", serif;
-    font-size: 11pt;
-    color: #A8A8A8;
+    font-size: 11pt; color: #A8A8A8;
     margin-bottom: 8px;
   }
   .colophon-italic {
     font-family: "Noto Serif SC", serif;
     font-style: italic;
-    font-size: 10pt;
-    color: #C9A8A9;
+    font-size: 10pt; color: #C9A8A9;
   }
 
-  /* ---------- 屏幕预览优化 ---------- */
+  /* ---------- 屏幕预览 ---------- */
   @media screen {
     html, body {
-      width: 148mm;
-      min-height: 210mm;
-      margin: 0 auto;
       box-shadow: 0 0 40px rgba(100,80,75,0.10);
-      padding: 0;
     }
-    .cover { height: auto; min-height: 210mm; }
-    .colophon { min-height: 210mm; height: auto; }
-    /* 屏幕上也显示页码位置（模拟） */
-    .page-num {
-      position: absolute;
-      bottom: 20mm;
-      left: 0;
-      right: 0;
-      text-align: center;
-      font-family: "Noto Sans SC", sans-serif;
-      font-size: 8pt;
-      color: #A8A8A8;
-    }
+    .cover, .colophon { min-height: 210mm; height: auto; }
   }
 </style>
 </head>
 <body>
-  <!-- 封面 -->
+  <!-- 封面（无页码，@page :first 控制） -->
   <div class="cover">
-    <div class="page-number"></div>
     <div class="cover-ornament">💌</div>
     <div class="cover-year">${year}</div>
     <div class="cover-subtitle">年度情书集</div>
@@ -547,48 +546,39 @@ const generateEbook = (year: number) => {
     <div class="cover-count">共 ${yearLetters.length} 封情书</div>
   </div>
 
-  <!-- 目录 -->
+  <!-- 目录（罗马数字页码，由 CSS counter 自动生成） -->
   <div class="toc">
-    <div class="page-number"></div>
-    <div class="toc-title">— 目录 —</div>
+    <div class="toc-title">— 目 录 —</div>
     ${tocHTML}
+    <!-- 页码由 CSS 生成，打印时显示在底部居中 -->
+    <div class="page-num-print"></div>
   </div>
 
-  <!-- 正文：每封信独立一页 -->
-  ${lettersHTML}
+  <!-- 正文（阿拉伯数字页码，从 1 开始） -->
+  <div class="content-body">
+    ${lettersHTML}
+  </div>
 
-  <!-- 尾页 -->
+  <!-- 尾页（继续正文页码） -->
   <div class="colophon">
-    <div class="page-number"></div>
+    <div class="page-num-print"></div>
     <div class="colophon-flower">🌸</div>
     <div class="colophon-text">这是我们 ${year} 年的故事</div>
     <div class="colophon-italic">每一个字，都满载着爱</div>
   </div>
 
-    <script>
-    // 动态生成页码：第 X / Y 页
-    (function() {
-      const pages = document.querySelectorAll('.cover, .toc, .letter-page, .colophon');
-      const total = pages.length;
-      pages.forEach((p, i) => {
-        const num = p.querySelector('.page-number');
-        if (num) num.textContent = (i+1) + ' / ' + total;
-      });
-    })();
-  <\/script>
-<!-- 顶部操作栏（仅屏幕显示） -->
+  <!-- 屏幕操作栏 -->
   <div class="print-toolbar">
     <div class="print-tips-bar">
       <span class="tips-icon">💡</span>
       <span>打印时请关闭「页眉和页脚」→ 选「保存为 PDF」</span>
     </div>
     <button onclick="window.print()" style="padding:8px 18px;background:#B8979A;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:'Noto Sans SC',sans-serif;box-shadow:0 3px 10px rgba(184,151,154,0.35);white-space:nowrap">
-      🖨️ 打印 / PDF
+      &#x1F5A8;&#xFE0F; 打印 / PDF
     </button>
     <button onclick="document.querySelector('.print-toolbar').style.display='none'" style="padding:8px 12px;background:#F0EBE6;color:#9A7A7C;border:none;border-radius:8px;font-size:13px;cursor:pointer;">
-      ✕
+      &#x2715;
     </button>
-  </div>
   </div>
 </body>
 </html>`
@@ -597,6 +587,7 @@ const generateEbook = (year: number) => {
   const url = URL.createObjectURL(blob)
   window.open(url, '_blank')
 }
+
 
 onMounted(() => {
   if (store.letters.length === 0) {
