@@ -25,30 +25,32 @@
             <path d="M21 21l-4.35-4.35" />
           </svg>
         </div>
+        <!-- 生成电子书按钮 -->
+        <button class="ebook-btn-sm" @click="showEbookPicker = true" :disabled="store.letterYears.length === 0" title="生成年度电子书">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+          </svg>
+          电子书
+        </button>
       </div>
-    </div>
 
-    <!-- 年度电子书生成 -->
-    <div class="ebook-section">
-      <div class="ebook-card">
-        <div class="ebook-icon">📖</div>
-        <div class="ebook-info">
-          <h3 class="ebook-title">生成年度情书电子书</h3>
-          <p class="ebook-desc">将某一年的情书汇编成精美电子书，可打印或保存为 PDF</p>
+      <!-- 年份选择弹窗 -->
+      <Teleport to="body">
+        <div v-if="showEbookPicker" class="ebook-overlay" @click.self="showEbookPicker = false">
+          <div class="ebook-picker">
+            <div class="picker-header">
+              <span>📖 选择年份</span>
+              <button class="picker-close" @click="showEbookPicker = false">×</button>
+            </div>
+            <div class="picker-years">
+              <button v-for="year in store.letterYears" :key="year" class="picker-year-btn" @click="generateEbook(year); showEbookPicker = false">
+                {{ year }}年
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="ebook-actions">
-          <select v-model="ebookYear" class="filter-select ebook-year-select">
-            <option v-for="year in store.letterYears" :key="year" :value="year">{{ year }}年</option>
-          </select>
-          <button class="ebook-btn" @click="generateEbook" :disabled="store.letterYears.length === 0">
-            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-            </svg>
-            生成电子书
-          </button>
-        </div>
-      </div>
+      </Teleport>
     </div>
 
     <!-- 时间脉络 DNA 组件 -->
@@ -95,7 +97,7 @@ const store = useAppStore()
 const selectedYear = ref('all')
 const searchQuery = ref('')
 const selectedMonth = ref<number | null>(null)
-const ebookYear = ref<number>(new Date().getFullYear())
+const showEbookPicker = ref(false)
 
 const filteredLetters = computed(() => {
   let result = store.letters
@@ -138,8 +140,7 @@ const handleMonthSelect = (month: number) => {
   }
 }
 
-const generateEbook = () => {
-  const year = ebookYear.value
+const generateEbook = (year: number) => {
   const yearLetters = store.letters
     .filter(l => l.year === year)
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
@@ -328,72 +329,18 @@ const generateEbook = () => {
 
 onMounted(() => {
   if (store.letters.length === 0) {
-    store.loadLetters().then(() => {
-      if (store.letterYears.length > 0) {
-        ebookYear.value = store.letterYears[0]
-      }
-    })
-  } else if (store.letterYears.length > 0) {
-    ebookYear.value = store.letterYears[0]
+    store.loadLetters()
   }
 })
 </script>
 
 <style scoped>
-/* ========== 电子书区域 ========== */
-.ebook-section {
-  margin-bottom: var(--space-lg);
-}
-
-.ebook-card {
+/* ========== 电子书小按钮 ========== */
+.ebook-btn-sm {
   display: flex;
   align-items: center;
-  gap: var(--space-md);
-  padding: var(--space-md) var(--space-lg);
-  background: linear-gradient(135deg, #FFF8F8 0%, #FFF4F0 100%);
-  border: 1px solid #EDDFDF;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.ebook-icon {
-  font-size: 32px;
-  flex-shrink: 0;
-}
-
-.ebook-info {
-  flex: 1;
-  min-width: 0;
-}
-
-.ebook-title {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  margin-bottom: 4px;
-}
-
-.ebook-desc {
-  font-size: var(--font-size-sm);
-  color: var(--text-tertiary);
-}
-
-.ebook-actions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-  flex-shrink: 0;
-}
-
-.ebook-year-select {
-  min-width: 90px;
-}
-
-.ebook-btn {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
+  gap: 5px;
+  padding: 10px 16px;
   background: var(--color-primary);
   color: white;
   border: none;
@@ -403,17 +350,89 @@ onMounted(() => {
   cursor: pointer;
   transition: all var(--transition-fast);
   white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.ebook-btn:hover:not(:disabled) {
+.ebook-btn-sm:hover:not(:disabled) {
   background: var(--color-primary-dark);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(201, 168, 169, 0.4);
 }
 
-.ebook-btn:disabled {
-  opacity: 0.5;
+.ebook-btn-sm:disabled {
+  opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* 年份选择弹窗 */
+.ebook-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ebook-picker {
+  background: white;
+  border-radius: 16px;
+  padding: 24px;
+  min-width: 240px;
+  box-shadow: 0 20px 60px rgba(100, 80, 75, 0.18);
+  animation: picker-in 0.2s ease-out;
+}
+
+@keyframes picker-in {
+  from { opacity: 0; transform: scale(0.95) translateY(8px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.picker-close {
+  border: none;
+  background: none;
+  font-size: 22px;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.picker-close:hover { color: var(--text-primary); }
+
+.picker-years {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.picker-year-btn {
+  padding: 10px 16px;
+  border: 1px solid #E5DED8;
+  border-radius: var(--radius-md);
+  background: #FAF8F5;
+  color: var(--text-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s;
+}
+
+.picker-year-btn:hover {
+  border-color: var(--color-primary);
+  background: #FFF8F6;
+  color: var(--color-primary);
 }
 
 /* ========== 页面头部 ========== */
