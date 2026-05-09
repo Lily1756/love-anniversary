@@ -1,11 +1,8 @@
 <template>
   <div class="app">
+    <PasswordLock />
     <main class="main-content">
-      <router-view v-slot="{ Component }">
-        <transition name="page" mode="out-in">
-          <component :is="Component" />
-        </transition>
-      </router-view>
+      <router-view />
     </main>
     <FooterNav />
   </div>
@@ -13,6 +10,7 @@
 
 <script setup lang="ts">
 import FooterNav from '@/components/layout/FooterNav.vue'
+import PasswordLock from '@/components/features/PasswordLock.vue'
 </script>
 
 <style>
