@@ -34,7 +34,6 @@ const navItems = [
   { name: 'gallery', path: '/gallery', label: '照片', icon: 'gallery' },
   { name: 'footprints', path: '/footprints', label: '足迹', icon: 'footprints' },
   { name: 'wishlist', path: '/wishlist', label: '愿望', icon: 'wishlist' },
-  { name: 'capsules', path: '/capsules', label: '胶囊', icon: 'capsules' },
   { name: 'settings', path: '/settings', label: '设置', icon: 'settings' }
 ]
 
