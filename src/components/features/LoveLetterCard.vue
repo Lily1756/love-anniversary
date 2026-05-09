@@ -75,11 +75,20 @@ const formatDate = (dateStr: string) => {
   white-space: nowrap;
 }
 
+.letter-card :deep(.card-header) {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.letter-card :deep(.card-body) {
+  padding-top: var(--space-xs);
+}
+
 .letter-meta {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-sm);
+  margin-bottom: var(--space-xs);
 }
 
 .letter-date {
