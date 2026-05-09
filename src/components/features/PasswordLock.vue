@@ -1,32 +1,28 @@
 <template>
   <Transition name="lock">
-    <div v-if="!unlocked" class="password-lock">
-      <div class="lock-content">
-        <div class="lock-icon">
-          <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.5">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-        <h2 class="lock-title">Love Story with You</h2>
-        <p class="lock-subtitle">输入暗号，开启我们的故事</p>
-
+    <div v-if="!isUnlocked" class="password-lock">
+      <div class="lock-card">
+        <div class="lock-icon">💕</div>
+        <h2 class="lock-title">欢迎回来</h2>
+        <p class="lock-subtitle">输入密码解锁我们的故事</p>
         <div class="lock-input-wrap">
           <input
             ref="inputRef"
             v-model="password"
             type="password"
             class="lock-input"
-            :class="{ shake: isShaking, error: showError }"
-            placeholder="请输入暗号..."
+            placeholder="请输入密码..."
             maxlength="20"
             autocomplete="off"
-            @keydown.enter="tryUnlock"
+            @keydown.enter="handleUnlock"
           />
-          <p v-if="hint" class="lock-hint">{{ hint }}</p>
         </div>
-
-        <button class="lock-btn" @click="tryUnlock">解锁</button>
+        <button class="lock-btn" @click="handleUnlock">
+          解锁 💝
+        </button>
+        <Transition name="shake">
+          <p v-if="showError" class="lock-error">密码错误，请再试一次 💔</p>
+        </Transition>
       </div>
     </div>
   </Transition>
@@ -36,58 +32,48 @@
 import { ref, onMounted } from 'vue'
 
 const CORRECT_PASSWORD = '2025'
-const LS_UNLOCKED = 'love_site_unlocked'
+const STORAGE_KEY = 'love_site_unlocked'
 
 const password = ref('')
-const unlocked = ref(false)
-const isShaking = ref(false)
 const showError = ref(false)
-const hint = ref('')
+const isUnlocked = ref(false)
 const inputRef = ref<HTMLInputElement>()
 
-const emit = defineEmits<{
-  unlock: []
-}>()
+function checkUnlockState() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored === 'true') {
+      isUnlocked.value = true
+    }
+  } catch {
+    // localStorage 不可用
+  }
+}
+
+function handleUnlock() {
+  if (password.value.trim() === CORRECT_PASSWORD) {
+    isUnlocked.value = true
+    try {
+      localStorage.setItem(STORAGE_KEY, 'true')
+    } catch {
+      // localStorage 不可用
+    }
+  } else {
+    showError.value = true
+    password.value = ''
+    inputRef.value?.focus()
+    setTimeout(() => {
+      showError.value = false
+    }, 2000)
+  }
+}
 
 onMounted(() => {
-  // 检查是否已解锁（当前 session）
-  if (sessionStorage.getItem(LS_UNLOCKED) === 'true') {
-    unlocked.value = true
-    emit('unlock')
-    return
+  checkUnlockState()
+  if (!isUnlocked.value) {
+    setTimeout(() => inputRef.value?.focus(), 100)
   }
-  setTimeout(() => inputRef.value?.focus(), 300)
 })
-
-function tryUnlock() {
-  const val = password.value.trim()
-
-  if (!val) {
-    hint.value = '暗号不能为空哦'
-    shake()
-    return
-  }
-
-  if (val === CORRECT_PASSWORD) {
-    unlocked.value = true
-    sessionStorage.setItem(LS_UNLOCKED, 'true')
-    emit('unlock')
-  } else {
-    hint.value = '暗号好像不对，再想想'
-    shake()
-    password.value = ''
-    setTimeout(() => { hint.value = '' }, 3000)
-  }
-}
-
-function shake() {
-  showError.value = true
-  isShaking.value = true
-  setTimeout(() => {
-    isShaking.value = false
-    showError.value = false
-  }, 1500)
-}
 </script>
 
 <style scoped>
@@ -98,121 +84,135 @@ function shake() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #FAF8F5 0%, #F5F1EC 100%);
+  background: linear-gradient(135deg, #faf8f5 0%, #f5f0eb 50%, #faf8f5 100%);
+  padding: var(--space-lg);
 }
 
-.lock-content {
+.lock-card {
+  width: 100%;
+  max-width: 380px;
   text-align: center;
-  padding: var(--space-xl);
-  max-width: 360px;
-  width: 90%;
+  padding: var(--space-2xl);
+  background: var(--bg-container);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-lg);
 }
 
 .lock-icon {
-  color: var(--color-primary);
+  font-size: 48px;
   margin-bottom: var(--space-lg);
-  opacity: 0.8;
+  animation: heartbeat 2s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  14% { transform: scale(1.1); }
+  28% { transform: scale(1); }
+  42% { transform: scale(1.1); }
+  70% { transform: scale(1); }
 }
 
 .lock-title {
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
   color: var(--text-primary);
   margin-bottom: var(--space-xs);
-  font-family: 'Playfair Display', serif;
 }
 
 .lock-subtitle {
-  font-size: var(--font-size-base);
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
   margin-bottom: var(--space-xl);
 }
 
 .lock-input-wrap {
-  margin-bottom: var(--space-lg);
+  margin-bottom: var(--space-md);
 }
 
 .lock-input {
   width: 100%;
-  padding: 14px 20px;
-  font-size: var(--font-size-lg);
-  text-align: center;
-  letter-spacing: 4px;
+  padding: 14px 18px;
   border: 2px solid var(--border-base);
   border-radius: var(--radius-md);
-  background: var(--bg-container);
+  background: var(--bg-surface);
   color: var(--text-primary);
-  transition: all 0.3s ease;
-  outline: none;
+  font-size: var(--font-size-base);
+  text-align: center;
+  letter-spacing: 4px;
+  transition: all var(--transition-fast);
 }
 
 .lock-input:focus {
+  outline: none;
   border-color: var(--color-primary);
   box-shadow: var(--shadow-focus);
 }
 
-.lock-input.error {
-  border-color: var(--color-danger);
-  box-shadow: 0 0 0 3px rgba(232, 180, 184, 0.2);
-}
-
-.lock-input.shake {
-  animation: shake 0.5s ease;
-}
-
-.lock-hint {
-  margin-top: var(--space-sm);
-  font-size: var(--font-size-sm);
-  color: var(--color-danger);
-  min-height: 20px;
+.lock-input::placeholder {
+  letter-spacing: 0;
+  color: var(--text-tertiary);
 }
 
 .lock-btn {
   width: 100%;
   padding: 14px 24px;
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-medium);
+  background: linear-gradient(135deg, var(--color-primary), #b8979a);
   color: white;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
   border: none;
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: var(--shadow-base);
+  transition: all var(--transition-base);
+  box-shadow: 0 4px 16px rgba(201, 168, 169, 0.3);
 }
 
 .lock-btn:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 6px 20px rgba(201, 168, 169, 0.4);
 }
 
 .lock-btn:active {
   transform: translateY(0);
 }
 
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-10px); }
-  40% { transform: translateX(10px); }
-  60% { transform: translateX(-6px); }
-  80% { transform: translateX(6px); }
+.lock-error {
+  margin-top: var(--space-md);
+  font-size: var(--font-size-sm);
+  color: #c97070;
 }
 
-/* 过渡动画 */
+/* Transitions */
 .lock-enter-active {
-  transition: opacity 0.6s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
 }
 
 .lock-leave-active {
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  pointer-events: none;
 }
 
 .lock-enter-from {
   opacity: 0;
+  transform: scale(1.05);
 }
 
 .lock-leave-to {
   opacity: 0;
   transform: scale(1.05);
+  pointer-events: none;
+}
+
+.shake-enter-active {
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
 }
 </style>
