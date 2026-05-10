@@ -52,6 +52,7 @@
           v-for="galaxy in galaxies"
           :key="`core-${galaxy.month}`"
           class="galaxy-core"
+          :class="{ 'active': activeMonth === galaxy.month }"
           :style="{
             left: `${galaxy.corePosition.x}px`,
             top: `${galaxy.corePosition.y}px`
@@ -713,6 +714,27 @@ onUnmounted(() => {
 .galaxy-core:hover .star-svg {
   fill: #E8D6D7;
   filter: drop-shadow(0 0 25px rgba(212, 165, 165, 0.9));
+}
+
+/* 激活状态（月份筛选） */
+.galaxy-core.active {
+  transform: translate(-50%, -50%) scale(1.6);
+  z-index: 40;
+  animation: pulse-active 2s infinite;
+}
+
+.galaxy-core.active .star-svg {
+  fill: #F0B8B8;
+  filter: drop-shadow(0 0 30px rgba(212, 165, 165, 1));
+}
+
+@keyframes pulse-active {
+  0%, 100% {
+    filter: drop-shadow(0 0 10px rgba(212, 165, 165, 0.6));
+  }
+  50% {
+    filter: drop-shadow(0 0 20px rgba(212, 165, 165, 0.9));
+  }
 }
 
 /* 卫星（小星星）- 四角星芒 */
