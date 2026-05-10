@@ -8,28 +8,65 @@
       </div>
     </div>
     
-    <!-- 第2层：星空画布区域 - 仅此部分被替换 -->
+    <!-- 第2层：星空画布区域 - 微观星系布局 -->
     <div class="visualization-wrapper" ref="canvasRef">
-      <!-- 星云光晕背景（垂直椭圆形）- 放在最底层 -->
+      <!-- 星云光晕背景（垂直椭圆形） -->
       <div class="nebula-background"></div>
       
-      <!-- 只有星空节点，没有底部圆点 -->
-      <div class="stars-canvas">
+      <!-- 星系间连线 -->
+      <div class="galaxy-canvas">
+        <div 
+          v-for="(connection, index) in connections" 
+          :key="`conn-${index}`"
+          class="galaxy-connection"
+          :style="connection.style"
+        />
+        
+        <!-- 卫星（小星星） -->
         <div
-          v-for="node in starPositions"
-          :key="'month-' + node.month"
-          class="star-node"
-          :class="{ 'has-letters': node.hasLetter }"
-          :style="getNodeStyle(node)"
-          @mouseenter="handleNodeHover(node)"
-          @mouseleave="handleNodeLeave"
-          @click="handleNodeClick(node)"
+          v-for="galaxy in galaxies"
+          :key="`satellites-${galaxy.month}`"
         >
-          <!-- 节点内容 -->
-          <div class="star-core"></div>
-          <div class="star-glow"></div>
-          <div class="node-label">{{ node.month }}月</div>
-          <div v-if="node.hasLetter" class="node-count">+{{ node.letterCount }}</div>
+          <div
+            v-for="(satellite, sIndex) in galaxy.satellites"
+            :key="`sat-${galaxy.month}-${sIndex}`"
+            class="satellite"
+            :style="{
+              left: `${satellite.x}px`,
+              top: `${satellite.y}px`,
+              '--size': `${satellite.size}px`
+            }"
+          />
+        </div>
+        
+        <!-- 星系核心（主星） -->
+        <div
+          v-for="galaxy in galaxies"
+          :key="`core-${galaxy.month}`"
+          class="galaxy-core"
+          :style="{
+            left: `${galaxy.corePosition.x}px`,
+            top: `${galaxy.corePosition.y}px`,
+            fontSize: `${galaxy.coreSize}px`
+          }"
+          :data-count="getCountCategory(galaxy.count)"
+          @mouseenter="onGalaxyHover(galaxy)"
+          @mouseleave="onGalaxyLeave"
+          @click="onGalaxyClick(galaxy)"
+        >
+          ★
+        </div>
+        
+        <!-- 悬浮提示（无默认显示） -->
+        <div 
+          v-if="hoveredGalaxy" 
+          class="galaxy-tooltip"
+          :style="tooltipStyle"
+        >
+          <div class="tooltip-month">{{ hoveredGalaxy.month }}月</div>
+          <div class="tooltip-count">{{ hoveredGalaxy.count }} 封情书</div>
+          <div v-if="hoveredGalaxy.count > 0" class="tooltip-hint">点击查看详情</div>
+          <div v-else class="tooltip-hint">这个月还没有情书哦</div>
         </div>
       </div>
     </div>
@@ -85,6 +122,11 @@ const emit = defineEmits(['month-selected', 'date-selected'])
 const canvasRef = ref(null)
 const containerSize = ref({ width: 800, height: 320 })
 
+// ── 交互状态 ─────────────────────────────────────
+const activeMonth = ref(null)
+const hoveredGalaxy = ref(null)
+const tooltipStyle = ref({})
+
 // ── 月份数据聚合 ──────────────────────────
 const monthsData = computed(() => {
   const data = {}
@@ -98,88 +140,174 @@ const monthsData = computed(() => {
   return data
 })
 
-// ── 优化后的星空节点位置计算（避免重叠）─────────────────────
-const starPositions = computed(() => {
+// ── 星系数据计算 ──────────────────────────
+const galaxies = computed(() => {
   const containerWidth = containerSize.value.width
   const containerHeight = containerSize.value.height
-  const positions = []
-  const horizontalSpacing = containerWidth / 13 // 左右留边距
-  const verticalRange = containerHeight * 0.6   // 垂直分布范围
-  const horizontalJitter = horizontalSpacing * 0.4 // 水平扰动
-  
-  // 避免节点重叠的冲突检测
   const placedPositions = []
-  const minDistance = 60 // 节点间最小距离
   
-  for (let i = 0; i < 12; i++) {
+  return Array.from({ length: 12 }, (_, i) => {
     const month = i + 1
-    const hasLetter = monthsData.value[month]?.count > 0
-    const letterCount = monthsData.value[month]?.count || 0
+    const count = monthsData.value[month]?.count || 0
     
-    // 基础水平位置（保持时间顺序）
-    const baseX = horizontalSpacing + (i * (containerWidth - horizontalSpacing * 2) / 11)
+    // 计算核心位置
+    const corePosition = calculateCorePosition(month, containerWidth, containerHeight, placedPositions)
+    placedPositions.push(corePosition)
     
-    // 尝试多次寻找不重叠的位置
-    let x, y
-    let attempts = 0
-    const maxAttempts = 50
+    // 生成卫星
+    const satellites = generateSatellites(count, corePosition, containerWidth, containerHeight)
     
-    do {
-      // 水平随机扰动
-      const hJitter = (Math.random() * 2 - 1) * horizontalJitter
-      
-      // 垂直位置 - 使用正弦波产生有节奏的分布
-      const verticalPhase = (i / 12) * Math.PI * 2
-      const verticalBase = Math.sin(verticalPhase) * (verticalRange / 3)
-      const verticalRandom = (Math.random() * 2 - 1) * (verticalRange / 3)
-      
-      x = baseX + hJitter
-      y = (containerHeight / 2) + verticalBase + verticalRandom
-      
-      // 边界检查
-      x = Math.max(30, Math.min(containerWidth - 30, x))
-      y = Math.max(50, Math.min(containerHeight - 50, y))
-      
-      attempts++
-      
-      // 如果尝试次数过多，放宽距离限制
-      const currentMinDistance = attempts > 20 ? minDistance * 0.7 : minDistance
-      
-      // 检查是否与已放置节点太近
-      const tooClose = placedPositions.some(pos => {
-        const dx = pos.x - x
-        const dy = pos.y - y
-        return Math.sqrt(dx * dx + dy * dy) < currentMinDistance
-      })
-      
-      if (!tooClose || attempts >= maxAttempts) {
-        break
-      }
-    } while (attempts < maxAttempts)
+    // 计算核心大小和亮度
+    const coreSize = getCoreSize(count)
+    const coreBrightness = getCoreBrightness(count)
     
-    // 记录已放置位置
-    placedPositions.push({ x, y })
-    
-    // 计算节点大小（根据情书数量）
-    const size = hasLetter ? 24 + Math.min(letterCount, 5) * 2 : 16
-    
-    positions.push({
-      x,
-      y,
+    return {
       month,
-      hasLetter,
-      letterCount,
-      size
-    })
-  }
-  
-  return positions
+      count,
+      corePosition,
+      satellites,
+      coreSize,
+      coreBrightness
+    }
+  })
 })
 
-// ─── 交互状态 ─────────────────────────────────────────
-const activeMonth = ref(null)
+// ── 星系间连线计算 ──────────────────────────
+const connections = computed(() => {
+  const cons = []
+  for (let i = 0; i < galaxies.value.length - 1; i++) {
+    const current = galaxies.value[i]
+    const next = galaxies.value[i + 1]
+    
+    // 只连接有情书的星系
+    if (current.count > 0 && next.count > 0) {
+      const length = Math.sqrt(
+        Math.pow(next.corePosition.x - current.corePosition.x, 2) +
+        Math.pow(next.corePosition.y - current.corePosition.y, 2)
+      )
+      const angle = Math.atan2(
+        next.corePosition.y - current.corePosition.y,
+        next.corePosition.x - current.corePosition.x
+      ) * (180 / Math.PI)
+      
+      cons.push({
+        style: {
+          left: `${current.corePosition.x}px`,
+          top: `${current.corePosition.y}px`,
+          width: `${length}px`,
+          transform: `rotate(${angle}deg)`,
+          opacity: 0.3
+        }
+      })
+    }
+  }
+  return cons
+})
 
-// ─── 核心修复：进度按不同日期数/365计算 ──────────────
+// ── 核心位置计算（打破网格感）──────────────────────
+function calculateCorePosition(month, containerWidth, containerHeight, placedPositions) {
+  // 基础水平位置（保持时间流向）
+  const baseX = (month / 13) * containerWidth
+  
+  // 水平随机扰动 (±10% 间距)
+  const horizontalJitter = (containerWidth / 13) * 0.2
+  let finalX = baseX + (Math.random() * 2 - 1) * horizontalJitter
+  
+  // 垂直位置 - 完全随机，但避免边界
+  const verticalRange = containerHeight * 0.6
+  const verticalPadding = containerHeight * 0.2
+  let finalY = verticalPadding + (Math.random() * verticalRange)
+  
+  // 冲突检测和避让
+  const minDistance = 80
+  let attempts = 0
+  const maxAttempts = 50
+  
+  while (attempts < maxAttempts) {
+    let tooClose = false
+    
+    for (const placed of placedPositions) {
+      const dx = placed.x - finalX
+      const dy = placed.y - finalY
+      const distance = Math.sqrt(dx * dx + dy * dy)
+      
+      if (distance < minDistance) {
+        // 太近了！调整位置
+        const angle = Math.atan2(dy, dx)
+        finalX = placed.x + Math.cos(angle) * minDistance
+        finalY = placed.y + Math.sin(angle) * minDistance
+        tooClose = true
+        break
+      }
+    }
+    
+    if (!tooClose) break
+    attempts++
+  }
+  
+  // 边界检查
+  finalX = Math.max(30, Math.min(containerWidth - 30, finalX))
+  finalY = Math.max(30, Math.min(containerHeight - 30, finalY))
+  
+  return { x: finalX, y: finalY }
+}
+
+// ── 卫星生成算法 ──────────────────────────
+function generateSatellites(count, corePosition, containerWidth, containerHeight) {
+  if (count === 0) return []
+  
+  const satellites = []
+  const baseRadius = 35 // 基础环绕半径
+  
+  for (let i = 0; i < count; i++) {
+    // 环绕角度 - 均匀分布但加入随机扰动
+    const angle = (i * 2 * Math.PI / count) + (Math.random() * 0.3 - 0.15)
+    
+    // 半径 - 基础半径加入随机扰动
+    const radius = baseRadius + (Math.random() * 20 - 10)
+    
+    // 计算卫星位置
+    let x = corePosition.x + Math.cos(angle) * radius
+    let y = corePosition.y + Math.sin(angle) * radius
+    
+    // 边界检查
+    x = Math.max(10, Math.min(containerWidth - 10, x))
+    y = Math.max(10, Math.min(containerHeight - 10, y))
+    
+    // 卫星大小 - 随机微小差异
+    const size = 3 + Math.random() * 3 // 3-6px
+    
+    satellites.push({ x, y, size })
+  }
+  
+  return satellites
+}
+
+// ── 核心大小计算 ──────────────────────────
+function getCoreSize(count) {
+  if (count === 0) return 20
+  if (count <= 3) return 24
+  if (count <= 6) return 28
+  return 32
+}
+
+// ── 核心亮度计算 ──────────────────────────
+function getCoreBrightness(count) {
+  if (count === 0) return 0.3
+  if (count <= 3) return 0.7
+  if (count <= 6) return 0.85
+  return 1
+}
+
+// ── 数量分类 ──────────────────────────
+function getCountCategory(count) {
+  if (count === 0) return "0"
+  if (count <= 3) return "1-3"
+  if (count <= 6) return "4-6"
+  return "7+"
+}
+
+// ─── 进度按不同日期数/365计算 ──────────────
 const progressData = computed(() => {
   if (!props.letters || props.letters.length === 0) {
     return { percentage: 0, count: 0, total: 365 }
@@ -246,37 +374,38 @@ const extraStats = computed(() => {
 })
 
 // ─── 交互处理 ────────────────────────────────────────
-function handleNodeHover(month) {
-  activeMonth.value = month
+function onGalaxyHover(galaxy) {
+  hoveredGalaxy.value = galaxy
+  
+  // 计算提示框位置
+  const tooltipX = galaxy.corePosition.x + 20
+  const tooltipY = galaxy.corePosition.y - 40
+  
+  tooltipStyle.value = {
+    left: `${tooltipX}px`,
+    top: `${tooltipY}px`
+  }
+  
+  activeMonth.value = galaxy.month
 }
 
-function handleNodeLeave() {
-  // 不立即清除，保持选中状态
+function onGalaxyLeave() {
+  hoveredGalaxy.value = null
+  // 不立即清除activeMonth，保持选中状态
 }
 
-function handleNodeClick(node) {
-  if (activeMonth.value === node.month) {
+function onGalaxyClick(galaxy) {
+  if (activeMonth.value === galaxy.month) {
     clearMonthFilter()
   } else {
-    activeMonth.value = node.month
-    emit('month-selected', node.month)
+    activeMonth.value = galaxy.month
+    emit('month-selected', galaxy.month)
   }
 }
 
 function clearMonthFilter() {
   activeMonth.value = null
   emit('month-selected', null)
-}
-
-// ── 星空节点样式 ──────────────────────
-function getNodeStyle(node) {
-  return {
-    left: node.x + 'px',
-    top: node.y + 'px',
-    '--size': node.size + 'px',
-    '--brightness': node.hasLetter ? 1 : 0.3,
-    zIndex: node.hasLetter ? 3 : 2
-  }
 }
 
 // ── 响应式监听容器尺寸 ──────────────────────
@@ -341,7 +470,7 @@ onUnmounted(() => {
   font-family: 'Noto Sans SC', sans-serif;
 }
 
-/* 第2层：星空画布区域 - 仅替换此部分内容 */
+/* 第2层：星空画布区域 - 微观星系布局 */
 .visualization-wrapper {
   /* 尺寸约束 */
   flex: 1 1 auto;        /* 可伸缩，占据可用空间 */
@@ -359,7 +488,7 @@ onUnmounted(() => {
 }
 
 /* 星空画布 - 确保只在父容器内绘制 */
-.stars-canvas {
+.galaxy-canvas {
   /* 确保只在父容器内绘制 */
   position: absolute;
   top: 0;
@@ -369,7 +498,7 @@ onUnmounted(() => {
   /* 不要设置 z-index，避免覆盖其他层 */
 }
 
-/* 星云光晕背景（垂直椭圆形）- 方案一 */
+/* 星云光晕背景（垂直椭圆形） */
 .nebula-background {
   position: absolute;
   top: 50%;
@@ -378,7 +507,7 @@ onUnmounted(() => {
   width: 80%;   /* 占容器宽度的80% */
   height: 90%;  /* 占容器高度的90% */
 
-  /* 三层径向渐变 - 莫兰迪色系（方案一规范） */
+  /* 三层径向渐变 - 莫兰迪色系 */
   background: radial-gradient(
     ellipse at center,
     rgba(255, 245, 245, 0.1) 0%,   /* 最内层：极淡的粉白色光心 */
@@ -398,7 +527,7 @@ onUnmounted(() => {
   pointer-events: none; /* 不拦截鼠标事件，确保星星可点击 */
 }
 
-/* 呼吸动画定义（方案一规范） */
+/* 呼吸动画定义 */
 @keyframes nebula-breathe {
   0%, 100% { 
     opacity: 0.03; /* 最淡状态 */
@@ -408,134 +537,99 @@ onUnmounted(() => {
   }
 }
 
-/* 确保其他内容在光晕之上 */
-.header-area,
-.chart-area {
-  position: relative;
-  z-index: 2; /* 高于光晕背景 */
+/* 星系核心 - 真实的五角星 */
+.galaxy-core {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 24px; /* 基础大小 */
+  color: #D4A5A5;  /* 莫兰迪粉 */
+  text-shadow: 0 0 8px currentColor;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  z-index: 20;
+  /* 确保是星星形状 */
+  font-family: "Segoe UI Symbol", "Apple Symbols", sans-serif;
 }
 
-/* 星星在光晕之上 */
-.star-group {
-  z-index: 3;
+/* 根据情书数量动态调整 */
+.galaxy-core[data-count="0"] {
+  opacity: 0.3;
+  filter: grayscale(0.8);
+  transform: translate(-50%, -50%) scale(0.8);
 }
 
-/* 桌面端优化 */
-@media (min-width: 1024px) {
-  .nebula-background {
-    width: 70%; /* 桌面端可以稍小 */
-    filter: blur(40px); /* 更大的模糊，更柔和 */
-  }
+.galaxy-core[data-count="1-3"] {
+  font-size: 24px;
+  text-shadow: 0 0 10px currentColor;
 }
 
-/* 平板端适配 */
-@media (max-width: 1024px) and (min-width: 768px) {
-  .nebula-background {
-    width: 85%;
-    filter: blur(25px);
-  }
+.galaxy-core[data-count="4-6"] {
+  font-size: 28px;
+  text-shadow: 0 0 15px currentColor;
 }
 
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .starry-container {
-    min-height: 280px;
-    padding: 15px 0;
-  }
-
-  .nebula-background {
-    width: 90%;
-    height: 85%;
-    filter: blur(20px);
-  }
+.galaxy-core[data-count="7+"] {
+  font-size: 32px;
+  text-shadow: 0 0 20px currentColor;
 }
 
-/* 确保SVG内容在星云之上 */
-.chart-area .stars-canvas {
-  position: relative;
-  z-index: 2;
+/* 悬停效果 */
+.galaxy-core:hover {
+  transform: translate(-50%, -50%) scale(1.4);
+  text-shadow: 0 0 25px rgba(212, 165, 165, 0.9);
+  z-index: 30;
 }
 
-.stars-canvas {
-  width: 100%;
-  max-width: 760px;
-  height: auto;
-  overflow: visible;
+/* 卫星（小星星） */
+.satellite {
+  position: absolute;
+  width: var(--size, 4px);
+  height: var(--size, 4px);
+  background: radial-gradient(circle, rgba(255, 215, 215, 0.9) 30%, rgba(212, 165, 165, 0.6) 100%);
+  border-radius: 50%; /* 小尺寸用圆形 */
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 4px rgba(212, 165, 165, 0.5);
+  z-index: 10;
+  pointer-events: none; /* 不拦截事件 */
+  
+  /* 呼吸动画 */
+  animation: satellite-breathe 3s ease-in-out infinite;
 }
 
-/* 背景微星动画 */
-.bg-star {
-  animation: bg-twinkle 4s infinite ease-in-out alternate;
+/* 呼吸动画 */
+@keyframes satellite-breathe {
+  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 }
 
-@keyframes bg-twinkle {
-  0% { opacity: 0.1; }
-  100% { opacity: 0.25; }
+/* 可选：部分卫星用四角星 */
+.satellite:nth-child(3n) {
+  background: none;
+  width: 6px;
+  height: 6px;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  background: rgba(212, 165, 165, 0.7);
 }
 
-/* 星星动画 */
-.star-wrapper {
-  animation: star-twinkle 3s infinite ease-in-out;
-  animation-delay: var(--delay);
-}
-
-@keyframes star-twinkle {
-  0%, 100% {
-    opacity: 0.85;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-/* 外层光晕动画 */
-.star-outer-glow {
-  animation: glow-pulse 3s infinite ease-in-out;
-  animation-delay: var(--delay);
-  transition: opacity 0.3s ease;
-}
-
-@keyframes glow-pulse {
-  0%, 100% { opacity: 0.1; }
-  50% { opacity: 0.2; }
-}
-
-/* 涟漪效果 */
-.ripple-ring {
-  animation: ripple 1s ease-out infinite;
-}
-
-@keyframes ripple {
-  0% {
-    r: 4;
-    opacity: 0.7;
-    stroke-width: 1;
-  }
-  100% {
-    r: 18;
-    opacity: 0;
-    stroke-width: 0.2;
-  }
-}
-
-/* 月份标签 */
-.month-label-text {
-  font-size: 11px;
-  font-family: 'Noto Sans SC', sans-serif;
-  transition: fill 0.3s ease, font-weight 0.3s ease;
-  user-select: none;
-}
-
-/* 分割线 */
-.divider {
+/* 星系间连线 */
+.galaxy-connection {
+  position: absolute;
   height: 1px;
-  background: rgba(201, 168, 169, 0.15);
-  margin: 12px auto;
-  max-width: 90%;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    rgba(212, 165, 165, 0.2) 20%, 
+    rgba(212, 165, 165, 0.3) 50%, 
+    rgba(212, 165, 165, 0.2) 80%, 
+    transparent 100%
+  );
+  transform-origin: 0 0;
+  z-index: 5;
+  pointer-events: none;
 }
 
-/* Tooltip */
-.svg-tooltip {
+/* 悬浮提示 */
+.galaxy-tooltip {
+  position: absolute;
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
@@ -546,26 +640,24 @@ onUnmounted(() => {
   font-family: 'Noto Sans SC', sans-serif;
   animation: tooltip-in 0.2s ease;
   pointer-events: none;
+  z-index: 100;
+  white-space: nowrap;
 }
 
-.tooltip-date {
+.tooltip-month {
   font-size: 12px;
   font-weight: 600;
   color: #595959;
   margin-bottom: 3px;
 }
 
-.tooltip-preview {
+.tooltip-count {
   font-size: 11px;
   color: #C9A8A9;
   line-height: 1.4;
-  max-width: 160px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
-.tooltip-count {
+.tooltip-hint {
   font-size: 10px;
   color: #999;
   margin-top: 3px;
@@ -699,10 +791,6 @@ onUnmounted(() => {
     margin-bottom: 30px;
   }
 
-  .starry-canvas {
-    height: 280px;
-  }
-
   .stats-panel {
     flex-direction: column;
     gap: 8px;
@@ -718,108 +806,4 @@ onUnmounted(() => {
     font-size: 18px;
   }
 }
-
-/* 星空节点样式 */
-.star-node {
-  position: absolute;
-  width: 60px;
-  height: 60px;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  transition: all 0.3s ease;
-  z-index: 2;
-}
-
-/* 无记录的节点 - 低调显示 */
-.star-node:not(.has-letters) {
-  opacity: 0.3;
-  transform: translate(-50%, -50%) scale(0.8);
-}
-
-.star-node:not(.has-letters) .star-core {
-  width: 16px;
-  height: 16px;
-  background-color: var(--text-tertiary, #999);
-  border-radius: 50%;
-}
-
-/* 有记录的节点 - 突出显示 */
-.star-node.has-letters {
-  opacity: 1;
-}
-
-.star-node.has-letters .star-core {
-  width: 24px;
-  height: 24px;
-  background: radial-gradient(
-    circle at 30% 30%,
-    var(--color-accent, #C9A8A9) 0%,
-    rgba(201, 168, 169, 0.7) 70%,
-    rgba(201, 168, 169, 0.3) 100%
-  );
-  border-radius: 50%;
-  box-shadow: 0 0 12px rgba(201, 168, 169, 0.6);
-}
-
-.month-node.has-letter {
-  background: radial-gradient(
-    circle at 30% 30%,
-    var(--color-accent) 0%,
-    rgba(201, 168, 169, 0.7) 70%,
-    rgba(201, 168, 169, 0.3) 100%
-  );
-  box-shadow: 
-    0 0 12px rgba(201, 168, 169, 0.5),
-    inset 0 0 8px rgba(255, 255, 255, 0.3);
-}
-
-/* 光晕效果 */
-.star-glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  box-shadow: 0 0 30px 15px rgba(201, 168, 169, 0.3);
-  pointer-events: none;
-  z-index: 1;
-}
-
-/* 悬停效果 */
-.star-node:hover {
-  z-index: 10;
-  transform: translate(-50%, -50%) scale(1.3);
-}
-
-.star-node:hover .star-glow {
-  box-shadow: 0 0 50px 25px rgba(201, 168, 169, 0.5);
-}
-
-/* 节点标签 */
-.node-label {
-  position: absolute;
-  bottom: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 12px;
-  color: var(--text-secondary, #595959);
-  white-space: nowrap;
-  font-family: 'Noto Sans SC', sans-serif;
-}
-
-.node-count {
-  position: absolute;
-  top: -25px;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 11px;
-  color: var(--color-accent, #C9A8A9);
-  background: rgba(201, 168, 169, 0.1);
-  padding: 2px 6px;
-  border-radius: 10px;
-  font-family: 'Noto Sans SC', sans-serif;
-}
-
 </style>
