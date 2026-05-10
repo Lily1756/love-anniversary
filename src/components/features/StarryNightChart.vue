@@ -124,12 +124,6 @@
         <span class="stat-value">{{ extraStats.maxStreak }}<span class="stat-unit">天</span></span>
       </div>
     </div>
-
-    <!-- 月份筛选提示 -->
-    <div v-if="activeMonth !== null" class="month-filter-hint">
-      <span>📅 正在查看 {{ activeMonth }} 月的情书</span>
-      <button class="clear-month-btn" @click="clearMonthFilter">清除筛选</button>
-    </div>
   </div>
 </template>
 
