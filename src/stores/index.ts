@@ -42,6 +42,36 @@ export const useAppStore = defineStore('app', () => {
   async function loadLetters() {
     try {
       isLoading.value = true
+      // 优先从 localStorage 读取（避免 CF 重建期间数据丢失）
+      const saved = localStorage.getItem('love_site_letters')
+      if (saved) {
+        const items = JSON.parse(saved)
+        letters.value = items.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          date: item.date,
+          year: new Date(item.date).getFullYear(),
+          tag: item.tag,
+          isFavorite: item.isFavorite || false
+        }))
+        isLoading.value = false
+        // 后台静默同步最新数据
+        fetchLatest('public/data/diaries.json', './data/diaries.json')
+          .then((d: any) => {
+            letters.value = d.map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              content: item.content,
+              date: item.date,
+              year: new Date(item.date).getFullYear(),
+              tag: item.tag,
+              isFavorite: item.isFavorite || false
+            }))
+          })
+          .catch(() => {})
+        return
+      }
       const data = await fetchLatest('public/data/diaries.json', './data/diaries.json')
       letters.value = data.map((item: any) => ({
         id: item.id,
@@ -62,7 +92,16 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      // saveViaGithub 写入 public/data/，所以这里也从 public/data/ 读取最新数据
+      // 优先从 localStorage 读取（避免 CF 重建期间的Data丢失）
+      const saved = localStorage.getItem('love_site_albums')
+      if (saved) {
+        albums.value = JSON.parse(saved)
+        // 后台静默同步最新数据
+        fetchLatest('public/data/photos.json', './data/photos.json')
+          .then(data => { albums.value = data })
+          .catch(() => {})
+        return
+      }
       albums.value = await fetchLatest('public/data/photos.json', './data/photos.json')
     } catch (err) {
       console.error('加载照片失败:', err)
@@ -71,6 +110,16 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
+      // 优先从 localStorage 读取（避免 CF 重建期间Data丢失）
+      const saved = localStorage.getItem('love_site_footprints')
+      if (saved) {
+        footprints.value = JSON.parse(saved)
+        // 后台静默同步最新数据
+        fetchLatest('public/data/travels.json', './data/travels.json')
+          .then(data => { footprints.value = data })
+          .catch(() => {})
+        return
+      }
       footprints.value = await fetchLatest('public/data/travels.json', './data/travels.json')
     } catch (err) {
       console.error('加载足迹失败:', err)
@@ -187,25 +236,33 @@ export const useAppStore = defineStore('app', () => {
 
   /**
    * 保存相册数据到 GitHub
+   * 先写 localStorage 作为备份，再推 GitHub
    */
   async function saveAlbums(password: string) {
+    // 先保存到 localStorage 作为备份（避免 CF 重建期间Data丢失）
+    localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
     return saveViaGithub(albums.value, 'data/photos.json', password)
   }
 
   /**
    * 保存足迹数据到 GitHub
+   * 先写 localStorage 作为备份
    */
   async function saveFootprints(password: string) {
+    localStorage.setItem('love_site_footprints', JSON.stringify(footprints.value))
     return saveViaGithub(footprints.value, 'data/travels.json', password)
   }
 
   /**
    * 保存情书数据到 GitHub
+   * 先写 localStorage 作为备份
    */
   async function saveLetters(password: string) {
     const dataToSave = letters.value.map(l => ({
-      id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag
+      id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag, isFavorite: l.isFavorite
     }))
+    // 先保存到 localStorage 作为备份（避免 CF 重建期间Data丢失）
+    localStorage.setItem('love_site_letters', JSON.stringify(letters.value))
     return saveViaGithub(dataToSave, 'data/diaries.json', password)
   }
 
