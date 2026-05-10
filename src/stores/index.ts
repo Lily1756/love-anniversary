@@ -284,11 +284,18 @@ export const useAppStore = defineStore('app', () => {
   async function saveAlbums(password: string) {
     // 第 1 步：尝试 CF Function（生产环境 /save-photos）
     try {
+      // 添加超时，防止本地开发时请求挂起
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000)
+
       const resp = await fetch('/save-photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, data: albums.value, path: 'data/photos.json' })
+        body: JSON.stringify({ password, data: albums.value, path: 'data/photos.json' }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
+
       if (resp.ok) {
         const result = await resp.json()
         if (result.success) {
@@ -296,7 +303,9 @@ export const useAppStore = defineStore('app', () => {
           return { success: true, message: '保存成功（CF Function）' }
         }
       }
-    } catch {}
+    } catch {
+      console.warn('CF Function /save-photos 不可用，回退到 GitHub API')
+    }
 
     // 第 2 步：回退到直连 GitHub API
     const result = await saveViaGithub(albums.value, 'data/photos.json', password)
