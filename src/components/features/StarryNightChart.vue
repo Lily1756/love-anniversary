@@ -133,6 +133,9 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const props = defineProps({
   letters: { type: Array, default: () => [] }
@@ -530,9 +533,8 @@ function handleSatelliteClick(satellite) {
     }, 300)
   }
   
-  // 跳转到情书详情页（新标签页）
-  // 注意：项目使用 Hash 路由（createWebHashHistory），URL 必须包含 /#/
-  window.open(`/#/letters/${satellite.id}`, '_blank')
+  // 使用 Vue Router 跳转（和情书卡片一样）
+  router.push({ name: 'LetterDetail', params: { id: satellite.id } })
 }
 
 // ─── 清除筛选 ─────────────────────────────
