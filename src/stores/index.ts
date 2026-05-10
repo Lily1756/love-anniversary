@@ -2,6 +2,11 @@ import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import type { Letter, Album, Footprint, Wish, Capsule } from '@/types'
 
+interface SaveResult {
+  success: boolean
+  error?: string
+}
+
 export const useAppStore = defineStore('app', () => {
   // 状态
   const letters = ref<Letter[]>([])
@@ -109,8 +114,17 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  function saveWishes() {
+  async function saveWishes(password: string): Promise<SaveResult> {
+    // 先存本地
     localStorage.setItem('love_site_wishes', JSON.stringify(wishes.value))
+    // 再存 GitHub
+    try {
+      await saveViaGithub(wishes.value, 'data/wishes.json', password)
+      return { success: true }
+    } catch (e: any) {
+      console.error('保存愿望失败:', e)
+      return { success: false, error: String(e) }
+    }
   }
 
   async function loadCapsules() {
@@ -126,8 +140,17 @@ export const useAppStore = defineStore('app', () => {
     }
   }
 
-  function saveCapsules() {
+  async function saveCapsules(password: string): Promise<SaveResult> {
+    // 先存本地
     localStorage.setItem('love_site_capsules', JSON.stringify(capsules.value))
+    // 再存 GitHub
+    try {
+      await saveViaGithub(capsules.value, 'data/capsules.json', password)
+      return { success: true }
+    } catch (e: any) {
+      console.error('保存时间胶囊失败:', e)
+      return { success: false, error: String(e) }
+    }
   }
 
   async function loadAll() {
