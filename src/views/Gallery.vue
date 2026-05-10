@@ -642,16 +642,15 @@ async function handleCoverDrop(e: DragEvent) {
 
 async function uploadCover(file: File) {
   coverUploading.value = true
-  coverProgress.value = 20
-  coverProgressText.value = '压缩图片...'
+  coverProgress.value = 10
+  coverProgressText.value = '准备上传...'
 
   try {
-    const compressed = await upload.compressImage(file, 1200, 0.85)
-    coverProgress.value = 50
+    // 直接调用 uploadFile()，它内部会处理压缩和上传
+    coverProgress.value = 30
     coverProgressText.value = '上传到云端...'
 
-    // 使用 useUpload composable 上传（自动处理 Cloudinary 上传）
-    const url = await upload.uploadFile(compressed)
+    const url = await upload.uploadFile(file)
     albumForm.value.cover = url
     coverProgress.value = 100
     coverProgressText.value = '完成！'
