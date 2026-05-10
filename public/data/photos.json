@@ -135,5 +135,13 @@
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778423475/t46izuwqzyvb6elzpnk8.jpg",
     "date": "2026-05-10",
     "photos": []
+  },
+  {
+    "id": "test-1778428324710",
+    "title": "测试相册",
+    "tag": "daily",
+    "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v123/test.jpg",
+    "date": "2026-05-10",
+    "photos": []
   }
 ]
