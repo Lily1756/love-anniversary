@@ -177,11 +177,16 @@ export const useAppStore = defineStore('app', () => {
       const ghPath = path.startsWith('public/') ? path : `public/${path}`
 
       // --- 第一步：从远程拉取最新版本，进行智能合并 ---
-      // 获取 SHA（用 API）
+      // 获取 SHA（用 API）— 添加超时
+      const shaController = new AbortController()
+      const shaTimeoutId = setTimeout(() => shaController.abort(), 10000)
+
       const primaryApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
       const shaResp = await fetch(primaryApiUrl, {
-        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
+        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' },
+        signal: shaController.signal
       })
+      clearTimeout(shaTimeoutId)
 
       let mergedData = localData
       let primarySha: string | null = null
@@ -236,7 +241,8 @@ export const useAppStore = defineStore('app', () => {
 
       // --- 第二步：写入 public/data/（唯一路径）---
       const jsonStr = JSON.stringify(mergedData, null, 2)
-      const b64 = btoa(unescape(encodeURIComponent(jsonStr)))
+      // 使用可靠的 Base64 编码（支持中文）
+      const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(jsonStr)))
 
       const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
 
@@ -246,6 +252,10 @@ export const useAppStore = defineStore('app', () => {
       }
       if (primarySha) payload.sha = primarySha
 
+      // 添加超时
+      const updateController = new AbortController()
+      const updateTimeoutId = setTimeout(() => updateController.abort(), 15000)
+
       const updateResp = await fetch(apiUrl, {
         method: 'PUT',
         headers: {
@@ -254,11 +264,18 @@ export const useAppStore = defineStore('app', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
+        signal: updateController.signal
       })
+      clearTimeout(updateTimeoutId)
 
       if (!updateResp.ok) {
-        throw new Error(`${ghPath}: ${updateResp.status}`)
+        const errorText = await updateResp.text()
+        console.error(`[saveViaGithub] GitHub API 错误 ${updateResp.status}:`, errorText)
+        throw new Error(`${ghPath}: ${updateResp.status} - ${errorText}`)
       }
+
+      const updateResult = await updateResp.json()
+      console.log(`[saveViaGithub] 保存成功: ${ghPath}`, updateResult)
 
       // 如果合并了新数据，同步更新本地状态
       if (mergedData.length > localData.length) {
@@ -273,7 +290,7 @@ export const useAppStore = defineStore('app', () => {
 
       return { success: true, message: '保存成功' }
     } catch (err: any) {
-      console.error(`保存 ${path} 失败:`, err)
+      console.error(`[saveViaGithub] 保存 ${path} 失败:`, err)
       return { success: false, error: err.message }
     }
   }
