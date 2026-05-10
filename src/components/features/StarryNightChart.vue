@@ -2,221 +2,32 @@
   <div class="starry-container" role="region" aria-label="年度记忆星光图">
     <!-- 星云光晕背景（垂直椭圆形）- 放在最底层 -->
     <div class="nebula-background"></div>
+    
     <!-- 标题区 -->
     <div class="header-area">
       <h3 class="card-title">✨ 时间脉络</h3>
       <p class="card-subtitle">每一个写下情书的日子，都是星空里闪亮的一颗星</p>
     </div>
 
-    <!-- 图表主区域 -->
-    <div class="chart-area" ref="chartAreaRef">
-
-      <svg
-        class="stars-canvas"
-        :viewBox="`0 0 ${svgWidth} ${svgHeight}`"
-        xmlns="http://www.w3.org/2000/svg"
-        @mouseleave="handleMouseLeave"
+    <!-- 星空画布：只有月份节点，没有SVG画布 -->
+    <div class="starry-canvas" ref="canvasRef">
+      <!-- 只有星空节点，没有底部圆点 -->
+      <div
+        v-for="node in starPositions"
+        :key="'month-' + node.month"
+        class="star-node"
+        :class="{ 'has-letters': node.hasLetter }"
+        :style="getNodeStyle(node)"
+        @mouseenter="handleNodeHover(node)"
+        @mouseleave="handleNodeLeave"
+        @click="handleNodeClick(node)"
       >
-        <defs>
-          <!-- 星星光晕渐变（莫兰迪色系） -->
-          <radialGradient id="star-glow-soft" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#C9A8A9" stop-opacity="0.8" />
-            <stop offset="50%" stop-color="#C9A8A9" stop-opacity="0.3" />
-            <stop offset="100%" stop-color="#C9A8A9" stop-opacity="0" />
-          </radialGradient>
-
-          <!-- 亮星特殊光晕 -->
-          <radialGradient id="star-glow-bright" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stop-color="#A89080" stop-opacity="1" />
-            <stop offset="30%" stop-color="#C9A8A9" stop-opacity="0.5" />
-            <stop offset="100%" stop-color="#D8C4B6" stop-opacity="0" />
-          </radialGradient>
-
-          <!-- 星星发光滤镜 -->
-          <filter id="star-glow-filter" x="-100%" y="-100%" width="300%" height="300%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-
-          <!-- 强发光滤镜（悬停） -->
-          <filter id="star-glow-strong" x="-150%" y="-150%" width="400%" height="400%">
-            <feGaussianBlur stdDeviation="6" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <!-- 极淡背景色调（与页面融合） -->
-        <rect
-          :width="svgWidth"
-          :height="svgHeight"
-          fill="rgba(201, 168, 169, 0.03)"
-          rx="16"
-        />
-
-        <!-- 装饰性背景微星 -->
-        <circle
-          v-for="bg in backgroundStars"
-          :key="'bg-' + bg.id"
-          :cx="bg.x"
-          :cy="bg.y"
-          :r="bg.r"
-          :opacity="bg.opacity"
-          fill="#C9A8A9"
-          class="bg-star"
-          :style="{ animationDelay: bg.delay + 's' }"
-        />
-
-        <!-- 星座连线（月份间连接） -->
-        <g class="constellation-lines">
-          <line
-            v-for="(line, i) in constellationLines"
-            :key="'const-' + i"
-            :x1="line.x1"
-            :y1="line.y1"
-            :x2="line.x2"
-            :y2="line.y2"
-            stroke="#D8C4B6"
-            stroke-width="0.5"
-            stroke-dasharray="2 4"
-            opacity="0.3"
-          />
-        </g>
-
-        <!-- 星轨路径（连接有情书记录的月份节点） -->
-        <path
-          v-if="starTrailPath"
-          :d="starTrailPath"
-          fill="none"
-          stroke="var(--color-accent, #C9A8A9)"
-          stroke-width="1.5"
-          stroke-opacity="0.3"
-          stroke-dasharray="5,5"
-          class="star-trail-path"
-        />
-
-        <!-- 星光点（核心） -->
-        <g class="stars-group">
-          <g
-            v-for="(star, i) in positionedStars"
-            :key="star.key"
-            class="star-wrapper"
-            :style="{ '--i': i, '--delay': star.animationDelay + 's' }"
-            @mouseenter="handleStarHover(star, $event)"
-            @mouseleave="handleStarLeave"
-            @click="handleStarClick(star)"
-            style="cursor: pointer"
-          >
-            <!-- 外层光晕 -->
-            <circle
-              :cx="star.x"
-              :cy="star.y"
-              :r="star.outerR"
-              :fill="star.glowFill"
-              :opacity="star.hovered ? 0.4 : 0.15"
-              class="star-outer-glow"
-            />
-
-            <!-- 中层光晕 -->
-            <circle
-              :cx="star.x"
-              :cy="star.y"
-              :r="star.middleR"
-              :fill="star.glowFill"
-              :opacity="star.hovered ? 0.6 : 0.25"
-              class="star-middle-glow"
-            />
-
-            <!-- 核心星点 -->
-            <circle
-              :cx="star.x"
-              :cy="star.y"
-              :r="star.coreR"
-              :fill="star.coreColor"
-              :opacity="star.hovered ? 1 : star.opacity"
-              :filter="star.hovered ? 'url(#star-glow-strong)' : (star.count >= 4 ? 'url(#star-glow-filter)' : 'none')"
-              class="star-core"
-            />
-
-            <!-- 涟漪效果（悬停时显示） -->
-            <circle
-              v-if="star.hovered"
-              :cx="star.x"
-              :cy="star.y"
-              r="4"
-              fill="none"
-              :stroke="star.coreColor"
-              stroke-width="0.8"
-              class="ripple-ring"
-            />
-          </g>
-        </g>
-
-        <!-- 月份标签（底部水平排列） -->
-        <g class="month-labels">
-          <g
-            v-for="m in 12"
-            :key="'ml-' + m"
-            @click="handleMonthClick(m)"
-            style="cursor: pointer"
-          >
-            <rect
-              :x="monthLabelPos(m).x - 16"
-              :y="monthLabelPos(m).y - 10"
-              width="32"
-              height="20"
-              fill="transparent"
-              rx="4"
-            />
-            <text
-              :x="monthLabelPos(m).x"
-              :y="monthLabelPos(m).y"
-              class="month-label-text"
-              text-anchor="middle"
-              dominant-baseline="central"
-              :fill="activeMonth === m ? '#A89080' : 'rgba(90, 90, 90, 0.5)'"
-              :font-weight="activeMonth === m ? '600' : '400'"
-            >{{ m }}月</text>
-          </g>
-        </g>
-
-        <!-- Tooltip -->
-        <foreignObject
-          v-if="hoveredStar"
-          :x="tooltipPos.x - 90"
-          :y="tooltipPos.y - 80"
-          width="180"
-          height="80"
-          style="overflow: visible; pointer-events: none"
-        >
-          <div class="svg-tooltip">
-            <div class="tooltip-date">{{ hoveredStar.year }}年{{ hoveredStar.month }}月{{ hoveredStar.day }}日</div>
-            <div class="tooltip-preview">{{ hoveredStar.preview }}</div>
-            <div class="tooltip-count">{{ hoveredStar.count }}封情书</div>
-          </div>
-        </foreignObject>
-      </svg>
-    </div>
-
-    <!-- 星空分散布局：月份节点 -->
-    <div
-      v-for="node in starPositions"
-      :key="'month-' + node.month"
-      class="month-node"
-      :class="{ 'has-letter': node.hasLetter, 'active': activeMonth === node.month }"
-      :style="getNodeStyle(node)"
-      @mouseenter="handleMonthHover(node.month)"
-      @mouseleave="handleMonthLeave"
-      @click="handleMonthClick(node.month)"
-    >
-      <span class="month-label">{{ node.month }}月</span>
-      <span v-if="node.hasLetter" class="letter-count">+{{ node.letterCount }}</span>
+        <!-- 节点内容 -->
+        <div class="star-core"></div>
+        <div class="star-glow"></div>
+        <div class="node-label">{{ node.month }}月</div>
+        <div v-if="node.hasLetter" class="node-count">+{{ node.letterCount }}</div>
+      </div>
     </div>
 
     <!-- 分割线 -->
@@ -262,7 +73,6 @@
 
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { calculateStarPositions, generateStarTrailPath } from '@/utils/starPositionCalculator'
 
 const props = defineProps({
   letters: { type: Array, default: () => [] }
@@ -271,218 +81,102 @@ const props = defineProps({
 const emit = defineEmits(['month-selected', 'date-selected'])
 
 // ── 容器尺寸（响应式）───
-const containerRef = ref<HTMLElement | null>(null)
+const canvasRef = ref(null)
 const containerSize = ref({ width: 800, height: 320 })
 
-  // ── 月份数据聚合 ──────────────────────────
-  const monthsData = computed(() => {
-    const data = {}
-    for (let m = 1; m <= 12; m++) data[m] = { count: 0 }
-    for (const letter of props.letters) {
-      if (letter.date) {
-        const month = parseInt(letter.date.split('-')[1])
-        if (month >= 1 && month <= 12) data[month].count++
-      }
+// ── 月份数据聚合 ──────────────────────────
+const monthsData = computed(() => {
+  const data = {}
+  for (let m = 1; m <= 12; m++) data[m] = { count: 0 }
+  for (const letter of props.letters) {
+    if (letter.date) {
+      const month = parseInt(letter.date.split('-')[1])
+      if (month >= 1 && month <= 12) data[month].count++
     }
-    return data
-  })
+  }
+  return data
+})
 
-// ── 星空分散布局：月份节点位置 ─────────────────────
+// ── 优化后的星空节点位置计算（避免重叠）─────────────────────
 const starPositions = computed(() => {
-  return calculateStarPositions(monthsData.value, containerSize.value.width, containerSize.value.height)
+  const containerWidth = containerSize.value.width
+  const containerHeight = containerSize.value.height
+  const positions = []
+  const horizontalSpacing = containerWidth / 13 // 左右留边距
+  const verticalRange = containerHeight * 0.6   // 垂直分布范围
+  const horizontalJitter = horizontalSpacing * 0.4 // 水平扰动
+  
+  // 避免节点重叠的冲突检测
+  const placedPositions = []
+  const minDistance = 60 // 节点间最小距离
+  
+  for (let i = 0; i < 12; i++) {
+    const month = i + 1
+    const hasLetter = monthsData.value[month]?.count > 0
+    const letterCount = monthsData.value[month]?.count || 0
+    
+    // 基础水平位置（保持时间顺序）
+    const baseX = horizontalSpacing + (i * (containerWidth - horizontalSpacing * 2) / 11)
+    
+    // 尝试多次寻找不重叠的位置
+    let x, y
+    let attempts = 0
+    const maxAttempts = 50
+    
+    do {
+      // 水平随机扰动
+      const hJitter = (Math.random() * 2 - 1) * horizontalJitter
+      
+      // 垂直位置 - 使用正弦波产生有节奏的分布
+      const verticalPhase = (i / 12) * Math.PI * 2
+      const verticalBase = Math.sin(verticalPhase) * (verticalRange / 3)
+      const verticalRandom = (Math.random() * 2 - 1) * (verticalRange / 3)
+      
+      x = baseX + hJitter
+      y = (containerHeight / 2) + verticalBase + verticalRandom
+      
+      // 边界检查
+      x = Math.max(30, Math.min(containerWidth - 30, x))
+      y = Math.max(50, Math.min(containerHeight - 50, y))
+      
+      attempts++
+      
+      // 如果尝试次数过多，放宽距离限制
+      const currentMinDistance = attempts > 20 ? minDistance * 0.7 : minDistance
+      
+      // 检查是否与已放置节点太近
+      const tooClose = placedPositions.some(pos => {
+        const dx = pos.x - x
+        const dy = pos.y - y
+        return Math.sqrt(dx * dx + dy * dy) < currentMinDistance
+      })
+      
+      if (!tooClose || attempts >= maxAttempts) {
+        break
+      }
+    } while (attempts < maxAttempts)
+    
+    // 记录已放置位置
+    placedPositions.push({ x, y })
+    
+    // 计算节点大小（根据情书数量）
+    const size = hasLetter ? 24 + Math.min(letterCount, 5) * 2 : 16
+    
+    positions.push({
+      x,
+      y,
+      month,
+      hasLetter,
+      letterCount,
+      size
+    })
+  }
+  
+  return positions
 })
-
-// ── 星轨路径：连接有情书记录的月份 ───────────────────
-const starTrailPath = computed(() => {
-  return generateStarTrailPath(starPositions.value)
-})
-
-// ─── SVG 画布常量 ─────────────────────────────────────
-const svgWidth = 800
-const svgHeight = 380
-const margin = { left: 80, right: 80, top: 40, bottom: 50 }
-const chartWidth = svgWidth - margin.left - margin.right
-const chartHeight = svgHeight - margin.top - margin.bottom
-const baseY = svgHeight / 2 - 20  // 星星基准Y坐标
 
 // ─── 交互状态 ─────────────────────────────────────────
 const activeMonth = ref(null)
-const hoveredStar = ref(null)
-const tooltipPos = ref({ x: 0, y: 0 })
-const chartAreaRef = ref(null)
-
-// ─── 伪随机种子函数（确保同日期位置稳定） ─────────────
-function seededRandom(seed) {
-  let s = seed % 2147483647
-  if (s <= 0) s += 2147483646
-  s = (s * 16807) % 2147483647
-  return (s - 1) / 2147483646
-}
-
-// ─── 坐标映射：1月左 → 12月右 ────────────────────────
-function monthToX(month) {
-  const progress = (month - 1) / 11
-  return margin.left + progress * chartWidth
-}
-
-function dayToY(day, month, year) {
-  const seed = month * 31 + day + year * 1000
-  const random = seededRandom(seed)
-  const maxOffset = chartHeight / 2 - 20
-  return baseY + (random * 2 - 1) * maxOffset
-}
-
-// ─── 星星大小映射 ─────────────────────────────────────
-function getStarSize(count, contentLength) {
-  const base = 3
-  const max = 9
-  const countFactor = Math.min(count / 5, 1) * 0.5
-  const lengthFactor = Math.min(contentLength / 500, 1) * 0.5
-  return base + (countFactor + lengthFactor) * (max - base)
-}
-
-// ─── 星星颜色系统（莫兰迪色系） ──────────────────────
-function getStarColors(count) {
-  if (count === 1) {
-    return {
-      core: '#C9A8A9',
-      glowFill: 'rgba(201, 168, 169, 0.3)'
-    }
-  } else if (count <= 3) {
-    return {
-      core: '#B8958A',
-      glowFill: 'rgba(184, 149, 138, 0.3)'
-    }
-  } else {
-    return {
-      core: '#A89080',
-      glowFill: 'rgba(169, 144, 128, 0.25)'
-    }
-  }
-}
-
-// ─── 数据处理：按日期分组 ─────────────────────────────
-const letterGrouped = computed(() => {
-  const map = {}
-  for (const letter of props.letters) {
-    if (!letter.date) continue
-    if (!map[letter.date]) {
-      map[letter.date] = []
-    }
-    map[letter.date].push(letter)
-  }
-  return map
-})
-
-// ─── 所有星光点（核心算法） ──────────────────────────
-const positionedStars = computed(() => {
-  const today = new Date()
-  const stars = []
-
-  for (const [date, lettersOfDay] of Object.entries(letterGrouped.value)) {
-    const [yearStr, monthStr, dayStr] = date.split('-')
-    const yearN = parseInt(yearStr)
-    const month = parseInt(monthStr)
-    const day = parseInt(dayStr)
-
-    // 过滤未来日期
-    if (yearN > today.getFullYear()) continue
-    if (yearN === today.getFullYear() && month > today.getMonth() + 1) continue
-    if (yearN === today.getFullYear() && month === today.getMonth() + 1 && day > today.getDate()) continue
-
-    const x = monthToX(month)
-    const y = dayToY(day, month, yearN)
-
-    const maxContent = Math.max(...lettersOfDay.map(l => (l.content || '').length))
-    const size = getStarSize(lettersOfDay.length, maxContent)
-    const colors = getStarColors(lettersOfDay.length)
-
-    const preview = lettersOfDay[0].title
-      ? lettersOfDay[0].title.slice(0, 16) + (lettersOfDay[0].title.length > 16 ? '…' : '')
-      : (lettersOfDay[0].content || '').slice(0, 16) + '…'
-
-    const opacity = yearN === 2025 ? 0.65 : 0.9
-
-    stars.push({
-      key: date,
-      x,
-      y,
-      size,
-      r: size,
-      outerR: size * 2,
-      middleR: size * 1.2,
-      coreR: size * 0.4,
-      coreColor: colors.core,
-      glowFill: colors.glowFill,
-      opacity,
-      year: yearN,
-      month,
-      day,
-      count: lettersOfDay.length,
-      preview,
-      hovered: false,
-      animationDelay: seededRandom(yearN * 1000 + month * 31 + day)
-    })
-  }
-
-  return stars
-})
-
-// ─── 背景装饰微星 ────────────────────────────────────
-const backgroundStars = computed(() => {
-  const stars = []
-  for (let i = 0; i < 35; i++) {
-    const seed = i * 137
-    stars.push({
-      id: i,
-      x: seededRandom(seed) * svgWidth,
-      y: seededRandom(seed + 1) * svgHeight,
-      r: 0.3 + seededRandom(seed + 2) * 0.6,
-      opacity: 0.1 + seededRandom(seed + 3) * 0.2,
-      delay: seededRandom(seed + 4) * 5
-    })
-  }
-  return stars
-})
-
-// ─── 星座连线（相邻月份） ─────────────────────────────
-const constellationLines = computed(() => {
-  const lines = []
-  const sorted = [...positionedStars.value].sort((a, b) => {
-    return (a.year - b.year) || (a.month - b.month) || (a.day - b.day)
-  })
-
-  const byMonth = {}
-  for (const star of sorted) {
-    if (!byMonth[star.month]) byMonth[star.month] = []
-    byMonth[star.month].push(star)
-  }
-
-  for (let m = 1; m < 12; m++) {
-    const curr = byMonth[m]
-    const next = byMonth[m + 1]
-    if (curr && next) {
-      const currLast = curr[curr.length - 1]
-      const nextFirst = next[0]
-      lines.push({
-        x1: currLast.x,
-        y1: currLast.y,
-        x2: nextFirst.x,
-        y2: nextFirst.y
-      })
-    }
-  }
-
-  return lines
-})
-
-// ─── 月份标签位置 ────────────────────────────────────
-function monthLabelPos(month) {
-  return {
-    x: monthToX(month),
-    y: svgHeight - margin.bottom / 2 + 5
-  }
-}
 
 // ─── 核心修复：进度按不同日期数/365计算 ──────────────
 const progressData = computed(() => {
@@ -517,24 +211,28 @@ const progressData = computed(() => {
 const totalLetters = computed(() => props.letters.length)
 
 const activeMonthCount = computed(() => {
-  const months = new Set(positionedStars.value.map(s => s.month))
-  return months.size
+  const monthsWithLetters = Object.entries(monthsData.value)
+    .filter(([_, data]) => data.count > 0)
+    .length
+  return monthsWithLetters
 })
 
 const extraStats = computed(() => {
-  if (positionedStars.value.length === 0) return null
+  if (!props.letters || props.letters.length === 0) return null
 
-  // 最长连续天数
-  const sorted = [...positionedStars.value].sort((a, b) => {
-    return (a.year - b.year) || (a.month - b.month) || (a.day - b.day)
-  })
-
+  // 提取所有日期并排序
+  const dates = [...new Set(props.letters.map(l => l.date).filter(Boolean))]
+    .map(d => new Date(d))
+    .sort((a, b) => a - b)
+  
+  if (dates.length === 0) return null
+  
+  // 计算最长连续天数
   let maxStreak = 1
   let currentStreak = 1
-  for (let i = 1; i < sorted.length; i++) {
-    const prev = new Date(sorted[i - 1].year, sorted[i - 1].month - 1, sorted[i - 1].day)
-    const curr = new Date(sorted[i].year, sorted[i].month - 1, sorted[i].day)
-    const diff = (curr - prev) / (1000 * 60 * 60 * 24)
+  
+  for (let i = 1; i < dates.length; i++) {
+    const diff = (dates[i] - dates[i-1]) / (1000 * 60 * 60 * 24)
     if (diff === 1) {
       currentStreak++
       maxStreak = Math.max(maxStreak, currentStreak)
@@ -542,32 +240,25 @@ const extraStats = computed(() => {
       currentStreak = 1
     }
   }
-
+  
   return { maxStreak }
 })
 
 // ─── 交互处理 ────────────────────────────────────────
-function handleStarHover(star, event) {
-  hoveredStar.value = { ...star, hovered: true }
-  tooltipPos.value = { x: star.x, y: star.y }
-  activeMonth.value = star.month
+function handleNodeHover(month) {
+  activeMonth.value = month
 }
 
-function handleStarLeave() {
-  hoveredStar.value = null
+function handleNodeLeave() {
+  // 不立即清除，保持选中状态
 }
 
-function handleStarClick(star) {
-  emit('date-selected', star.key)
-  emit('month-selected', star.month)
-}
-
-function handleMonthClick(month) {
-  if (activeMonth.value === month) {
+function handleNodeClick(node) {
+  if (activeMonth.value === node.month) {
     clearMonthFilter()
   } else {
-    activeMonth.value = month
-    emit('month-selected', month)
+    activeMonth.value = node.month
+    emit('month-selected', node.month)
   }
 }
 
@@ -575,20 +266,36 @@ function clearMonthFilter() {
   activeMonth.value = null
   emit('month-selected', null)
 }
-// ── 星空分散布局：节点样式 ──────────────────────
+
+// ── 星空节点样式 ──────────────────────
 function getNodeStyle(node) {
   return {
     left: node.x + 'px',
     top: node.y + 'px',
-    '--size': node.hasLetter ? node.size : 24,
+    '--size': node.size + 'px',
     '--brightness': node.hasLetter ? 1 : 0.3,
     zIndex: node.hasLetter ? 3 : 2
   }
 }
 
-function handleMouseLeave() {
-  hoveredStar.value = null
+// ── 响应式监听容器尺寸 ──────────────────────
+function updateContainerSize() {
+  if (canvasRef.value) {
+    containerSize.value = {
+      width: canvasRef.value.offsetWidth,
+      height: canvasRef.value.offsetHeight || 320
+    }
+  }
 }
+
+onMounted(() => {
+  updateContainerSize()
+  window.addEventListener('resize', updateContainerSize)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateContainerSize)
+})
 </script>
 
 <style scoped>
@@ -965,8 +672,8 @@ function handleMouseLeave() {
     margin-bottom: 30px;
   }
 
-  .chart-area {
-    min-height: 280px;
+  .starry-canvas {
+    height: 280px;
   }
 
   .stats-panel {
@@ -985,22 +692,46 @@ function handleMouseLeave() {
   }
 }
 
-/* 星空分散布局：月份节点 */
-.month-node {
+/* 星空节点样式 */
+.star-node {
   position: absolute;
-  width: calc(var(--size, 24) * 1px);
-  height: calc(var(--size, 24) * 1px);
-  border-radius: 50%;
-  background: var(--color-accent, #C9A8A9);
-  opacity: var(--brightness, 0.3);
+  width: 60px;
+  height: 60px;
   transform: translate(-50%, -50%);
   cursor: pointer;
   transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 0 8px rgba(201, 168, 169, 0.3);
+  z-index: 2;
+}
+
+/* 无记录的节点 - 低调显示 */
+.star-node:not(.has-letters) {
+  opacity: 0.3;
+  transform: translate(-50%, -50%) scale(0.8);
+}
+
+.star-node:not(.has-letters) .star-core {
+  width: 16px;
+  height: 16px;
+  background-color: var(--text-tertiary, #999);
+  border-radius: 50%;
+}
+
+/* 有记录的节点 - 突出显示 */
+.star-node.has-letters {
+  opacity: 1;
+}
+
+.star-node.has-letters .star-core {
+  width: 24px;
+  height: 24px;
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--color-accent, #C9A8A9) 0%,
+    rgba(201, 168, 169, 0.7) 70%,
+    rgba(201, 168, 169, 0.3) 100%
+  );
+  border-radius: 50%;
+  box-shadow: 0 0 12px rgba(201, 168, 169, 0.6);
 }
 
 .month-node.has-letter {
@@ -1015,32 +746,53 @@ function handleMouseLeave() {
     inset 0 0 8px rgba(255, 255, 255, 0.3);
 }
 
-.month-node:hover {
-  transform: translate(-50%, -50%) scale(1.3);
-  box-shadow: 0 0 20px rgba(201, 168, 169, 0.8);
-  z-index: 4 !important;
-}
-
-.month-node.active {
-  animation: star-twinkle 1.5s ease-in-out infinite;
-}
-
-.month-label {
-  font-size: 10px;
-  color: white;
-  font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
-  user-select: none;
-}
-
-.letter-count {
-  font-size: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 2px;
-}
-
-.star-trail-path {
+/* 光晕效果 */
+.star-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 0 30px 15px rgba(201, 168, 169, 0.3);
   pointer-events: none;
+  z-index: 1;
+}
+
+/* 悬停效果 */
+.star-node:hover {
+  z-index: 10;
+  transform: translate(-50%, -50%) scale(1.3);
+}
+
+.star-node:hover .star-glow {
+  box-shadow: 0 0 50px 25px rgba(201, 168, 169, 0.5);
+}
+
+/* 节点标签 */
+.node-label {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: var(--text-secondary, #595959);
+  white-space: nowrap;
+  font-family: 'Noto Sans SC', sans-serif;
+}
+
+.node-count {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  color: var(--color-accent, #C9A8A9);
+  background: rgba(201, 168, 169, 0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-family: 'Noto Sans SC', sans-serif;
 }
 
 </style>
