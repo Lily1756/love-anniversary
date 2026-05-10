@@ -575,6 +575,16 @@ function clearMonthFilter() {
   activeMonth.value = null
   emit('month-selected', null)
 }
+// ── 星空分散布局：节点样式 ──────────────────────
+function getNodeStyle(node) {
+  return {
+    left: node.x + 'px',
+    top: node.y + 'px',
+    '--size': node.hasLetter ? node.size : 24,
+    '--brightness': node.hasLetter ? 1 : 0.3,
+    zIndex: node.hasLetter ? 3 : 2
+  }
+}
 
 function handleMouseLeave() {
   hoveredStar.value = null
@@ -974,4 +984,63 @@ function handleMouseLeave() {
     font-size: 18px;
   }
 }
+
+/* 星空分散布局：月份节点 */
+.month-node {
+  position: absolute;
+  width: calc(var(--size, 24) * 1px);
+  height: calc(var(--size, 24) * 1px);
+  border-radius: 50%;
+  background: var(--color-accent, #C9A8A9);
+  opacity: var(--brightness, 0.3);
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 8px rgba(201, 168, 169, 0.3);
+}
+
+.month-node.has-letter {
+  background: radial-gradient(
+    circle at 30% 30%,
+    var(--color-accent) 0%,
+    rgba(201, 168, 169, 0.7) 70%,
+    rgba(201, 168, 169, 0.3) 100%
+  );
+  box-shadow: 
+    0 0 12px rgba(201, 168, 169, 0.5),
+    inset 0 0 8px rgba(255, 255, 255, 0.3);
+}
+
+.month-node:hover {
+  transform: translate(-50%, -50%) scale(1.3);
+  box-shadow: 0 0 20px rgba(201, 168, 169, 0.8);
+  z-index: 4 !important;
+}
+
+.month-node.active {
+  animation: star-twinkle 1.5s ease-in-out infinite;
+}
+
+.month-label {
+  font-size: 10px;
+  color: white;
+  font-weight: 600;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+.letter-count {
+  font-size: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 2px;
+}
+
+.star-trail-path {
+  pointer-events: none;
+}
+
 </style>
