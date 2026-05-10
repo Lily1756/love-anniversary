@@ -2,49 +2,56 @@
   <div class="letters-page page-container">
     <!-- 页面头部 -->
     <div class="page-header">
-      <h2 class="page-title">
-        情书馆
-        <span class="count">({{ filteredLetters.length }})</span>
-      </h2>
-      <div class="header-actions">
-        <!-- 编辑按钮 -->
-        <button v-if="!isEditMode" class="edit-btn" @click="openAuthModal">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-          </svg>
-          编辑
-        </button>
-        <template v-else>
-          <button class="add-btn" @click="openAddModal">
+      <!-- 第一行：标题 + 编辑按钮 -->
+      <div class="header-row header-row--primary">
+        <h2 class="page-title">
+          情书馆
+          <span class="count">({{ filteredLetters.length }})</span>
+        </h2>
+        <div class="primary-actions">
+          <button v-if="!isEditMode" class="edit-btn" @click="openAuthModal">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
             </svg>
-            写情书
+            编辑
           </button>
-          <button class="done-btn" @click="exitEditMode">完成</button>
-        </template>
+          <template v-else>
+            <button class="add-btn" @click="openAddModal">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+              写情书
+            </button>
+            <button class="done-btn" @click="exitEditMode">完成</button>
+          </template>
+        </div>
+      </div>
 
-        <!-- 筛选器 -->
-        <select v-model="selectedYear" class="filter-select">
-          <option value="all">全部年份</option>
-          <option v-for="year in store.letterYears" :key="year" :value="year">
-            {{ year }}年
-          </option>
-        </select>
+      <!-- 第二行：筛选工具 + 电子书按钮 -->
+      <div class="header-row header-row--tools">
+        <div class="filter-tools">
+          <!-- 年份筛选 -->
+          <select v-model="selectedYear" class="filter-select">
+            <option value="all">全部年份</option>
+            <option v-for="year in store.letterYears" :key="year" :value="year">
+              {{ year }}年
+            </option>
+          </select>
 
-        <!-- 搜索框 -->
-        <div class="search-box">
-          <input
-            v-model="searchQuery"
-            type="text"
-            placeholder="搜索情书..."
-            class="search-input"
-          />
-          <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8" />
-            <path d="M21 21l-4.35-4.35" />
-          </svg>
+          <!-- 搜索框 -->
+          <div class="search-box">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="搜索情书..."
+              class="search-input"
+            />
+            <svg class="search-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <path d="M21 21l-4.35-4.35" />
+            </svg>
+          </div>
         </div>
 
         <!-- 生成电子书按钮 -->
@@ -589,19 +596,38 @@ onMounted(() => {
 <style scoped>
 /* ========== 页面头部 ========== */
 .page-header {
+  margin-bottom: var(--space-xl);
+}
+
+/* 第一行：标题 + 编辑按钮 */
+.header-row--primary {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: var(--space-xl);
-  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.primary-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-shrink: 0;
+}
+
+/* 第二行：筛选工具 + 电子书按钮 */
+.header-row--tools {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: var(--space-md);
 }
 
-.header-actions {
+.filter-tools {
   display: flex;
-  gap: var(--space-sm);
   align-items: center;
-  flex-wrap: wrap;
+  gap: var(--space-sm);
+  flex: 1;
+  min-width: 0;
 }
 
 .edit-btn, .done-btn, .add-btn {
@@ -945,14 +971,29 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .page-header {
+  /* 第一行：移动端堆叠 */
+  .header-row--primary {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 14px;
   }
 
-  .header-actions {
+  .primary-actions {
     width: 100%;
-    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  /* 第二行：移动端堆叠 */
+  .header-row--tools {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .filter-tools {
+    flex-direction: column;
+    gap: 8px;
   }
 
   .filter-select {
