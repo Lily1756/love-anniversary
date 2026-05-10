@@ -42,7 +42,7 @@ export const useAppStore = defineStore('app', () => {
   async function loadLetters() {
     try {
       isLoading.value = true
-      // 完全信任 localStorage（来源唯一、实时、不依赖 CF 重建）
+      // 1. 先尝试从 localStorage 读取（立即显示）
       const saved = localStorage.getItem('love_site_letters')
       if (saved) {
         const items = JSON.parse(saved)
@@ -56,6 +56,28 @@ export const useAppStore = defineStore('app', () => {
           isFavorite: item.isFavorite || false
         }))
         isLoading.value = false
+        // 2. 后台检查服务器是否有更新的数据
+        fetch(`./data/diaries.json?v=${Date.now()}`)
+          .then(r => r.json())
+          .then((serverRaw: any[]) => {
+            const serverData = serverRaw.map((item: any) => ({
+              id: item.id,
+              title: item.title,
+              content: item.content,
+              date: item.date,
+              year: new Date(item.date).getFullYear(),
+              tag: item.tag,
+              isFavorite: item.isFavorite || false
+            }))
+            const localStr = JSON.stringify(letters.value)
+            const serverStr = JSON.stringify(serverData)
+            if (localStr !== serverStr) {
+              letters.value = serverData
+              // localStorage 存原始格式（不带 year，和 saveLetters 一致）
+              localStorage.setItem('love_site_letters', JSON.stringify(serverRaw))
+            }
+          })
+          .catch(() => {})
         return
       }
       // 仅当 localStorage 为空（新设备）时才从服务器读取
@@ -269,8 +291,8 @@ export const useAppStore = defineStore('app', () => {
     const dataToSave = letters.value.map(l => ({
       id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag, isFavorite: l.isFavorite
     }))
-    // 先保存到 localStorage 作为备份（避免 CF 重建期间Data丢失）
-    localStorage.setItem('love_site_letters', JSON.stringify(letters.value))
+    // localStorage 存原始数据格式（和服务器一致，不带 year 计算字段）
+    localStorage.setItem('love_site_letters', JSON.stringify(dataToSave))
     return saveViaGithub(dataToSave, 'data/diaries.json', password)
   }
 
