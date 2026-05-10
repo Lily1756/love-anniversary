@@ -589,15 +589,19 @@ onMounted(() => {
 <style scoped>
 /* ========== 页面头部 ========== */
 .page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: var(--space-xl);
+  flex-wrap: wrap;
+  gap: var(--space-md);
 }
 
 .header-actions {
   display: flex;
   gap: var(--space-sm);
-  margin-top: var(--space-md);
-  flex-wrap: wrap;
   align-items: center;
+  flex-wrap: wrap;
 }
 
 .edit-btn, .done-btn, .add-btn {
@@ -941,8 +945,14 @@ onMounted(() => {
     grid-template-columns: 1fr;
   }
 
-  .header-actions {
+  .page-header {
     flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .header-actions {
+    width: 100%;
+    flex-wrap: wrap;
   }
 
   .filter-select {
