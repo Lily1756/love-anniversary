@@ -1,122 +1,5 @@
 [
   {
-    "id": "album-1",
-    "title": "甜蜜日常",
-    "cover": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-    "date": "2025",
-    "tag": "daily",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-        "caption": "在一起的每一天，都是最珍贵的礼物"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?w=600&q=80",
-        "caption": "日常的甜蜜，不需要特别的理由"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-        "caption": "温暖陪伴，是最长情的告白"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=600&q=80",
-        "caption": "平凡的日子，因为有你而不平凡"
-      }
-    ]
-  },
-  {
-    "id": "album-2",
-    "title": "浪漫约会",
-    "cover": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-    "date": "2025",
-    "tag": "date",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-        "caption": "第一次约会，心跳加速的感觉"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1515023115689-589c33041d3c?w=600&q=80",
-        "caption": "生日惊喜，为你准备的浪漫"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1511405946472-a37e3b5ccd47?w=600&q=80",
-        "caption": "烛光晚餐，浪漫满溢"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=600&q=80",
-        "caption": "约会时光，每一刻都值得珍藏"
-      }
-    ]
-  },
-  {
-    "id": "album-3",
-    "title": "旅途风景",
-    "cover": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80",
-    "date": "2025",
-    "tag": "travel",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80",
-        "caption": "一起看日落，余晖洒在你脸上"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&q=80",
-        "caption": "山顶的风景，只有和你一起才有意义"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=80",
-        "caption": "湖边的宁静，岁月静好"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=600&q=80",
-        "caption": "大自然的怀抱，有你更温暖"
-      }
-    ]
-  },
-  {
-    "id": "album-4",
-    "title": "纪念时刻",
-    "cover": "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=600&q=80",
-    "date": "2025",
-    "tag": "anniversary",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1529634806980-85c3dd6d34ac?w=600&q=80",
-        "caption": "周年纪念日，感谢一路有你"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-        "caption": "特殊的日子，特别的庆祝"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-        "caption": "每一个纪念日，都是爱情的里程碑"
-      }
-    ]
-  },
-  {
-    "id": "album-5",
-    "title": "生活点滴",
-    "cover": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80",
-    "date": "2024",
-    "tag": "daily",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80",
-        "caption": "一起做饭的温馨时光"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=600&q=80",
-        "caption": "周末的午后，慵懒又惬意"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80",
-        "caption": "和朋友们在一起的欢乐时光"
-      }
-    ]
-  },
-  {
     "id": "album-1777592217805",
     "title": "大同之行",
     "tag": "travel",
@@ -241,6 +124,83 @@
       },
       {
         "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1777966763/sqr3jqzg6u53fcklx9t1.jpg",
+        "caption": ""
+      }
+    ]
+  },
+  {
+    "id": "album-1778389533585",
+    "title": "爱之初体验",
+    "tag": "daily",
+    "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389523/ambgtedsvhiq5koitgrf.jpg",
+    "date": "2025-05-24",
+    "photos": [
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389555/stctkzbnh4n3j8dpaqu1.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389557/kqw717j2l0iori9ajzsh.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389559/zru7whpsmxjgosdk8phu.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389561/iyh1unaqvkfblnvijpz1.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389564/iqvy7rdh7iefrh9v9nuj.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389568/pkgjmtdiz1lkenfyabl6.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389572/l2j2udo7t27uteik0eor.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389575/xqn2kfemo4uxowy8xpt0.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389577/jegkzkq7uxprh8ryzmeu.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389579/jahgkyzejmumqdlm9vi1.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389580/h5gdvuofr6u3zmjuhhiz.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389582/sozbxciwckixjolckqeh.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389583/shgy5x3wbfjc61wivf3w.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389587/xlbcimyb7hpwdxyi9npi.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389589/rdaprpnp6u7gctd2qn26.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389591/akcrfzkikvfnxczo0fwm.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778389850/mywdwwiho7ielmmrb2yw.jpg",
         "caption": ""
       }
     ]
