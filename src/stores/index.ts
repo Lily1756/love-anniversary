@@ -320,11 +320,17 @@ export const useAppStore = defineStore('app', () => {
    */
   async function saveFootprints(password: string) {
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000)
+
       const resp = await fetch('/save-photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, data: footprints.value, path: 'data/travels.json' })
+        body: JSON.stringify({ password, data: footprints.value, path: 'data/travels.json' }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
+
       if (resp.ok) {
         const result = await resp.json()
         if (result.success) {
@@ -332,7 +338,9 @@ export const useAppStore = defineStore('app', () => {
           return { success: true, message: '保存成功（CF Function）' }
         }
       }
-    } catch {}
+    } catch {
+      console.warn('CF Function /save-photos 不可用，回退到 GitHub API')
+    }
     const result = await saveViaGithub(footprints.value, 'data/travels.json', password)
     if (result.success) {
       localStorage.setItem('love_site_footprints', JSON.stringify(footprints.value))
@@ -348,11 +356,17 @@ export const useAppStore = defineStore('app', () => {
       id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag, isFavorite: l.isFavorite
     }))
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 5000)
+
       const resp = await fetch('/save-photos', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password, data: dataToSave, path: 'data/diaries.json' })
+        body: JSON.stringify({ password, data: dataToSave, path: 'data/diaries.json' }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
+
       if (resp.ok) {
         const result = await resp.json()
         if (result.success) {
@@ -360,7 +374,9 @@ export const useAppStore = defineStore('app', () => {
           return { success: true, message: '保存成功（CF Function）' }
         }
       }
-    } catch {}
+    } catch {
+      console.warn('CF Function /save-photos 不可用，回退到 GitHub API')
+    }
     const result = await saveViaGithub(dataToSave, 'data/diaries.json', password)
     if (result.success) {
       localStorage.setItem('love_site_letters', JSON.stringify(dataToSave))
