@@ -48,7 +48,8 @@ export async function onRequestPost(context) {
   // 获取 Token（环境变量优先，否则用内置值）
   const token = env.GITHUB_TOKEN || _t;
 
-  const filePath = path || 'data/photos.json';
+  // 统一存到 public/data/，和 load 路径一致
+  const filePath = path ? `public/${path.replace(/^public\//, '')}` : 'public/data/photos.json';
   const jsonStr = JSON.stringify(data, null, 2);
 
   // 获取文件 SHA

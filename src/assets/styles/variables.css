@@ -62,9 +62,11 @@
   --space-3xl: 96px;
 
   /* ========== 字体 ========== */
-  --font-family-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
-    'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
-  --font-family-heading: var(--font-family-base);
+  /* Google Fonts 在 index.html 中加载：Noto Sans SC, Playfair Display, Ma Shan Zheng, Poppins */
+  --font-family-base: 'Noto Sans SC', 'PingFang SC', 'Microsoft YaHei', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-family-heading: 'Playfair Display', 'Noto Sans SC', var(--font-family-base);
+  --font-family-brand: 'Ma Shan Zheng', 'Noto Sans SC', cursive;
+  --font-family-mono: 'Poppins', 'SF Mono', Monaco, 'Cascadia Code', monospace;
   --font-size-xs: 12px;
   --font-size-sm: 14px;
   --font-size-base: 16px;

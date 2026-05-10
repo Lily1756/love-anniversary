@@ -25,29 +25,33 @@ export const useAppStore = defineStore('app', () => {
   const totalCapsules = computed(() => capsules.value.length)
 
   // GitHub raw 地址（每次带时间戳绕过 CDN/GitHub 缓存）
+  // 使用 raw.githubusercontent.com 直接返回 UTF-8 JSON，无需 Base64 解码，避免中文乱码
   const _g = ['ghp_','LXWDH','vA1EK','TaCqh','ujU9tq','wMdFA7','BM34eL','5is'].join('')
-  const GH_RAW_BASE = 'https://api.github.com/repos/Lily1756/love-anniversary/contents'
+  const RAW_BASE = 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main'
 
   /**
-   * 从 GitHub API 读取最新文件内容（实时，不依赖 Cloudflare 构建）
+   * 从 GitHub raw 读取最新文件内容（实时，不依赖 Cloudflare 构建）
+   * 使用 raw.githubusercontent.com 直接获取 UTF-8 内容，无需 Base64 解码
    * 失败时回退到本地构建文件（带缓存破坏参数）
    */
   async function fetchLatest(ghPath: string, localPath: string): Promise<any> {
-    // 1. 优先从 GitHub API 实时读取
+    // 1. 优先从 GitHub raw 实时读取（直接返回 UTF-8 JSON，最可靠）
     try {
-      const resp = await fetch(`${GH_RAW_BASE}/${ghPath}?v=${Date.now()}`, {
-        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
+      const resp = await fetch(`${RAW_BASE}/${ghPath}?v=${Date.now()}`, {
+        headers: { Accept: 'application/json' }
       })
       if (resp.ok) {
-        const data = await resp.json()
-        const content = atob(data.content.replace(/\n/g, ''))
-        return JSON.parse(content)
+        const parsed = await resp.json()
+        console.log(`[fetchLatest] GitHub raw 成功读取 ${ghPath}`)
+        return parsed
       }
     } catch (e) {
-      console.warn(`[fetchLatest] GitHub 读取失败，回退本地: ${ghPath}`, e)
+      console.warn(`[fetchLatest] GitHub raw 读取失败，回退本地: ${ghPath}`, e)
     }
     // 2. 回退：从本地构建文件读取（带缓存破坏参数）
+    console.log(`[fetchLatest] 回退本地: ${localPath}`)
     const resp2 = await fetch(`${localPath}?v=${Date.now()}`)
+    if (!resp2.ok) throw new Error(`无法加载 ${localPath}`)
     return resp2.json()
   }
 
@@ -150,6 +154,7 @@ export const useAppStore = defineStore('app', () => {
       const ghPath = path.startsWith('public/') ? path : `public/${path}`
 
       // --- 第一步：从远程拉取最新版本，进行智能合并 ---
+      // 获取 SHA（用 API）
       const primaryApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
       const shaResp = await fetch(primaryApiUrl, {
         headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' }
@@ -161,8 +166,16 @@ export const useAppStore = defineStore('app', () => {
       if (shaResp.ok) {
         const shaData = await shaResp.json()
         primarySha = shaData.sha
-        const remoteContent = atob(shaData.content.replace(/\n/g, ''))
-        const remoteData: any[] = JSON.parse(remoteContent)
+        // 读取内容用 raw.githubusercontent.com（直接返回 UTF-8 JSON，避免 atob 中文乱码）
+        let remoteData: any[] = []
+        try {
+          const rawResp = await fetch(`${RAW_BASE}/${ghPath}?v=${Date.now()}`)
+          if (rawResp.ok) {
+            remoteData = await rawResp.json()
+          }
+        } catch (e) {
+          console.warn('[saveViaGithub] 读取远程内容失败，跳过合并', e)
+        }
 
         // 智能合并：以本地数据为基础，补充远程独有的条目
         const localIds = new Set(localData.map((item: any) => item.id))
