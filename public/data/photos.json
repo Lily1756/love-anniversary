@@ -1,30 +1,5 @@
 [
   {
-    "id": "album-1",
-    "title": "甜蜜日常",
-    "cover": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-    "date": "2025",
-    "tag": "daily",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=600&q=80",
-        "caption": "在一起的每一天，都是最珍贵的礼物"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1516738901171-8eb4fc13bd20?w=600&q=80",
-        "caption": "日常的甜蜜，不需要特别的理由"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&q=80",
-        "caption": "温暖陪伴，是最长情的告白"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1474552226712-ac0f0961a954?w=600&q=80",
-        "caption": "平凡的日子，因为有你而不平凡"
-      }
-    ]
-  },
-  {
     "id": "album-2",
     "title": "浪漫约会",
     "cover": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
