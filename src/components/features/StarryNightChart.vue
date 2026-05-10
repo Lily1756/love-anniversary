@@ -89,6 +89,18 @@
           />
         </g>
 
+        <!-- 星轨路径（连接有情书记录的月份节点） -->
+        <path
+          v-if="starTrailPath"
+          :d="starTrailPath"
+          fill="none"
+          stroke="var(--color-accent, #C9A8A9)"
+          stroke-width="1.5"
+          stroke-opacity="0.3"
+          stroke-dasharray="5,5"
+          class="star-trail-path"
+        />
+
         <!-- 星光点（核心） -->
         <g class="stars-group">
           <g
@@ -192,6 +204,21 @@
       </svg>
     </div>
 
+    <!-- 星空分散布局：月份节点 -->
+    <div
+      v-for="node in starPositions"
+      :key="'month-' + node.month"
+      class="month-node"
+      :class="{ 'has-letter': node.hasLetter, 'active': activeMonth === node.month }"
+      :style="getNodeStyle(node)"
+      @mouseenter="handleMonthHover(node.month)"
+      @mouseleave="handleMonthLeave"
+      @click="handleMonthClick(node.month)"
+    >
+      <span class="month-label">{{ node.month }}月</span>
+      <span v-if="node.hasLetter" class="letter-count">+{{ node.letterCount }}</span>
+    </div>
+
     <!-- 分割线 -->
     <div class="divider"></div>
 
@@ -234,13 +261,41 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { calculateStarPositions, generateStarTrailPath } from '@/utils/starPositionCalculator'
 
 const props = defineProps({
   letters: { type: Array, default: () => [] }
 })
 
 const emit = defineEmits(['month-selected', 'date-selected'])
+
+// ── 容器尺寸（响应式）───
+const containerRef = ref<HTMLElement | null>(null)
+const containerSize = ref({ width: 800, height: 320 })
+
+  // ── 月份数据聚合 ──────────────────────────
+  const monthsData = computed(() => {
+    const data = {}
+    for (let m = 1; m <= 12; m++) data[m] = { count: 0 }
+    for (const letter of props.letters) {
+      if (letter.date) {
+        const month = parseInt(letter.date.split('-')[1])
+        if (month >= 1 && month <= 12) data[month].count++
+      }
+    }
+    return data
+  })
+
+// ── 星空分散布局：月份节点位置 ─────────────────────
+const starPositions = computed(() => {
+  return calculateStarPositions(monthsData.value, containerSize.value.width, containerSize.value.height)
+})
+
+// ── 星轨路径：连接有情书记录的月份 ───────────────────
+const starTrailPath = computed(() => {
+  return generateStarTrailPath(starPositions.value)
+})
 
 // ─── SVG 画布常量 ─────────────────────────────────────
 const svgWidth = 800
