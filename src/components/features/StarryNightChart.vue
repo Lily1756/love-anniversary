@@ -40,8 +40,10 @@
               opacity: getSatelliteOpacity(galaxy.month, satellite.id),
               zIndex: hoveredSatellite && hoveredSatellite.id === satellite.id ? 100 : 10
             }"
+            :data-satellite-id="satellite.id"
             @mouseenter="handleSatelliteHover(galaxy.month, satellite)"
             @mouseleave="handleSatelliteLeave"
+            @click="handleSatelliteClick(satellite)"
           />
         </div>
         
@@ -69,8 +71,10 @@
           class="satellite-tooltip"
           :style="tooltipStyle"
         >
-          <div class="tooltip-icon">📝</div>
-          <div class="tooltip-title">{{ hoveredSatellite.title }}</div>
+          <div class="tooltip-header">
+            <span class="tooltip-icon">✍️</span>
+            <span class="tooltip-title">{{ hoveredSatellite.title }}</span>
+          </div>
           <div class="tooltip-meta">{{ hoveredSatellite.date }} · {{ hoveredSatellite.weather }}</div>
           <div class="tooltip-excerpt">{{ hoveredSatellite.excerpt }}</div>
         </div>
@@ -513,6 +517,23 @@ function handleSatelliteLeave() {
   // 不立即清除，保持显示一会儿
 }
 
+// ── 小星星点击跳转 ────────────────────────
+function handleSatelliteClick(satellite) {
+  if (!satellite || !satellite.id) return
+  
+  // 提供点击反馈
+  const element = document.querySelector(`[data-satellite-id="${satellite.id}"]`)
+  if (element) {
+    element.classList.add('is-clicked')
+    setTimeout(() => {
+      element.classList.remove('is-clicked')
+    }, 300)
+  }
+  
+  // 跳转到情书详情页（新标签页）
+  window.open(`/letter/${satellite.id}`, '_blank')
+}
+
 // ─── 清除筛选 ─────────────────────────────
 function clearMonthFilter() {
   activeMonth.value = null
@@ -738,6 +759,12 @@ onUnmounted(() => {
   z-index: 100;
 }
 
+/* 点击效果 */
+.satellite-star.is-clicked {
+  transform: translate(-50%, -50%) scale(0.9);
+  transition: transform 0.1s ease;
+}
+
 /* 呼吸动画 */
 @keyframes satellite-breathe {
   0%, 100% { 
@@ -786,6 +813,13 @@ onUnmounted(() => {
 
 .tooltip-icon {
   font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.tooltip-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 4px;
 }
 
