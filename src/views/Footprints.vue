@@ -61,22 +61,7 @@
 
         <!-- 选中地点详情 -->
         <div v-if="selectedFootprint && !isEditMode" class="footprint-detail">
-          <div class="detail-photo-wrapper">
-            <img
-              v-if="selectedFootprint.photo && !photoLoadError"
-              :src="selectedFootprint.photo"
-              :alt="selectedFootprint.name"
-              class="detail-photo"
-              @error="photoLoadError = true"
-            />
-            <div v-else class="photo-placeholder">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <circle cx="8.5" cy="8.5" r="1.5"/>
-                <path d="M21 15l-5-5L5 21"/>
-              </svg>
-            </div>
-          </div>
+          <img :src="selectedFootprint.photo" :alt="selectedFootprint.name" class="detail-photo" />
           <div class="detail-content">
             <h3>{{ selectedFootprint.name }}</h3>
             <p class="detail-date">{{ selectedFootprint.date }}</p>
@@ -178,7 +163,6 @@ const upload = useUpload()
 
 const mapRef = ref<HTMLElement>()
 const selectedId = ref('')
-const photoLoadError = ref(false)
 let map: any = null
 let markers: any[] = []
 let L: any = null
@@ -246,7 +230,6 @@ const selectedFootprint = computed(() => {
 /* ---------- 地图 ---------- */
 const selectFootprint = (fp: Footprint) => {
   selectedId.value = fp.id
-  photoLoadError.value = false
   if (map) {
     // 先通知 Leaflet 重新计算容器尺寸，再移动视图，避免瓦片分块/连不上
     map.invalidateSize()
@@ -313,27 +296,14 @@ const initMap = async () => {
   })
 }
 
-const createFootprintIcon = () => {
-  if (!L) return undefined
-  return L.divIcon({
-    className: 'footprint-marker',
-    html: `<div style="width:28px;height:28px;background:#C4A8A2;border-radius:50% 50% 50% 4px;transform:rotate(-45deg);border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="14" height="14" fill="white" style="transform:rotate(45deg)"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>`,
-    iconSize: [28, 28],
-    iconAnchor: [14, 28],
-    popupAnchor: [0, -30]
-  })
-}
-
 const renderMarkers = () => {
   if (!map || !L) return
   // 清除旧标记
   markers.forEach(m => map.removeLayer(m))
   markers = []
 
-  const icon = createFootprintIcon()
-
   markers = store.footprints.map(fp => {
-    const marker = L.marker([fp.location[1], fp.location[0]], icon ? { icon } : {}).addTo(map)
+    const marker = L.marker([fp.location[1], fp.location[0]]).addTo(map)
     marker.bindPopup(`<b>${fp.name}</b><br>${fp.date}`)
     marker.on('click', () => {
       selectedId.value = fp.id
@@ -569,28 +539,11 @@ onMounted(() => {
   box-shadow: var(--shadow-sm);
 }
 
-.detail-photo-wrapper {
-  position: relative;
-  flex-shrink: 0;
-}
-
 .detail-photo {
   width: 120px;
   height: 90px;
   object-fit: cover;
   border-radius: var(--radius-sm);
-}
-
-.photo-placeholder {
-  width: 120px;
-  height: 90px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: var(--bg-surface);
-  border: 1px dashed var(--border-base);
-  border-radius: var(--radius-sm);
-  color: var(--text-tertiary);
   flex-shrink: 0;
 }
 
