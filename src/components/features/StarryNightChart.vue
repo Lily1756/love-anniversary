@@ -8,7 +8,7 @@
       </div>
     </div>
     
-    <!-- 第2层：星空画布区域 - 微观星系布局 -->
+    <!-- 第2层：星空画布区域 - 微观星系布局（交互升级版） -->
     <div class="visualization-wrapper" ref="canvasRef">
       <!-- 星云光晕背景（垂直椭圆形） -->
       <div class="nebula-background"></div>
@@ -22,7 +22,7 @@
           :style="connection.style"
         />
         
-        <!-- 卫星（小星星） -->
+        <!-- 卫星（小星星）- 每颗都是独立热区 -->
         <div
           v-for="galaxy in galaxies"
           :key="`satellites-${galaxy.month}`"
@@ -30,12 +30,18 @@
           <div
             v-for="(satellite, sIndex) in galaxy.satellites"
             :key="`sat-${galaxy.month}-${sIndex}`"
-            class="satellite"
+            class="satellite-star"
+            :class="{ 'is-hovered': hoveredSatellite && hoveredSatellite.id === satellite.id }"
             :style="{
               left: `${satellite.x}px`,
               top: `${satellite.y}px`,
-              '--size': `${satellite.size}px`
+              width: `${satellite.size}px`,
+              height: `${satellite.size}px`,
+              opacity: getSatelliteOpacity(galaxy.month, satellite.id),
+              zIndex: hoveredSatellite && hoveredSatellite.id === satellite.id ? 100 : 10
             }"
+            @mouseenter="handleSatelliteHover(galaxy.month, satellite)"
+            @mouseleave="handleSatelliteLeave"
           />
         </div>
         
@@ -57,9 +63,21 @@
           ★
         </div>
         
-        <!-- 悬浮提示（无默认显示） -->
+        <!-- 悬浮提示（单颗星星） -->
         <div 
-          v-if="hoveredGalaxy" 
+          v-if="hoveredSatellite" 
+          class="satellite-tooltip"
+          :style="tooltipStyle"
+        >
+          <div class="tooltip-icon">📝</div>
+          <div class="tooltip-title">{{ hoveredSatellite.title }}</div>
+          <div class="tooltip-meta">{{ hoveredSatellite.date }} · {{ hoveredSatellite.weather }}</div>
+          <div class="tooltip-excerpt">{{ hoveredSatellite.excerpt }}</div>
+        </div>
+        
+        <!-- 悬浮提示（星系核心） -->
+        <div 
+          v-if="hoveredGalaxy && !hoveredSatellite" 
           class="galaxy-tooltip"
           :style="tooltipStyle"
         >
@@ -125,16 +143,27 @@ const containerSize = ref({ width: 800, height: 320 })
 // ── 交互状态 ─────────────────────────────────────
 const activeMonth = ref(null)
 const hoveredGalaxy = ref(null)
+const hoveredSatellite = ref(null)
 const tooltipStyle = ref({})
 
-// ── 月份数据聚合 ──────────────────────────
+// ── 月份数据聚合（包含具体情书信息）──────────────────
 const monthsData = computed(() => {
   const data = {}
-  for (let m = 1; m <= 12; m++) data[m] = { count: 0 }
+  for (let m = 1; m <= 12; m++) data[m] = { count: 0, letters: [] }
+  
   for (const letter of props.letters) {
     if (letter.date) {
       const month = parseInt(letter.date.split('-')[1])
-      if (month >= 1 && month <= 12) data[month].count++
+      if (month >= 1 && month <= 12) {
+        data[month].count++
+        data[month].letters.push({
+          id: letter.id || `${letter.date}-${letter.title}`,
+          title: letter.title || 'Untitled',
+          date: letter.date,
+          weather: letter.weather || '晴',
+          excerpt: letter.excerpt || letter.content?.substring(0, 50) || '暂无摘要...'
+        })
+      }
     }
   }
   return data
@@ -148,14 +177,16 @@ const galaxies = computed(() => {
   
   return Array.from({ length: 12 }, (_, i) => {
     const month = i + 1
-    const count = monthsData.value[month]?.count || 0
+    const monthData = monthsData.value[month] || { count: 0, letters: [] }
+    const count = monthData.count
+    const letters = monthData.letters
     
     // 计算核心位置
     const corePosition = calculateCorePosition(month, containerWidth, containerHeight, placedPositions)
     placedPositions.push(corePosition)
     
-    // 生成卫星
-    const satellites = generateSatellites(count, corePosition, containerWidth, containerHeight)
+    // 生成卫星（传入具体情书信息）
+    const satellites = generateSatellites(letters, corePosition, containerWidth, containerHeight)
     
     // 计算核心大小和亮度
     const coreSize = getCoreSize(count)
@@ -164,6 +195,7 @@ const galaxies = computed(() => {
     return {
       month,
       count,
+      letters,
       corePosition,
       satellites,
       coreSize,
@@ -246,41 +278,97 @@ function calculateCorePosition(month, containerWidth, containerHeight, placedPos
   }
   
   // 边界检查
-  finalX = Math.max(30, Math.min(containerWidth - 30, finalX))
-  finalY = Math.max(30, Math.min(containerHeight - 30, finalY))
+  finalX = Math.max(50, Math.min(containerWidth - 50, finalX))
+  finalY = Math.max(50, Math.min(containerHeight - 50, finalY))
   
   return { x: finalX, y: finalY }
 }
 
-// ── 卫星生成算法 ──────────────────────────
-function generateSatellites(count, corePosition, containerWidth, containerHeight) {
-  if (count === 0) return []
+// ── 卫星生成算法（引力扩散布局）────────────────────
+function generateSatellites(letters, corePosition, containerWidth, containerHeight) {
+  if (!letters || letters.length === 0) return []
   
   const satellites = []
-  const baseRadius = 35 // 基础环绕半径
+  const minDistance = 15 // 卫星间最小距离
   
-  for (let i = 0; i < count; i++) {
-    // 环绕角度 - 均匀分布但加入随机扰动
-    const angle = (i * 2 * Math.PI / count) + (Math.random() * 0.3 - 0.15)
+  for (let i = 0; i < letters.length; i++) {
+    const letter = letters[i]
     
-    // 半径 - 基础半径加入随机扰动
-    const radius = baseRadius + (Math.random() * 20 - 10)
+    // 椭圆轨道参数
+    const ellipseA = 30 + Math.random() * 30 // 长半轴：30-60px
+    const ellipseB = 20 + Math.random() * 20 // 短半轴：20-40px
     
-    // 计算卫星位置
-    let x = corePosition.x + Math.cos(angle) * radius
-    let y = corePosition.y + Math.sin(angle) * radius
+    // 均匀分布角度 + 随机扰动
+    const baseAngle = (i * 2 * Math.PI / letters.length)
+    const angle = baseAngle + (Math.random() * 0.5 - 0.25)
+    
+    // 计算初始位置（椭圆轨道）
+    let x = corePosition.x + Math.cos(angle) * ellipseA
+    let y = corePosition.y + Math.sin(angle) * ellipseB
+    
+    // 避让算法：如果与其他卫星太近，向外推散
+    let attempts = 0
+    const maxAttempts = 30
+    
+    while (attempts < maxAttempts) {
+      let tooClose = false
+      
+      for (const existing of satellites) {
+        const dx = existing.x - x
+        const dy = existing.y - y
+        const distance = Math.sqrt(dx * dx + dy * dy)
+        
+        if (distance < minDistance) {
+          // 太近了！向外推散
+          const pushAngle = Math.atan2(dy, dx)
+          const pushDistance = minDistance - distance + 5
+          x += Math.cos(pushAngle + Math.PI) * pushDistance
+          y += Math.sin(pushAngle + Math.PI) * pushDistance
+          tooClose = true
+        }
+      }
+      
+      if (!tooClose) break
+      attempts++
+    }
     
     // 边界检查
     x = Math.max(10, Math.min(containerWidth - 10, x))
     y = Math.max(10, Math.min(containerHeight - 10, y))
     
-    // 卫星大小 - 随机微小差异
-    const size = 3 + Math.random() * 3 // 3-6px
+    // 卫星大小 - 8-12px
+    const size = 8 + Math.random() * 4
     
-    satellites.push({ x, y, size })
+    satellites.push({
+      id: letter.id,
+      x,
+      y,
+      size,
+      title: letter.title,
+      date: letter.date,
+      weather: letter.weather,
+      excerpt: letter.excerpt
+    })
   }
   
   return satellites
+}
+
+// ── 卫星透明度计算（联动效果）─────────────────────
+function getSatelliteOpacity(month, satId) {
+  if (!hoveredSatellite.value) return 0.6 // 默认半透明
+  
+  // 如果悬停的卫星属于同一个月，其他卫星微微变亮
+  if (hoveredSatellite.value.month === month && hoveredSatellite.value.id !== satId) {
+    return 0.8 // 同月其他卫星变亮
+  }
+  
+  // 如果悬停的卫星不属于这一个月，这一个月的卫星保持半透明
+  if (hoveredSatellite.value.month !== month) {
+    return 0.6
+  }
+  
+  return 0.6
 }
 
 // ── 核心大小计算 ──────────────────────────
@@ -373,8 +461,9 @@ const extraStats = computed(() => {
   return { maxStreak }
 })
 
-// ─── 交互处理 ────────────────────────────────────────
+// ─── 交互处理（星系核心）────────────────────────────
 function onGalaxyHover(galaxy) {
+  if (hoveredSatellite.value) return // 如果正在悬停小星星，不显示星系提示
   hoveredGalaxy.value = galaxy
   
   // 计算提示框位置
@@ -390,8 +479,9 @@ function onGalaxyHover(galaxy) {
 }
 
 function onGalaxyLeave() {
-  hoveredGalaxy.value = null
-  // 不立即清除activeMonth，保持选中状态
+  if (!hoveredSatellite.value) {
+    hoveredGalaxy.value = null
+  }
 }
 
 function onGalaxyClick(galaxy) {
@@ -403,6 +493,27 @@ function onGalaxyClick(galaxy) {
   }
 }
 
+// ─── 交互处理（小星星）────────────────────────────
+function handleSatelliteHover(month, satellite) {
+  hoveredSatellite.value = { ...satellite, month }
+  hoveredGalaxy.value = null // 隐藏星系提示
+  
+  // 计算提示框位置（跟随鼠标或固定在小星星旁边）
+  const tooltipX = satellite.x + 15
+  const tooltipY = satellite.y - 10
+  
+  tooltipStyle.value = {
+    left: `${tooltipX}px`,
+    top: `${tooltipY}px`
+  }
+}
+
+function handleSatelliteLeave() {
+  hoveredSatellite.value = null
+  // 不立即清除，保持显示一会儿
+}
+
+// ─── 清除筛选 ─────────────────────────────
 function clearMonthFilter() {
   activeMonth.value = null
   emit('month-selected', null)
@@ -470,7 +581,7 @@ onUnmounted(() => {
   font-family: 'Noto Sans SC', sans-serif;
 }
 
-/* 第2层：星空画布区域 - 微观星系布局 */
+/* 第2层：星空画布区域 - 微观星系布局（交互升级版） */
 .visualization-wrapper {
   /* 尺寸约束 */
   flex: 1 1 auto;        /* 可伸缩，占据可用空间 */
@@ -580,35 +691,63 @@ onUnmounted(() => {
   z-index: 30;
 }
 
-/* 卫星（小星星） */
-.satellite {
+/* 卫星（小星星）- 微光星芒 */
+.satellite-star {
   position: absolute;
-  width: var(--size, 4px);
-  height: var(--size, 4px);
-  background: radial-gradient(circle, rgba(255, 215, 215, 0.9) 30%, rgba(212, 165, 165, 0.6) 100%);
-  border-radius: 50%; /* 小尺寸用圆形 */
   transform: translate(-50%, -50%);
-  box-shadow: 0 0 4px rgba(212, 165, 165, 0.5);
-  z-index: 10;
-  pointer-events: none; /* 不拦截事件 */
+  
+  /* 四角星芒形状 */
+  background: radial-gradient(circle, rgba(212, 165, 165, 0.9) 0%, rgba(212, 165, 165, 0.6) 50%, transparent 70%);
+  border-radius: 50%; /* 基础是圆，通过 clip-path 切角 */
+  
+  /* 发光效果 */
+  box-shadow: 
+    0 0 4px rgba(212, 165, 165, 0.4),
+    0 0 8px rgba(212, 165, 165, 0.2);
   
   /* 呼吸动画 */
   animation: satellite-breathe 3s ease-in-out infinite;
+  animation-delay: calc(var(--index, 0) * 0.2s);
+  
+  /* 过渡效果 */
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  
+  /* 确保可以点击 */
+  pointer-events: auto;
+  cursor: pointer;
+  z-index: 10;
+}
+
+/* 四角星芒效果（部分卫星） */
+.satellite-star:nth-child(3n) {
+  background: none;
+  width: 10px;
+  height: 10px;
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  background: rgba(212, 165, 165, 0.7);
+  border-radius: 0;
+}
+
+/* 悬停效果（魔法光晕） */
+.satellite-star.is-hovered {
+  transform: translate(-50%, -50%) scale(1.5);
+  opacity: 1 !important;
+  box-shadow: 
+    0 0 15px rgba(212, 165, 165, 0.8),
+    0 0 30px rgba(212, 165, 165, 0.4);
+  z-index: 100;
 }
 
 /* 呼吸动画 */
 @keyframes satellite-breathe {
-  0%, 100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1); }
-  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-}
-
-/* 可选：部分卫星用四角星 */
-.satellite:nth-child(3n) {
-  background: none;
-  width: 6px;
-  height: 6px;
-  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-  background: rgba(212, 165, 165, 0.7);
+  0%, 100% { 
+    opacity: 0.6; 
+    transform: translate(-50%, -50%) scale(1); 
+  }
+  50% { 
+    opacity: 0.8; 
+    transform: translate(-50%, -50%) scale(1.05); 
+  }
 }
 
 /* 星系间连线 */
@@ -627,7 +766,54 @@ onUnmounted(() => {
   pointer-events: none;
 }
 
-/* 悬浮提示 */
+/* 悬浮提示（单颗星星）- 毛玻璃卡片 */
+.satellite-tooltip {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(201, 168, 169, 0.2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  font-family: 'Noto Sans SC', sans-serif;
+  animation: tooltip-in 0.2s ease;
+  pointer-events: none;
+  z-index: 1000;
+  max-width: 200px;
+  white-space: normal;
+}
+
+.tooltip-icon {
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.tooltip-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #595959;
+  margin-bottom: 3px;
+  line-height: 1.3;
+}
+
+.tooltip-meta {
+  font-size: 11px;
+  color: #999;
+  margin-bottom: 5px;
+}
+
+.tooltip-excerpt {
+  font-size: 11px;
+  color: #C9A8A9;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* 悬浮提示（星系核心） */
 .galaxy-tooltip {
   position: absolute;
   background: rgba(255, 255, 255, 0.95);
@@ -804,6 +990,10 @@ onUnmounted(() => {
 
   .card-title {
     font-size: 18px;
+  }
+  
+  .satellite-tooltip {
+    max-width: 150px;
   }
 }
 </style>
