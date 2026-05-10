@@ -531,7 +531,8 @@ function handleSatelliteClick(satellite) {
   }
   
   // 跳转到情书详情页（新标签页）
-  window.open(`/letter/${satellite.id}`, '_blank')
+  // 注意：路由配置是 /letters/:id（复数）
+  window.open(`/letters/${satellite.id}`, '_blank')
 }
 
 // ─── 清除筛选 ─────────────────────────────
