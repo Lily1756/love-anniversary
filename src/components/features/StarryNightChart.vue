@@ -1,39 +1,40 @@
 <template>
   <div class="starry-container" role="region" aria-label="年度记忆星光图">
-    <!-- 星云光晕背景（垂直椭圆形）- 放在最底层 -->
-    <div class="nebula-background"></div>
-    
-    <!-- 标题区 -->
-    <div class="header-area">
-      <h3 class="card-title">✨ 时间脉络</h3>
-      <p class="card-subtitle">每一个写下情书的日子，都是星空里闪亮的一颗星</p>
+    <!-- 第1层：标题区域 - 完全保留，禁止修改 -->
+    <div class="title-section">
+      <div class="header-area">
+        <h3 class="card-title">✨ 时间脉络</h3>
+        <p class="card-subtitle">每一个写下情书的日子，都是星空里闪亮的一颗星</p>
+      </div>
     </div>
-
-    <!-- 星空画布：只有月份节点，没有SVG画布 -->
-    <div class="starry-canvas" ref="canvasRef">
+    
+    <!-- 第2层：星空画布区域 - 仅此部分被替换 -->
+    <div class="visualization-wrapper" ref="canvasRef">
+      <!-- 星云光晕背景（垂直椭圆形）- 放在最底层 -->
+      <div class="nebula-background"></div>
+      
       <!-- 只有星空节点，没有底部圆点 -->
-      <div
-        v-for="node in starPositions"
-        :key="'month-' + node.month"
-        class="star-node"
-        :class="{ 'has-letters': node.hasLetter }"
-        :style="getNodeStyle(node)"
-        @mouseenter="handleNodeHover(node)"
-        @mouseleave="handleNodeLeave"
-        @click="handleNodeClick(node)"
-      >
-        <!-- 节点内容 -->
-        <div class="star-core"></div>
-        <div class="star-glow"></div>
-        <div class="node-label">{{ node.month }}月</div>
-        <div v-if="node.hasLetter" class="node-count">+{{ node.letterCount }}</div>
+      <div class="stars-canvas">
+        <div
+          v-for="node in starPositions"
+          :key="'month-' + node.month"
+          class="star-node"
+          :class="{ 'has-letters': node.hasLetter }"
+          :style="getNodeStyle(node)"
+          @mouseenter="handleNodeHover(node)"
+          @mouseleave="handleNodeLeave"
+          @click="handleNodeClick(node)"
+        >
+          <!-- 节点内容 -->
+          <div class="star-core"></div>
+          <div class="star-glow"></div>
+          <div class="node-label">{{ node.month }}月</div>
+          <div v-if="node.hasLetter" class="node-count">+{{ node.letterCount }}</div>
+        </div>
       </div>
     </div>
 
-    <!-- 分割线 -->
-    <div class="divider"></div>
-
-    <!-- 进度显示区域 -->
+    <!-- 第3层：进度条区域 - 完全保留，禁止修改 -->
     <div class="progress-section">
       <div class="progress-header">
         <span class="progress-title">记忆星辰点亮度</span>
@@ -305,9 +306,17 @@ onUnmounted(() => {
   box-shadow: none;
   padding: 20px 0 0 0;
   margin-bottom: 40px;
-  position: relative;
-  overflow: hidden;
-  min-height: 300px;
+  /* 三层flex布局 */
+  display: flex;
+  flex-direction: column;
+  /* 确保容器有足够高度 */
+  min-height: 500px;
+}
+
+/* 第1层：标题区域 - 完全保留，禁止修改 */
+.title-section {
+  flex-shrink: 0;
+  z-index: 10;
 }
 
 /* 标题区 */
@@ -332,14 +341,32 @@ onUnmounted(() => {
   font-family: 'Noto Sans SC', sans-serif;
 }
 
-/* 图表区域 */
-.chart-area {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 320px;
-  overflow: visible;
-  position: relative;
+/* 第2层：星空画布区域 - 仅替换此部分内容 */
+.visualization-wrapper {
+  /* 尺寸约束 */
+  flex: 1 1 auto;        /* 可伸缩，占据可用空间 */
+  min-height: 300px;     /* 最小高度，确保可视化区域可见 */
+  max-height: 400px;     /* 最大高度，防止过度扩张 */
+  
+  /* 定位约束 */
+  position: relative;    /* 为绝对定位的子元素提供参考 */
+  overflow: hidden;      /* 防止内容溢出到其他层 */
+  
+  /* 视觉分隔 */
+  background: var(--bg-surface, #FAF8F5); /* 使用主题背景色 */
+  border-radius: 12px;   /* 圆角，与设计协调 */
+  margin: 16px 0;        /* 与上下层间距 */
+}
+
+/* 星空画布 - 确保只在父容器内绘制 */
+.stars-canvas {
+  /* 确保只在父容器内绘制 */
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* 不要设置 z-index，避免覆盖其他层 */
 }
 
 /* 星云光晕背景（垂直椭圆形）- 方案一 */
