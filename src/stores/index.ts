@@ -56,20 +56,29 @@ export const useAppStore = defineStore('app', () => {
           isFavorite: item.isFavorite || false
         }))
         isLoading.value = false
-        // 后台静默同步最新数据
-        fetchLatest('public/data/diaries.json', './data/diaries.json')
-          .then((d: any) => {
-            letters.value = d.map((item: any) => ({
-              id: item.id,
-              title: item.title,
-              content: item.content,
-              date: item.date,
-              year: new Date(item.date).getFullYear(),
-              tag: item.tag,
-              isFavorite: item.isFavorite || false
-            }))
-          })
-          .catch(() => {})
+        // 后台静默同步最新数据（延迟 3 分钟，等 CF 重建完成后再同步）
+        setTimeout(() => {
+          fetchLatest('public/data/diaries.json', './data/diaries.json')
+            .then((d: any) => {
+              const newData = d.map((item: any) => ({
+                id: item.id,
+                title: item.title,
+                content: item.content,
+                date: item.date,
+                year: new Date(item.date).getFullYear(),
+                tag: item.tag,
+                isFavorite: item.isFavorite || false
+              }))
+              // 只有服务器数据真的不同才更新（避免覆盖 localStorage 的新数据）
+              const localStr = JSON.stringify(letters.value)
+              const serverStr = JSON.stringify(newData)
+              if (localStr !== serverStr) {
+                letters.value = newData
+                localStorage.setItem('love_site_letters', JSON.stringify(newData))
+              }
+            })
+            .catch(() => {})
+        }, 180000) // 3 分钟后同步，确保 CF 已重建完成
         return
       }
       const data = await fetchLatest('public/data/diaries.json', './data/diaries.json')
@@ -92,14 +101,25 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      // 优先从 localStorage 读取（避免 CF 重建期间的Data丢失）
+      // 优先从 localStorage 读取（避免 CF 重建期间数据丢失）
       const saved = localStorage.getItem('love_site_albums')
       if (saved) {
         albums.value = JSON.parse(saved)
-        // 后台静默同步最新数据
-        fetchLatest('public/data/photos.json', './data/photos.json')
-          .then(data => { albums.value = data })
-          .catch(() => {})
+        isLoading.value = false
+        // 后台静默同步最新数据（延迟 3 分钟，等 CF 重建完成后再同步）
+        setTimeout(() => {
+          fetchLatest('public/data/photos.json', './data/photos.json')
+            .then(data => {
+              // 只有服务器数据真的不同才更新（避免覆盖 localStorage 的新数据）
+              const localStr = JSON.stringify(albums.value)
+              const serverStr = JSON.stringify(data)
+              if (localStr !== serverStr) {
+                albums.value = data
+                localStorage.setItem('love_site_albums', JSON.stringify(data))
+              }
+            })
+            .catch(() => {})
+        }, 180000) // 3 分钟后同步，确保 CF 已重建完成
         return
       }
       albums.value = await fetchLatest('public/data/photos.json', './data/photos.json')
@@ -110,14 +130,25 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
-      // 优先从 localStorage 读取（避免 CF 重建期间Data丢失）
+      // 优先从 localStorage 读取（避免 CF 重建期间数据丢失）
       const saved = localStorage.getItem('love_site_footprints')
       if (saved) {
         footprints.value = JSON.parse(saved)
-        // 后台静默同步最新数据
-        fetchLatest('public/data/travels.json', './data/travels.json')
-          .then(data => { footprints.value = data })
-          .catch(() => {})
+        isLoading.value = false
+        // 后台静默同步最新数据（延迟 3 分钟，等 CF 重建完成后再同步）
+        setTimeout(() => {
+          fetchLatest('public/data/travels.json', './data/travels.json')
+            .then(data => {
+              // 只有服务器数据真的不同才更新（避免覆盖 localStorage 的新数据）
+              const localStr = JSON.stringify(footprints.value)
+              const serverStr = JSON.stringify(data)
+              if (localStr !== serverStr) {
+                footprints.value = data
+                localStorage.setItem('love_site_footprints', JSON.stringify(data))
+              }
+            })
+            .catch(() => {})
+        }, 180000) // 3 分钟后同步，确保 CF 已重建完成
         return
       }
       footprints.value = await fetchLatest('public/data/travels.json', './data/travels.json')
