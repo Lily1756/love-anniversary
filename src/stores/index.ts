@@ -176,14 +176,23 @@ export const useAppStore = defineStore('app', () => {
       // 统一使用 public/data/ 作为唯一数据路径
       const ghPath = path.startsWith('public/') ? path : `public/${path}`
 
+      // 判断是否开发环境
+      const isDev = import.meta.env.DEV
+
       // --- 第一步：从远程拉取最新版本，进行智能合并 ---
       // 获取 SHA（用 API）— 添加超时
       const shaController = new AbortController()
       const shaTimeoutId = setTimeout(() => shaController.abort(), 10000)
 
-      const primaryApiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
+      // 开发环境使用代理，生产环境直连 GitHub API
+      const primaryApiUrl = isDev
+        ? `/api/github/repos/${owner}/${repo}/contents/${ghPath}`
+        : `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
+
       const shaResp = await fetch(primaryApiUrl, {
-        headers: { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' },
+        headers: isDev
+          ? { Accept: 'application/vnd.github.v3+json' }
+          : { Authorization: `token ${_g}`, Accept: 'application/vnd.github.v3+json' },
         signal: shaController.signal
       })
       clearTimeout(shaTimeoutId)
@@ -244,7 +253,10 @@ export const useAppStore = defineStore('app', () => {
       // 使用可靠的 Base64 编码（支持中文）
       const b64 = btoa(String.fromCharCode(...new TextEncoder().encode(jsonStr)))
 
-      const apiUrl = `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
+      // 开发环境使用代理，生产环境直连 GitHub API
+      const apiUrl = isDev
+        ? `/api/github/repos/${owner}/${repo}/contents/${ghPath}`
+        : `https://api.github.com/repos/${owner}/${repo}/contents/${ghPath}`
 
       const payload: Record<string, unknown> = {
         message: `update: ${ghPath}`,
@@ -258,11 +270,13 @@ export const useAppStore = defineStore('app', () => {
 
       const updateResp = await fetch(apiUrl, {
         method: 'PUT',
-        headers: {
-          Authorization: `token ${_g}`,
-          Accept: 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json',
-        },
+        headers: isDev
+          ? { Accept: 'application/vnd.github.v3+json', 'Content-Type': 'application/json' }
+          : {
+              Authorization: `token ${_g}`,
+              Accept: 'application/vnd.github.v3+json',
+              'Content-Type': 'application/json',
+            },
         body: JSON.stringify(payload),
         signal: updateController.signal
       })
@@ -300,6 +314,7 @@ export const useAppStore = defineStore('app', () => {
    */
   async function saveAlbums(password: string) {
     // 第 1 步：尝试 CF Function（生产环境 /save-photos）
+    // 注意：本地开发时 /save-photos 可能不可用，会自动回退到 GitHub API
     try {
       // 添加超时，防止本地开发时请求挂起
       const controller = new AbortController()
@@ -317,17 +332,22 @@ export const useAppStore = defineStore('app', () => {
         const result = await resp.json()
         if (result.success) {
           localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
+          console.log('[saveAlbums] CF Function 保存成功')
           return { success: true, message: '保存成功（CF Function）' }
         }
       }
-    } catch {
-      console.warn('CF Function /save-photos 不可用，回退到 GitHub API')
+    } catch (e) {
+      console.warn('CF Function /save-photos 不可用，回退到 GitHub API', e)
     }
 
     // 第 2 步：回退到直连 GitHub API
+    console.log('[saveAlbums] 开始调用 saveViaGithub...')
     const result = await saveViaGithub(albums.value, 'data/photos.json', password)
     if (result.success) {
       localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
+      console.log('[saveAlbums] GitHub API 保存成功')
+    } else {
+      console.error('[saveAlbums] GitHub API 保存失败:', result.error)
     }
     return result
   }
