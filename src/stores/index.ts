@@ -243,27 +243,84 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /**
-   * 保存相册数据到 GitHub
+   * 保存相册数据 —— 优先走 CF Function（无 CORS 问题），失败则直连 GitHub API
    */
   async function saveAlbums(password: string) {
-    return saveViaGithub(albums.value, 'data/photos.json', password)
+    // 第 1 步：尝试 CF Function（生产环境 /save-photos）
+    try {
+      const resp = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, data: albums.value, path: 'data/photos.json' })
+      })
+      if (resp.ok) {
+        const result = await resp.json()
+        if (result.success) {
+          localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
+          return { success: true, message: '保存成功（CF Function）' }
+        }
+      }
+    } catch {}
+
+    // 第 2 步：回退到直连 GitHub API
+    const result = await saveViaGithub(albums.value, 'data/photos.json', password)
+    if (result.success) {
+      localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
+    }
+    return result
   }
 
   /**
-   * 保存足迹数据到 GitHub
+   * 保存足迹数据 —— 优先走 CF Function，失败则直连 GitHub API
    */
   async function saveFootprints(password: string) {
-    return saveViaGithub(footprints.value, 'data/travels.json', password)
+    try {
+      const resp = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, data: footprints.value, path: 'data/travels.json' })
+      })
+      if (resp.ok) {
+        const result = await resp.json()
+        if (result.success) {
+          localStorage.setItem('love_site_footprints', JSON.stringify(footprints.value))
+          return { success: true, message: '保存成功（CF Function）' }
+        }
+      }
+    } catch {}
+    const result = await saveViaGithub(footprints.value, 'data/travels.json', password)
+    if (result.success) {
+      localStorage.setItem('love_site_footprints', JSON.stringify(footprints.value))
+    }
+    return result
   }
 
   /**
-   * 保存情书数据到 GitHub
+   * 保存情书数据 —— 优先走 CF Function，失败则直连 GitHub API
    */
   async function saveLetters(password: string) {
     const dataToSave = letters.value.map(l => ({
-      id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag
+      id: l.id, title: l.title, content: l.content, date: l.date, tag: l.tag, isFavorite: l.isFavorite
     }))
-    return saveViaGithub(dataToSave, 'data/diaries.json', password)
+    try {
+      const resp = await fetch('/save-photos', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password, data: dataToSave, path: 'data/diaries.json' })
+      })
+      if (resp.ok) {
+        const result = await resp.json()
+        if (result.success) {
+          localStorage.setItem('love_site_letters', JSON.stringify(dataToSave))
+          return { success: true, message: '保存成功（CF Function）' }
+        }
+      }
+    } catch {}
+    const result = await saveViaGithub(dataToSave, 'data/diaries.json', password)
+    if (result.success) {
+      localStorage.setItem('love_site_letters', JSON.stringify(dataToSave))
+    }
+    return result
   }
 
   return {
