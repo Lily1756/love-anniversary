@@ -650,23 +650,13 @@ async function uploadCover(file: File) {
     coverProgress.value = 50
     coverProgressText.value = '上传到云端...'
 
-    const formData = new FormData()
-    formData.append('file', compressed)
-    formData.append('upload_preset', 'love_site_preset')
-
-    const response = await fetch(`https://api.cloudinary.com/v1_1/dcpzdsdxc/image/upload`, {
-      method: 'POST',
-      body: formData,
-      signal: AbortSignal.timeout(30000),
-    })
-
-    if (!response.ok) throw new Error('Upload failed')
-    const data = await response.json()
-    albumForm.value.cover = data.secure_url
+    // 使用 useUpload composable 上传（自动处理 Cloudinary 上传）
+    const url = await upload.uploadFile(compressed)
+    albumForm.value.cover = url
     coverProgress.value = 100
     coverProgressText.value = '完成！'
   } catch (err: any) {
-    coverProgressText.value = '上传失败: ' + err.message
+    coverProgressText.value = '上传失败: ' + (err.message || '未知错误')
     setTimeout(() => { coverUploading.value = false }, 2000)
     return
   }

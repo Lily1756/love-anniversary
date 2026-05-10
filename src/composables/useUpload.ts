@@ -37,7 +37,9 @@ export function useUpload() {
         const canvas = document.createElement('canvas')
         canvas.width = w
         canvas.height = h
-        canvas.getContext('2d')!.drawImage(img, 0, 0, w, h)
+        const ctx = canvas.getContext('2d')
+        if (!ctx) { resolve(file); return }
+        ctx.drawImage(img, 0, 0, w, h)
         canvas.toBlob((blob) => {
           if (blob) {
             resolve(new File([blob], file.name, { type: 'image/jpeg' }))
