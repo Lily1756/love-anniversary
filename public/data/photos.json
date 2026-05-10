@@ -1,26 +1,5 @@
 [
   {
-    "id": "album-5",
-    "title": "生活点滴",
-    "cover": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80",
-    "date": "2024",
-    "tag": "daily",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1523240795612-9a054b0db644?w=600&q=80",
-        "caption": "一起做饭的温馨时光"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1491438590914-bc09fcaaf77a?w=600&q=80",
-        "caption": "周末的午后，慵懒又惬意"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&q=80",
-        "caption": "和朋友们在一起的欢乐时光"
-      }
-    ]
-  },
-  {
     "id": "album-1777592217805",
     "title": "大同之行",
     "tag": "travel",
