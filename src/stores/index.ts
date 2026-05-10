@@ -79,11 +79,24 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      // 完全信任 localStorage（来源唯一、实时、不依赖 CF 重建）
+      // 1. 先尝试从 localStorage 读取（立即显示，不依赖服务器）
       const saved = localStorage.getItem('love_site_albums')
       if (saved) {
         albums.value = JSON.parse(saved)
         isLoading.value = false
+        // 2. 后台检查服务器是否有更新的数据（带时间戳防缓存）
+        fetch(`./data/photos.json?v=${Date.now()}`)
+          .then(r => r.json())
+          .then(serverData => {
+            const localStr = JSON.stringify(albums.value)
+            const serverStr = JSON.stringify(serverData)
+            // 只有服务器数据真的不同才更新（避免不必要的覆盖）
+            if (localStr !== serverStr) {
+              albums.value = serverData
+              localStorage.setItem('love_site_albums', JSON.stringify(serverData))
+            }
+          })
+          .catch(() => {}) // 忽略后台同步错误
         return
       }
       // 仅当 localStorage 为空（新设备）时才从服务器读取
@@ -95,11 +108,23 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
-      // 完全信任 localStorage（来源唯一、实时、不依赖 CF 重建）
+      // 1. 先尝试从 localStorage 读取（立即显示，不依赖服务器）
       const saved = localStorage.getItem('love_site_footprints')
       if (saved) {
         footprints.value = JSON.parse(saved)
         isLoading.value = false
+        // 2. 后台检查服务器是否有更新的数据（带时间戳防缓存）
+        fetch(`./data/travels.json?v=${Date.now()}`)
+          .then(r => r.json())
+          .then(serverData => {
+            const localStr = JSON.stringify(footprints.value)
+            const serverStr = JSON.stringify(serverData)
+            if (localStr !== serverStr) {
+              footprints.value = serverData
+              localStorage.setItem('love_site_footprints', JSON.stringify(serverData))
+            }
+          })
+          .catch(() => {})
         return
       }
       // 仅当 localStorage 为空（新设备）时才从服务器读取
