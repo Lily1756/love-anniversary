@@ -1,30 +1,5 @@
 [
   {
-    "id": "album-2",
-    "title": "浪漫约会",
-    "cover": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-    "date": "2025",
-    "tag": "date",
-    "photos": [
-      {
-        "src": "https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&q=80",
-        "caption": "第一次约会，心跳加速的感觉"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1515023115689-589c33041d3c?w=600&q=80",
-        "caption": "生日惊喜，为你准备的浪漫"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1511405946472-a37e3b5ccd47?w=600&q=80",
-        "caption": "烛光晚餐，浪漫满溢"
-      },
-      {
-        "src": "https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?w=600&q=80",
-        "caption": "约会时光，每一刻都值得珍藏"
-      }
-    ]
-  },
-  {
     "id": "album-3",
     "title": "旅途风景",
     "cover": "https://images.unsplash.com/photo-1522673607200-164d1b6ce486?w=600&q=80",
