@@ -2,7 +2,9 @@ import { ref } from 'vue'
 
 const CLOUDINARY_CLOUD_NAME = 'dcpzdsdxc'
 const CLOUDINARY_UPLOAD_PRESET = 'love_site_preset'
-const CLOUDINARY_UPLOAD_URL = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
+const CLOUDINARY_UPLOAD_URL = import.meta.env.DEV
+  ? `/api/cloudinary/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
+  : `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`
 
 export interface UploadTask {
   id: string
