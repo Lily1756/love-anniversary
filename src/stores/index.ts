@@ -98,21 +98,20 @@ export const useAppStore = defineStore('app', () => {
 
   /**
    * 从 GitHub raw 读取最新文件内容（实时）
+   * ⚠️ 不允许本地回退：GitHub 读取失败必须抛错，不能静默降级到不存在的本地文件
    */
-  async function fetchLatest(ghPath: string, localPath: string): Promise<any> {
+  async function fetchLatest(ghPath: string, _localPath: string): Promise<any> {
     try {
       const resp = await safeFetch(`${RAW_BASE}/${ghPath}?v=${Date.now()}`)
       if (resp.ok) {
         console.log(`[fetchLatest] ✅ GitHub raw 成功读取 ${ghPath}`)
         return resp.json()
       }
-    } catch (e) {
-      console.warn(`[fetchLatest] ⚠️ GitHub raw 读取失败，回退本地: ${ghPath}`, e)
+      throw new Error(`GitHub raw 返回 ${resp.status}: ${ghPath}`)
+    } catch (e: any) {
+      console.error(`[fetchLatest] ❌ GitHub raw 读取失败: ${ghPath}`, e)
+      throw new Error(`无法从 GitHub 加载 ${ghPath}，请检查网络或 Token 配置。原始错误: ${e.message}`)
     }
-    console.log(`[fetchLatest] 📂 回退本地: ${localPath}`)
-    const resp2 = await safeFetch(`${localPath}?v=${Date.now()}`, { timeoutMs: 5000 })
-    if (!resp2.ok) throw new Error(`无法加载 ${localPath} (${resp2.status})`)
-    return resp2.json()
   }
 
   // ================================================================
@@ -424,21 +423,27 @@ export const useAppStore = defineStore('app', () => {
   }
 
   async function saveWishes(password: string): Promise<SaveResult> {
-    localStorage.setItem('love_site_wishes', JSON.stringify(wishes.value))
     try {
       const result = await saveViaGithub(wishes.value, 'data/wishes.json', password)
+      if (result.success) {
+        localStorage.setItem('love_site_wishes', JSON.stringify(wishes.value))
+      }
       return result
     } catch (e: any) {
+      console.error('[saveWishes] ❌ GitHub 写入失败，未更新本地缓存', e)
       return { success: false, error: String(e) }
     }
   }
 
   async function saveCapsules(password: string): Promise<SaveResult> {
-    localStorage.setItem('love_site_capsules', JSON.stringify(capsules.value))
     try {
       const result = await saveViaGithub(capsules.value, 'data/capsules.json', password)
+      if (result.success) {
+        localStorage.setItem('love_site_capsules', JSON.stringify(capsules.value))
+      }
       return result
     } catch (e: any) {
+      console.error('[saveCapsules] ❌ GitHub 写入失败，未更新本地缓存', e)
       return { success: false, error: String(e) }
     }
   }
