@@ -33,7 +33,6 @@ export const useAppStore = defineStore('app', () => {
   // GitHub 配置
   // ================================================================
   const _g = ['ghp_','LXWDH','vA1EK','TaCqh','ujU9tq','wMdFA7','BM34eL','5is'].join('')
-  const RAW_BASE = 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main'
 
   /**
    * 判断当前环境：开发环境用 Vite 代理，生产环境直连 GitHub API
@@ -42,11 +41,21 @@ export const useAppStore = defineStore('app', () => {
     return import.meta.env.DEV
   }
 
-  /** 构建 GitHub API URL */
+  /** 构建 GitHub API URL（开发环境走代理，生产环境直连） */
   function ghApiUrl(path: string): string {
     return isDev()
       ? `/api/github/${path}`
       : `https://api.github.com/${path}`
+  }
+
+  /** 构建 GitHub Raw URL（开发环境走代理，生产环境直连） */
+  function getRawBase(): string {
+    if (isDev()) {
+      // 开发环境：通过 Vite 代理绕过 SSL 证书问题
+      return '/api/github/repos/Lily1756/love-anniversary/contents'
+    }
+    // 生产环境：直连 GitHub Raw
+    return 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main'
   }
 
   /** 构建 GitHub API Headers（所有环境都需要 Authorization） */
@@ -97,20 +106,72 @@ export const useAppStore = defineStore('app', () => {
   }
 
   /**
-   * 从 GitHub raw 读取最新文件内容（实时）
+   * 从 GitHub 读取最新文件内容（实时）
+   *
+   * 开发环境：通过 Vite 代理访问 GitHub Contents API（需要 Authorization header）
+   * 生产环境：直连 GitHub Raw（无需 Authorization）
+   *
    * ⚠️ 不允许本地回退：GitHub 读取失败必须抛错，不能静默降级到不存在的本地文件
    */
   async function fetchLatest(ghPath: string, _localPath: string): Promise<any> {
+    const isDevMode = isDev()
+
     try {
-      const resp = await safeFetch(`${RAW_BASE}/${ghPath}?v=${Date.now()}`)
-      if (resp.ok) {
-        console.log(`[fetchLatest] ✅ GitHub raw 成功读取 ${ghPath}`)
-        return resp.json()
+      let url: string
+      let headers: Record<string, string> | undefined
+
+      if (isDevMode) {
+        // 开发环境：通过 Vite 代理访问 GitHub Contents API
+        // getRawBase() 返回 '/api/github/repos/Lily1756/love-anniversary/contents'
+        url = `${getRawBase()}/${ghPath}`
+        headers = ghHeaders()  // 需要 Authorization header
+        console.log(`[fetchLatest] 🔧 开发模式，通过代理读取: ${url}`)
+      } else {
+        // 生产环境：直连 GitHub Raw
+        url = `${getRawBase()}/${ghPath}?v=${Date.now()}`
+        headers = undefined  // GitHub Raw 不需要 Authorization
+        console.log(`[fetchLatest] 🚀 生产模式，直连: ${url}`)
       }
-      throw new Error(`GitHub raw 返回 ${resp.status}: ${ghPath}`)
+
+      const resp = await safeFetch(url, {
+        headers,
+        timeoutMs: 10000,
+      })
+
+      if (resp.ok) {
+        const data = await resp.json()
+
+        // 开发环境通过 Contents API 返回的是 base64 编码的内容
+        if (isDevMode && data.content) {
+          const decoded = decodeGitHubContent(data.content)
+          console.log(`[fetchLatest] ✅ 代理读取成功 ${ghPath}`)
+          return decoded
+        }
+
+        // 生产环境直接返回 JSON
+        console.log(`[fetchLatest] ✅ GitHub Raw 读取成功 ${ghPath}`)
+        return data
+      }
+
+      throw new Error(`GitHub 读取失败 (${resp.status}): ${ghPath}`)
     } catch (e: any) {
-      console.error(`[fetchLatest] ❌ GitHub raw 读取失败: ${ghPath}`, e)
+      console.error(`[fetchLatest] ❌ 读取失败: ${ghPath}`, e)
       throw new Error(`无法从 GitHub 加载 ${ghPath}，请检查网络或 Token 配置。原始错误: ${e.message}`)
+    }
+  }
+
+  /**
+   * 解码 GitHub Contents API 返回的 base64 内容
+   */
+  function decodeGitHubContent(base64Content: string): any {
+    try {
+      // GitHub API 返回的 content 是 base64 编码，带有换行符
+      const cleaned = base64Content.replace(/\n/g, '')
+      const decoded = atob(cleaned)
+      return JSON.parse(decoded)
+    } catch (e) {
+      console.error('[decodeGitHubContent] ❌ 解码失败', e)
+      throw new Error('GitHub 内容解码失败')
     }
   }
 
@@ -226,9 +287,33 @@ export const useAppStore = defineStore('app', () => {
         console.log('  [合并] 读取远程内容...')
         let remoteData: any[] = []
         try {
-          const rawResp = await safeFetch(`${RAW_BASE}/${ghPath}?v=${Date.now()}`, { timeoutMs: 8000 })
+          let rawUrl: string
+          let rawHeaders: Record<string, string> | undefined
+
+          if (isDev()) {
+            // 开发环境：通过代理访问 Contents API
+            rawUrl = `${getRawBase()}/${ghPath}`
+            rawHeaders = ghHeaders()
+          } else {
+            // 生产环境：直连 Raw
+            rawUrl = `${getRawBase()}/${ghPath}?v=${Date.now()}`
+          }
+
+          const rawResp = await safeFetch(rawUrl, {
+            headers: rawHeaders,
+            timeoutMs: 8000,
+          })
+
           if (rawResp.ok) {
-            remoteData = await rawResp.json()
+            const data = await rawResp.json()
+
+            // 开发环境需要解码 base64
+            if (isDev() && data.content) {
+              remoteData = decodeGitHubContent(data.content)
+            } else {
+              remoteData = data
+            }
+
             console.log(`  [合并] 远程数据条目:`, remoteData.length)
           }
         } catch (e) {
