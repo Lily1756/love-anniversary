@@ -317,7 +317,7 @@ export const useAppStore = defineStore('app', () => {
       console.log(`  ✅ [saveViaGithub] 保存成功! ${ghPath}`)
       console.groupEnd()
 
-      return { success: true, message: '保存成功' }
+      return { success: true }
 
     } catch (err: any) {
       console.error(`  💥 [saveViaGithub] 失败: ${err.message}`)
@@ -361,7 +361,7 @@ export const useAppStore = defineStore('app', () => {
           if (result.success) {
             localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
             console.log('[saveAlbums] ✅ CF Function 保存成功')
-            return { success: true, message: '保存成功（CF Function）' }
+            return { success: true }
           }
         }
       } catch (e) {
