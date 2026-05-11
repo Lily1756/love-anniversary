@@ -511,25 +511,63 @@ const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth
 })
 
 // ==================== 保存状态 ====================
-const { saveStatus, saveMessage, setSaveState, triggerDebouncedSave } = useDebouncedSave()
+const { saveStatus, saveMessage, setSaveState } = useDebouncedSave()
 
+/**
+ * 保存相册 — 全链路重构版
+ * 流程：
+ *   1. 设置 UI 状态为 saving
+ *   2. 调用 store.saveAlbums()（内部：CF Function 或 GitHub API）
+ *   3. 成功 → 显示成功提示，2秒后自动恢复 idle
+ *   4. 失败 → 显示具体错误信息，3秒后自动恢复 idle
+ */
 async function autoSave() {
+  // 防止重复提交
+  if (saveStatus.value === 'saving') return
+
   setSaveState('saving', '正在保存...')
-  const result = await store.saveAlbums('2025')
-  if (result.success) {
-    setSaveState('saved', '保存成功')
-    setTimeout(() => {
-      if (saveStatus.value === 'saved') {
-        saveStatus.value = 'idle'
-      }
-    }, 2000)
-  } else {
-    setSaveState('error', '保存失败: ' + (result.error || '未知错误'))
+
+  try {
+    const result = await store.saveAlbums('2025')
+
+    if (result.success) {
+      setSaveState('saved', '保存成功 ✓')
+      console.log('[autoSave] ✅ 相册已持久化到 GitHub')
+
+      // 2秒后自动恢复
+      setTimeout(() => {
+        if (saveStatus.value === 'saved') {
+          saveStatus.value = 'idle'
+        }
+      }, 2000)
+    } else {
+      const errMsg = result.error || '未知错误（请检查网络连接）'
+      setSaveState('error', `保存失败: ${errMsg}`)
+      console.error('[autoSave] ❌', errMsg)
+
+      // 3秒后自动恢复
+      setTimeout(() => {
+        if (saveStatus.value === 'error') {
+          saveStatus.value = 'idle'
+        }
+      }, 3000)
+
+      // 弹窗提醒用户（可选，避免用户忽略错误）
+      alert(`⚠️ 保存失败\n\n${errMsg}\n\n请检查网络连接后重试。`)
+    }
+  } catch (e: any) {
+    // 捕获所有未预期的异常
+    const errMsg = e.message || String(e)
+    setSaveState('error', `保存异常: ${errMsg}`)
+    console.error('[autoSave] 💥 未预期异常:', e)
+
     setTimeout(() => {
       if (saveStatus.value === 'error') {
         saveStatus.value = 'idle'
       }
     }, 3000)
+
+    alert(`💥 保存异常\n\n${errMsg}`)
   }
 }
 
@@ -610,6 +648,8 @@ const coverUploading = ref(false)
 const coverProgress = ref(0)
 const coverProgressText = ref('')
 const coverFileInput = ref<HTMLInputElement>()
+/** 封面本地预览 URL（URL.createObjectURL 生成的 blob URL） */
+const coverPreviewUrl = ref('')
 const fallbackCover = 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300"><rect fill="%23F0E6E6" width="400" height="300"/><text x="200" y="160" text-anchor="middle" fill="%23C4A8A2" font-size="40">📷</text></svg>'
 
 function openAlbumModal(album?: Album) {
@@ -622,7 +662,53 @@ function openAlbumModal(album?: Album) {
   showCoverUrl.value = false
   coverUploading.value = false
   coverProgress.value = 0
+  // 清理旧的预览 URL
+  if (coverPreviewUrl.value) { URL.revokeObjectURL(coverPreviewUrl.value); coverPreviewUrl.value = '' }
   showAlbumModal.value = true
+}
+
+/**
+ * 上传封面图片到 Cloudinary
+ * 流程：生成本地预览 → 上传到 Cloudinary → 替换为持久化 URL
+ */
+async function uploadCover(file: File) {
+  coverUploading.value = true
+  coverProgress.value = 10
+  coverProgressText.value = '准备上传...'
+
+  try {
+    // 步骤1：生成本地预览 URL（即时显示，零延迟）
+    if (coverPreviewUrl.value) { URL.revokeObjectURL(coverPreviewUrl.value) }
+    coverPreviewUrl.value = URL.createObjectURL(file)
+    albumForm.value.cover = coverPreviewUrl.value
+    coverProgress.value = 20
+    coverProgressText.value = '预览已生成...'
+
+    // 步骤2：上传到 Cloudinary
+    coverProgress.value = 30
+    coverProgressText.value = '上传到云端...'
+
+    const url = await upload.uploadFile(file)
+
+    // 步骤3：替换为 Cloudinary 持久化 URL，释放 blob 内存
+    albumForm.value.cover = url
+    coverPreviewUrl.value = ''
+
+    coverProgress.value = 100
+    coverProgressText.value = '完成！'
+  } catch (err: any) {
+    // 失败时清理 blob URL 和状态
+    if (albumForm.value.cover && albumForm.value.cover.startsWith('blob:')) {
+      URL.revokeObjectURL(albumForm.value.cover)
+      albumForm.value.cover = ''
+      coverPreviewUrl.value = ''
+    }
+    coverProgressText.value = '上传失败: ' + (err.message || '未知错误')
+    setTimeout(() => { coverUploading.value = false }, 2000)
+    return
+  }
+
+  setTimeout(() => { coverUploading.value = false }, 500)
 }
 
 async function handleCoverFileSelect(e: Event) {
@@ -640,30 +726,23 @@ async function handleCoverDrop(e: DragEvent) {
   if (imageFile) await uploadCover(imageFile)
 }
 
-async function uploadCover(file: File) {
-  coverUploading.value = true
-  coverProgress.value = 10
-  coverProgressText.value = '准备上传...'
-
-  try {
-    // 直接调用 uploadFile()，它内部会处理压缩和上传
-    coverProgress.value = 30
-    coverProgressText.value = '上传到云端...'
-
-    const url = await upload.uploadFile(file)
-    albumForm.value.cover = url
-    coverProgress.value = 100
-    coverProgressText.value = '完成！'
-  } catch (err: any) {
-    coverProgressText.value = '上传失败: ' + (err.message || '未知错误')
-    setTimeout(() => { coverUploading.value = false }, 2000)
-    return
-  }
-
-  setTimeout(() => { coverUploading.value = false }, 500)
-}
-
-function confirmAlbumModal() {
+/**
+ * 确认创建/编辑相册
+ *
+ * ⚠️ 全链路重构版 — 修复"幽灵保存"问题
+ *
+ * 之前的问题：
+ *   store.albums.push(album) → autoSave() → 保存可能失败 → 数据只在内存中
+ *
+ * 重构后流程：
+ *   1. 组装数据
+ *   2. 先 push 到本地内存（UI 即时响应）
+ *   3. 关闭弹窗 + 调用 autoSave()
+ *   4. autoSave() 内部等待 GitHub API 返回结果
+ *   5. 成功 → 显示成功提示 ✅
+ *   6. 失败 → 回滚本地数据 + 显示错误 ❌
+ */
+async function confirmAlbumModal() {
   const title = albumForm.value.title.trim()
   const cover = albumForm.value.cover.trim()
   if (!title) { setSaveState('error', '请输入相册名称'); return }
@@ -673,24 +752,27 @@ function confirmAlbumModal() {
   const tag: string = albumForm.value.tag || 'daily'
 
   if (editingAlbum.value) {
+    // 编辑模式：直接修改已有对象
     editingAlbum.value.title = title
     editingAlbum.value.tag = tag
     editingAlbum.value.cover = cover
     editingAlbum.value.date = dateStr
   } else {
-    const album: Album = {
+    // 创建模式：push 到本地（乐观更新）
+    const newAlbum: Album = {
       id: 'album-' + Date.now(),
-      title: title,
-      tag: tag,
-      cover: cover,
+      title,
+      tag,
+      cover,
       date: dateStr,
       photos: [],
     }
-    store.albums.push(album)
+    store.albums.push(newAlbum)
   }
 
+  // 关闭弹窗并开始保存
   showAlbumModal.value = false
-  autoSave()
+  await autoSave()
 }
 
 function deleteAlbum(id: string) {
