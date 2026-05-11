@@ -16,7 +16,6 @@ export default defineConfig({
     },
   },
   server: {
-    historyApiFallback: true,
     // 代理 GitHub API 请求，解决本地开发的 TLS 证书问题
     proxy: {
       '/api/github': {
