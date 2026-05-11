@@ -16,13 +16,21 @@ export default defineConfig({
     },
   },
   server: {
-    // 代理 GitHub API 请求，解决本地开发的 TLS 证书问题
+    // 代理外部 API 请求，解决本地开发的 TLS 证书问题
     proxy: {
+      // GitHub API 代理
       '/api/github': {
         target: 'https://api.github.com',
         changeOrigin: true,
-        secure: false, // 禁用 SSL 证书验证（本地开发环境）
+        secure: false,
         rewrite: (path) => path.replace(/^\/api\/github/, '')
+      },
+      // Cloudinary 上传代理（解决 ERR_CERT_COMMON_NAME_INVALID）
+      '/api/cloudinary': {
+        target: 'https://api.cloudinary.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/cloudinary/, '')
       }
     }
   },
