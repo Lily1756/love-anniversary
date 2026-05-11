@@ -15,7 +15,19 @@ export default defineConfig({
       '@': fileURLToPath(new URL('./src', import.meta.url))
     },
   },
-  base: './',
+  server: {
+    historyApiFallback: true,
+    // 代理 GitHub API 请求，解决本地开发的 TLS 证书问题
+    proxy: {
+      '/api/github': {
+        target: 'https://api.github.com',
+        changeOrigin: true,
+        secure: false, // 禁用 SSL 证书验证（本地开发环境）
+        rewrite: (path) => path.replace(/^\/api\/github/, '')
+      }
+    }
+  },
+  base: '/',
   build: {
     outDir: 'dist',
     assetsDir: 'assets',
