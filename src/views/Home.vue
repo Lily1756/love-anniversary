@@ -11,40 +11,26 @@
       <p class="home-subtitle">张祎 & 方志浩</p>
     </header>
 
-    <!-- 我们的故事 — 功能卡片 -->
-    <section class="story-section">
-      <h2 class="section-title">我们的故事</h2>
-      <div class="story-cards">
+    <!-- 功能卡片区 -->
+    <section class="feature-section">
+      <div class="feature-grid">
         <router-link
-          v-for="card in storyCards"
+          v-for="card in featureCards"
           :key="card.name"
           :to="card.path"
-          class="story-card"
+          class="feature-card"
         >
-          <span v-if="card.count !== undefined" class="card-badge">{{ card.count.value }}</span>
-          <span class="card-icon" v-html="card.svg"></span>
-          <span class="card-label">{{ card.label }}</span>
-        </router-link>
-      </div>
-    </section>
+          <!-- 数字角标 -->
+          <span class="feature-badge">{{ card.count.value }}</span>
 
-    <!-- 数据统计条 -->
-    <section class="stats-bar">
-      <div class="stat-item">
-        <span class="stat-number">{{ stats.letters }}</span>
-        <span class="stat-label">封情书</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">{{ stats.photos }}</span>
-        <span class="stat-label">张照片</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">{{ stats.cities }}</span>
-        <span class="stat-label">个城市</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number">{{ stats.wishesDone }}/{{ stats.wishesTotal }}</span>
-        <span class="stat-label">个愿望</span>
+          <!-- 图标：彩色填充块 + 白色线条 -->
+          <div class="feature-icon-wrapper" :style="{ backgroundColor: card.color + '22', color: card.color }">
+            <span class="feature-icon" v-html="card.svg"></span>
+          </div>
+
+          <!-- 功能名称 -->
+          <span class="feature-name">{{ card.label }}</span>
+        </router-link>
       </div>
     </section>
 
@@ -61,52 +47,94 @@ import { useAppStore } from '@/stores'
 
 const store = useAppStore()
 
-// 从 store 实时计算统计数据
-const stats = computed(() => ({
-  letters: store.letters.length,
-  photos: store.albums.reduce((sum: number, a: any) => sum + (a.photos?.length || 0), 0),
-  cities: store.footprints.length,
-  wishesDone: store.wishes.filter((w: any) => w.completed).length,
-  wishesTotal: store.wishes.length,
-}))
-
-// 功能卡片配置（SVG 图标 + 角标）
-const storyCards = [
+// 功能卡片配置
+// 颜色规范：填充底色（透明度 0.13）+ SVG 主色（全不透明）
+const featureCards = [
   {
     name: 'letters',
     label: '情书馆',
     path: '/letters',
+    color: '#E8B4B8', // 浅豆沙粉
     count: computed(() => store.letters.length),
-    svg: `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>`,
+    svg: `<svg viewBox="0 0 24 24" width="36" height="36" fill="none">
+            <!-- 信封主体 - 填充色块 -->
+            <rect x="3" y="5" width="18" height="14" rx="2.5" fill="currentColor" opacity="0.9"/>
+            <!-- 信封翻盖 - 白色线条 -->
+            <path d="M3 7L12 13L21 7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="4" y="6" width="16" height="12" rx="2" stroke="white" stroke-width="1.2" fill="none"/>
+            <!-- 小心形装饰 -->
+            <path d="M12 10.5C12 10.5 13 9 15 9C16.66 9 18 10.34 18 12C18 13.66 16.66 15 15 15C13 15 12 13.5 12 13.5C12 13.5 11 15 9 15C7.34 15 6 13.66 6 12C6 10.34 7.34 9 9 9C11 9 12 10.5 12 10.5Z" fill="white" opacity="0.75"/>
+          </svg>`,
   },
   {
     name: 'gallery',
     label: '照片墙',
     path: '/gallery',
-    count: computed(() => store.albums.reduce((sum: number, a: any) => sum + (a.photos?.length || 0), 0)),
-    svg: `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>`,
+    color: '#D4B5B0', // 浅奶茶棕
+    count: computed(() => store.albums.reduce((s: number, a: any) => s + (a.photos?.length || 0), 0)),
+    svg: `<svg viewBox="0 0 24 24" width="36" height="36" fill="none">
+            <!-- 相机机身 - 填充色块 -->
+            <rect x="2" y="6" width="20" height="14" rx="3" fill="currentColor" opacity="0.9"/>
+            <!-- 镜头圈 - 白色 -->
+            <circle cx="12" cy="13" r="4.5" stroke="white" stroke-width="1.8" fill="none"/>
+            <circle cx="12" cy="13" r="2.2" fill="white" opacity="0.7"/>
+            <!-- 闪光灯 -->
+            <rect x="6" y="8.5" width="3" height="2" rx="1" fill="white" opacity="0.6"/>
+            <!-- 快门按钮 -->
+            <circle cx="18" cy="10" r="1.2" fill="white" opacity="0.5"/>
+          </svg>`,
   },
   {
     name: 'footprints',
     label: '足迹地图',
     path: '/footprints',
+    color: '#A8DADC', // 浅薄荷绿
     count: computed(() => store.footprints.length),
-    svg: `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="1 6 1 22 8 18 16 22 21 18 21 2 16 6 8 2 1 6"/><line x1="8" y1="2" x2="8" y2="18"/><line x1="16" y1="6" x2="16" y2="22"/></svg>`,
+    svg: `<svg viewBox="0 0 24 24" width="36" height="36" fill="none">
+            <!-- 地图折纸 - 填充色块 -->
+            <polygon points="12 2 22 8.5 22 18 12 23 2 18 2 8.5" fill="currentColor" opacity="0.85" stroke="currentColor" stroke-width="0.5" stroke-opacity="0.5"/>
+            <!-- 地图线条 - 白色 -->
+            <line x1="2" y1="8.5" x2="12" y2="14" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+            <line x1="22" y1="8.5" x2="12" y2="14" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
+            <circle cx="12" cy="14" r="2" fill="white" opacity="0.8"/>
+            <!-- 定位针 -->
+            <path d="M12 10C12 10 12 6 12 6C12 6 16 8 16 11C16 13 12 10 12 10Z" fill="white" opacity="0.6"/>
+          </svg>`,
   },
   {
     name: 'wishlist',
     label: '愿望清单',
     path: '/wishlist',
+    color: '#FFD166', // 浅奶油黄
     count: computed(() => store.wishes.length),
-    svg: `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`,
+    svg: `<svg viewBox="0 0 24 24" width="36" height="36" fill="none">
+            <!-- 星星主体 - 填充色块 -->
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="currentColor" opacity="0.9"/>
+            <!-- 星星高光 - 白色线条 -->
+            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77" stroke="white" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
+            <!-- 中心亮点 -->
+            <circle cx="12" cy="12" r="2" fill="white" opacity="0.5"/>
+          </svg>`,
   },
   {
     name: 'capsules',
     label: '时间胶囊',
     path: '/capsules',
+    color: '#9D4EDD', // 香芋紫
     count: computed(() => store.capsules.length),
-    svg: `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8v13H3V8"/><path d="M1 3h22v5H1z"/><path d="M10 12h4"/></svg>`,
-  },
+    svg: `<svg viewBox="0 0 24 24" width="36" height="36" fill="none">
+            <!-- 胶囊主体 - 填充色块 -->
+            <rect x="3" y="7" width="18" height="10" rx="5" fill="currentColor" opacity="0.9"/>
+            <!-- 胶囊分隔线 - 白色 -->
+            <line x1="12" y1="7" x2="12" y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <!-- 顶部盖子 -->
+            <rect x="3" y="6" width="18" height="4" rx="2" fill="currentColor" opacity="0.6"/>
+            <!-- 沙漏装饰 -->
+            <path d="M10.5 10.5C10.5 10.5 11 9.5 12 9.5C13 9.5 13.5 10.5 13.5 10.5" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+            <circle cx="12" cy="12" r="0.8" fill="white" opacity="0.7"/>
+            <path d="M10.5 13.5C10.5 13.5 11 14.5 12 14.5C13 14.5 13.5 13.5 13.5 13.5" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none"/>
+          </svg>`,
+   },
 ]
 
 onMounted(() => {
@@ -130,7 +158,6 @@ onMounted(() => {
   margin-bottom: var(--space-lg);
 }
 
-/* 胶囊形状头像（参考图2风格） */
 .avatar {
   width: 160px;
   height: 120px;
@@ -160,160 +187,159 @@ onMounted(() => {
   color: var(--text-secondary);
 }
 
-/* ===== 我们的故事 — 功能卡片 ===== */
-.story-section {
-  padding: var(--space-lg);
+/* ===== 功能卡片区 ===== */
+.feature-section {
+  padding: var(--space-lg) var(--space-md);
 }
 
-.section-title {
-  font-size: var(--font-size-lg);
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
-  margin-bottom: var(--space-md);
+.feature-grid {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-.story-cards {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: var(--space-sm);
-}
-
-.story-card {
+/* 胶囊形状卡片 */
+.feature-card {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-sm);
-  padding: var(--space-lg) var(--space-xs);
-  background: var(--bg-container);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
+  justify-content: center;
+  gap: 8px;
+  width: 100px;
+  height: 120px;
+  border-radius: 24px;
+  background: #FFFFFF;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   text-decoration: none;
   color: inherit;
-  transition: all var(--transition-fast);
-  min-height: 100px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow: visible;
 }
 
-.story-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--border-base);
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
-/* 右上角角标 */
-.card-badge {
+/* 数字角标（毛玻璃圆形） */
+.feature-badge {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 6px;
+  right: 6px;
   min-width: 22px;
   height: 22px;
-  padding: 0 6px;
+  padding: 0 5px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
-  font-weight: var(--font-weight-semibold);
-  color: var(--text-secondary);
-  background: var(--bg-surface);
-  border-radius: 999px;
-  border: 1px solid var(--border-light);
+  font-weight: 600;
+  color: #333333;
+  background: rgba(0, 0, 0, 0.07);
+  border-radius: 50%;
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  z-index: 1;
 }
 
-.card-icon {
+/* 图标容器：彩色浅底圆角方块 */
+.feature-icon-wrapper {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--text-secondary);
+  transition: transform 0.2s ease;
 }
 
-.card-label {
-  font-size: 12px;
-  color: var(--text-primary);
-  font-weight: var(--font-weight-medium);
-  text-align: center;
-  white-space: nowrap;
+.feature-card:hover .feature-icon-wrapper {
+  transform: scale(1.05);
 }
 
-/* ===== 数据统计条 ===== */
-.stats-bar {
+.feature-icon {
   display: flex;
-  justify-content: space-around;
   align-items: center;
-  margin: 0 var(--space-lg) var(--space-xl);
-  padding: var(--space-xl) var(--space-lg);
-  background: var(--bg-container);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-xl);
-}
-
-.stat-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.stat-number {
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--text-primary);
+  justify-content: center;
   line-height: 1;
 }
 
-.stat-label {
-  font-size: var(--font-size-xs);
-  color: var(--text-tertiary);
+.feature-icon :deep(svg) {
+  display: block;
+}
+
+/* 功能名称 */
+.feature-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #333333;
+  text-align: center;
+  line-height: 1.2;
+  margin-top: 2px;
 }
 
 /* ===== 底部 ===== */
 .home-footer {
   text-align: center;
-  padding: var(--space-xl) var(--space-lg);
+  padding: var(--space-2xl) var(--space-lg);
   color: var(--text-tertiary);
   font-size: var(--font-size-sm);
 }
 
 /* ===== 响应式 ===== */
 @media (max-width: 480px) {
-  .story-cards {
-    grid-template-columns: repeat(3, 1fr);
-    gap: var(--space-xs);
+  .feature-grid {
+    gap: 8px;
+    padding: 0 4px;
   }
 
-  .story-card {
-    padding: var(--space-md) var(--space-xs);
-    min-height: 90px;
+  .feature-card {
+    width: calc(33.333% - 8px);
+    min-width: 80px;
+    height: 110px;
+    border-radius: 20px;
+    gap: 6px;
   }
 
-  .card-label {
+  .feature-icon-wrapper {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+  }
+
+  .feature-icon :deep(svg) {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .feature-name {
     font-size: 11px;
   }
 
-  .avatar {
-    width: 140px;
-    height: 105px;
-    border-radius: 35px;
+  .feature-badge {
+    top: 4px;
+    right: 4px;
+    min-width: 20px;
+    height: 20px;
+    font-size: 10px;
   }
+}
 
-  .stats-bar {
-    flex-wrap: wrap;
-    gap: var(--space-md);
-  }
-
-  .stat-item {
-    min-width: 60px;
+@media (min-width: 481px) and (max-width: 768px) {
+  .feature-card {
+    width: 100px;
+    height: 120px;
   }
 }
 
 @media (min-width: 769px) {
-  .story-cards {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .stats-bar {
-    max-width: 800px;
-    margin: 0 auto var(--space-xl);
+  .feature-section {
+    padding: var(--space-xl);
   }
 
   .home-title {
