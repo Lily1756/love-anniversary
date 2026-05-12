@@ -48,14 +48,19 @@ export const useAppStore = defineStore('app', () => {
       : `https://api.github.com/${path}`
   }
 
-  /** 构建 GitHub Raw URL（开发环境走代理，生产环境直连） */
+  /**
+   * 构建 GitHub 数据读取 URL
+   *
+   * 所有环境都统一走 GitHub Contents API（返回 base64 编码内容）
+   * - 开发环境：通过 Vite 代理 /api/github → api.github.com
+   * - 生产环境：直接请求 api.github.com（CORS 允许）
+   */
   function getRawBase(): string {
-    if (isDev()) {
-      // 开发环境：通过 Vite 代理绕过 SSL 证书问题
-      return '/api/github/repos/Lily1756/love-anniversary/contents'
-    }
-    // 生产环境：直连 GitHub Raw
-    return 'https://raw.githubusercontent.com/Lily1756/love-anniversary/main'
+    // 统一使用 Contents API 路径（开发环境加代理前缀）
+    const basePath = 'repos/Lily1756/love-anniversary/contents'
+    return isDev()
+      ? `/api/github/${basePath}`
+      : `https://api.github.com/${basePath}`
   }
 
   /** 构建 GitHub API Headers（所有环境都需要 Authorization） */
@@ -108,8 +113,11 @@ export const useAppStore = defineStore('app', () => {
   /**
    * 从 GitHub 读取最新文件内容（实时）
    *
-   * 开发环境：通过 Vite 代理访问 GitHub Contents API（需要 Authorization header）
-   * 生产环境：直连 GitHub Raw（无需 Authorization）
+   * 统一使用 GitHub Contents API（所有环境一致）：
+   * - 开发环境：通过 Vite 代理 /api/github → api.github.com
+   * - 生产环境：直接请求 api.github.com
+   *
+   * Contents API 返回 base64 编码内容，需要解码
    *
    * ⚠️ 不允许本地回退：GitHub 读取失败必须抛错，不能静默降级到不存在的本地文件
    */
@@ -117,40 +125,32 @@ export const useAppStore = defineStore('app', () => {
     const isDevMode = isDev()
 
     try {
-      let url: string
-      let headers: Record<string, string> | undefined
-
-      if (isDevMode) {
-        // 开发环境：通过 Vite 代理访问 GitHub Contents API
-        // getRawBase() 返回 '/api/github/repos/Lily1756/love-anniversary/contents'
-        url = `${getRawBase()}/${ghPath}`
-        headers = ghHeaders()  // 需要 Authorization header
-        console.log(`[fetchLatest] 🔧 开发模式，通过代理读取: ${url}`)
-      } else {
-        // 生产环境：直连 GitHub Raw
-        url = `${getRawBase()}/${ghPath}?v=${Date.now()}`
-        headers = undefined  // GitHub Raw 不需要 Authorization
-        console.log(`[fetchLatest] 🚀 生产模式，直连: ${url}`)
-      }
+      // 所有环境统一走 Contents API
+      const url = `${getRawBase()}/${ghPath}`
+      console.log(`[fetchLatest] ${isDevMode ? '🔧 开发模式' : '🚀 生产模式'} 读取: ${url}`)
 
       const resp = await safeFetch(url, {
-        headers,
+        headers: ghHeaders(),  // 所有环境都需要 Authorization
         timeoutMs: 10000,
       })
 
       if (resp.ok) {
         const data = await resp.json()
 
-        // 开发环境通过 Contents API 返回的是 base64 编码的内容
-        if (isDevMode && data.content) {
+        // Contents API 返回的是 base64 编码的内容
+        if (data.content) {
           const decoded = decodeGitHubContent(data.content)
-          console.log(`[fetchLatest] ✅ 代理读取成功 ${ghPath}`)
+          console.log(`[fetchLatest] ✅ 读取成功 ${ghPath} (${isDevMode ? '代理' : '直连'})`)
           return decoded
         }
 
-        // 生产环境直接返回 JSON
-        console.log(`[fetchLatest] ✅ GitHub Raw 读取成功 ${ghPath}`)
-        return data
+        // 如果没有 content 字段（异常情况），尝试直接解析
+        if (Array.isArray(data)) {
+          console.log(`[fetchLatest] ✅ 直接返回数组 ${ghPath}`)
+          return data
+        }
+
+        throw new Error(`GitHub API 返回格式异常: ${JSON.stringify(data).slice(0, 200)}`)
       }
 
       throw new Error(`GitHub 读取失败 (${resp.status}): ${ghPath}`)
@@ -287,31 +287,18 @@ export const useAppStore = defineStore('app', () => {
         console.log('  [合并] 读取远程内容...')
         let remoteData: any[] = []
         try {
-          let rawUrl: string
-          let rawHeaders: Record<string, string> | undefined
-
-          if (isDev()) {
-            // 开发环境：通过代理访问 Contents API
-            rawUrl = `${getRawBase()}/${ghPath}`
-            rawHeaders = ghHeaders()
-          } else {
-            // 生产环境：直连 Raw
-            rawUrl = `${getRawBase()}/${ghPath}?v=${Date.now()}`
-          }
-
-          const rawResp = await safeFetch(rawUrl, {
-            headers: rawHeaders,
+          // 统一使用 getRawBase()（已经是 Contents API 路径）
+          const rawResp = await safeFetch(`${getRawBase()}/${ghPath}`, {
+            headers: ghHeaders(),
             timeoutMs: 8000,
           })
 
           if (rawResp.ok) {
             const data = await rawResp.json()
 
-            // 开发环境需要解码 base64
-            if (isDev() && data.content) {
+            // Contents API 返回 base64 编码内容
+            if (data.content) {
               remoteData = decodeGitHubContent(data.content)
-            } else {
-              remoteData = data
             }
 
             console.log(`  [合并] 远程数据条目:`, remoteData.length)
