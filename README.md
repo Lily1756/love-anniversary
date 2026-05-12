@@ -2,133 +2,105 @@
 
 > 记录每一刻的甜蜜与感动
 
+---
+
+## 🤖 AI Agent 须知
+
+在开始工作前，**必须**先阅读 [.github/AI_AGENT_GUIDELINES.md](.github/AI_AGENT_GUIDELINES.md) 中的协作规范。
+
+快速初始化：
+```bash
+bash .ai_agent_init.sh
+```
+
+**核心约束（必须记住）：**
+- ❌ 禁止 `git push` → ✅ 使用 `python3 push_all_api.py`
+- ❌ 禁止全量覆盖写 JSON → ✅ 保持读→改→写三步流程
+- ❌ 禁止删除 `localStorage` 缓存逻辑（`LS_KEYS` / `lsGet` / `lsSet`）
+
+---
+
 ## 项目简介
 
-这是一个为情侣设计的恋爱纪念网站，包含情书博物馆、照片墙、足迹地图、愿望清单、时间胶囊等功能模块。
-
-## 快速开始
-
-### 本地预览
-```bash
-cd love-site
-python3 -m http.server 8080
-# 访问 http://localhost:8080/
-```
-
-### 部署更新
-```bash
-./push.sh "更新说明"
-```
+这是一个为情侣设计的恋爱纪念网站，包含情书馆、照片墙、足迹地图、愿望清单、时间胶囊等功能模块。
 
 ## 网站地址
 
 | 环境 | 地址 |
 |------|------|
-| Cloudflare Pages (主站) | https://love-anniversary.pages.dev/ |
-| GitHub Pages (备站) | https://Lily1756.github.io/love-anniversary/ |
+| Cloudflare Pages（主站） | https://love-anniversary.pages.dev/ |
+
+## 快速开始
+
+### 本地开发
+```bash
+cd love-site
+npm install
+npm run dev
+```
+
+### 构建 + 部署
+```bash
+npm run build
+python3 push_all_api.py
+```
+> ⚠️ 不要使用 `git push`，网络不稳定。`push_all_api.py` 通过 GitHub API 增量推送，只传变化的文件。
 
 ## 功能模块
 
-| 模块 | 文件 | 说明 |
+| 模块 | 路由 | 说明 |
 |------|------|------|
-| 首页 | `index.html` | 密码锁、计时器、精选内容入口 |
-| 情书博物馆 | `writings.html` | 32篇小作文，支持筛选和搜索 |
-| 照片墙 | `photos.html` | 瀑布流布局，支持上传和灯箱 |
-| 足迹地图 | `travels.html` | Leaflet + OpenStreetMap 地图 |
-| 愿望清单 | `wishes.html` | 愿望管理和进度追踪 |
-| 时间胶囊 | `time-capsule.html` | 未来时光留言 |
-| 婚礼手册 | `wedding.html` | 旅行婚礼全程执行手册 |
-| 音乐播放器 | `music-player.html` | 全局背景音乐 |
+| 首页 | `/` | 密码锁、倒计时 |
+| 情书馆 | `/letters` | 日记/小作文，支持筛选和星光图联动 |
+| 照片墙 | `/gallery` | 相册管理，Cloudinary 上传 |
+| 足迹地图 | `/footprints` | Leaflet + OpenStreetMap |
+| 愿望清单 | `/wishlist` | 愿望管理 |
+| 时间胶囊 | `/capsules` | 未来留言 |
+
+## 技术栈
+
+- **框架**：Vue 3 + Vite + TypeScript + Pinia
+- **路由**：Vue Router
+- **地图**：Leaflet + OpenStreetMap
+- **图床**：Cloudinary（cloud name: `dcpzdsdxc`）
+- **数据存储**：GitHub 仓库 JSON 文件（`public/data/`）
+- **部署**：Cloudflare Pages（监听 main 分支自动构建）
 
 ## 文件结构
 
 ```
 love-site/
-├── index.html              # 首页
-├── writings.html           # 情书博物馆
-├── photos.html             # 照片墙
-├── travels.html            # 足迹地图
-├── wishes.html             # 愿望清单
-├── time-capsule.html       # 时间胶囊
-├── music-player.html       # 音乐播放器
-│
-├── assets/                 # 静态资源
-│   ├── icons/              # SVG 图标
-│   │   ├── icon-writings.svg    # 情书图标
-│   │   ├── icon-photos.svg      # 照片图标
-│   │   ├── icon-travels.svg     # 足迹图标
-│   │   ├── icon-wishes.svg     # 愿望图标
-│   │   └── nav-logo.svg        # 导航 Logo
-│   └── logo/               # Logo 图片
-│
-├── js/                     # JavaScript 模块
-│   ├── simple-auth.js      # 认证模块（GitHub PAT）
-│   ├── simple-edit.js      # 编辑模式（密码 2025）
-│   └── photos.js           # 照片墙业务逻辑（Cloudinary 上传）
-│
-├── data/                   # JSON 数据
-│   ├── diaries.json        # 情书数据（32篇）
-│   ├── photos.json         # 照片元数据
-│   ├── travels.json        # 足迹数据
-│   ├── wishes.json         # 愿望数据
-│   └── capsules.json       # 时间胶囊数据
-│
-├── music/                  # 背景音乐
-│   └── once.mp3
-│
-├── style.css               # 全局样式
-├── app.js                  # 共享功能
-├── push.sh                 # 推送脚本
-└── sync_diaries.py         # 滴答同步脚本
+├── src/
+│   ├── views/             # 页面组件
+│   ├── components/        # 通用/功能组件
+│   ├── stores/index.ts    # Pinia Store（含 localStorage 缓存架构）
+│   ├── composables/       # 组合式函数
+│   └── router/            # 路由配置
+├── public/data/           # 静态数据文件
+│   ├── diaries.json       # 情书数据
+│   ├── photos.json        # 照片元数据
+│   ├── travels.json       # 足迹数据
+│   ├── wishes.json        # 愿望数据
+│   └── capsules.json      # 时间胶囊数据
+├── dist/                  # 构建产物（由 push_all_api.py 推送）
+├── push_all_api.py        # GitHub API 增量推送脚本
+├── .ai_agent_init.sh      # AI Agent 初始化脚本
+└── .github/
+    └── AI_AGENT_GUIDELINES.md  # AI Agent 协作规范
 ```
 
 ## 数据管理
 
-### 认证方式
-- **编辑密码**: `2025`
-- **GitHub PAT**: 需要在 GitHub Settings → Developer settings 生成
-
-### 数据存储
-内容通过 GitHub API 存储到仓库的 JSON 文件中，照片通过 Cloudinary 上传：
-- 照片上传到 Cloudinary（免费 25GB/月）
-- 元数据保存在 `data/photos.json`
-
-## 技术栈
-
-- **前端**: HTML5 + CSS3 + Vanilla JavaScript
-- **地图**: Leaflet + OpenStreetMap
-- **存储**: GitHub API (REST) + Cloudinary（图片）
-- **部署**: GitHub Pages
-
-## 开发指南
-
-### 添加新页面
-1. 在项目根目录创建 `xxx.html`
-2. 引入共享样式和脚本：
-   ```html
-   <link rel="stylesheet" href="style.css">
-   <script src="js/simple-auth.js"></script>
-   <script src="js/simple-edit.js"></script>
-   ```
-3. 添加页面内容
-
-### 更新图标
-图标文件位于 `assets/icons/`，所有图标使用统一的 SVG 格式：
-- viewBox: 24x24 或自定义
-- 颜色: 使用 CSS 变量或固定颜色
-- 命名: `icon-{module}.svg`
-
-### 同步滴答清单
-```bash
-python3 sync_diaries.py
-```
-- 自动同步滴答清单到 GitHub
-- 每天北京时间 08:00 自动运行
+- **编辑密码**：`2025`
+- **数据读取**：GitHub Contents API（生产环境直连，开发环境走 Vite 代理）
+- **数据写入**：读→改→写三步流程（获取 SHA → 合并 → PUT）
+- **缓存策略**：localStorage 优先读，写入成功后同步更新缓存
 
 ## 版本历史
 
-- **2026-04-26**: Cloudflare Pages Function 代理 GitHub API（编辑照片免 Token）
-- **2026-04-26**: 代码重构（提取 photos.js，清理无用文件），照片上传迁移到 Cloudinary
-- **2026-04-25**: 完成照片上传、图标更新、Cloudflare Pages 部署
-- **2026-04-24**: 完成 GitHub OAuth 编辑系统、滴答同步
-- **2026-04-23**: 完成足迹地图、情书博物馆、照片墙基础功能
+- **2026-05-13**：完善 localStorage 缓存架构，修复 wishes/capsules 缓存写入 bug
+- **2026-05-12**：修复 base64 中文乱码（TextDecoder），修复 loadWishes/loadCapsules 空数据
+- **2026-05-11**：修复 Cloudinary 上传 SSL 证书问题，修复幽灵保存 bug
+- **2026-05-10**：迁移到 Vue 3 + Vite，强制推送修复 Git 分叉
+- **2026-04-28**：TimeDNA 组件，按月聚合展示
+- **2026-04-26**：Cloudflare Pages 部署，照片迁移到 Cloudinary
