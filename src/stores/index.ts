@@ -162,13 +162,25 @@ export const useAppStore = defineStore('app', () => {
 
   /**
    * 解码 GitHub Contents API 返回的 base64 内容
+   *
+   * ⚠️ 不能用 atob() 直接 JSON.parse：
+   *   atob() 将 base64 还原为 latin1 字节字符串，中文（UTF-8 多字节）会变成乱码。
+   *   正确做法：atob → Uint8Array → TextDecoder('utf-8') → JSON.parse
    */
   function decodeGitHubContent(base64Content: string): any {
     try {
-      // GitHub API 返回的 content 是 base64 编码，带有换行符
+      // 1. 去除 GitHub API 返回的换行符
       const cleaned = base64Content.replace(/\n/g, '')
-      const decoded = atob(cleaned)
-      return JSON.parse(decoded)
+      // 2. atob 得到 latin1 字节字符串
+      const binaryStr = atob(cleaned)
+      // 3. 转换为 Uint8Array（逐字节）
+      const bytes = new Uint8Array(binaryStr.length)
+      for (let i = 0; i < binaryStr.length; i++) {
+        bytes[i] = binaryStr.charCodeAt(i)
+      }
+      // 4. 用 TextDecoder 正确还原 UTF-8（含中文）
+      const jsonStr = new TextDecoder('utf-8').decode(bytes)
+      return JSON.parse(jsonStr)
     } catch (e) {
       console.error('[decodeGitHubContent] ❌ 解码失败', e)
       throw new Error('GitHub 内容解码失败')
@@ -218,10 +230,9 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadWishes() {
     try {
-      const saved = localStorage.getItem('love_site_wishes')
-      if (saved) { wishes.value = JSON.parse(saved); return }
-      const response = await safeFetch(`./data/wishes.json?v=${Date.now()}`)
-      wishes.value = await response.json()
+      // 统一从 GitHub 读取（生产环境无本地文件可用）
+      // localStorage 仅作本次会话内的写操作缓存，不用于初始加载
+      wishes.value = await fetchLatest('public/data/wishes.json', './data/wishes.json')
     } catch (err) {
       console.error('[loadWishes] ❌ 加载愿望失败:', err)
     }
@@ -229,8 +240,8 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadCapsules() {
     try {
-      const saved = localStorage.getItem('love_site_capsules')
-      if (saved) { capsules.value = JSON.parse(saved); return }
+      // 统一从 GitHub 读取（之前只读 localStorage，新用户永远为空）
+      capsules.value = await fetchLatest('public/data/capsules.json', './data/capsules.json')
     } catch (err) {
       console.error('[loadCapsules] ❌ 加载胶囊失败:', err)
     }
