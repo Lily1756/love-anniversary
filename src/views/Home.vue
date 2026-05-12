@@ -11,7 +11,7 @@
       <p class="home-subtitle">张祎 & 方志浩</p>
     </header>
 
-    <!-- 倒计时 -->
+    <!-- 核心倒计时 -->
     <section class="countdown-section">
       <Countdown
         target-date="2025-05-17T00:00:00"
@@ -20,134 +20,114 @@
       <p class="love-quote">"遇见你，是我这辈子做过最正确的事"</p>
     </section>
 
-    <!-- 功能卡片区 -->
-    <section class="feature-section">
+    <!-- 快捷入口 -->
+    <section class="quick-access">
       <h2 class="section-title">我们的故事</h2>
-      <div class="feature-grid">
+      <div class="access-grid">
         <router-link
-          v-for="card in featureCards"
-          :key="card.name"
-          :to="card.path"
-          class="feature-card"
+          v-for="item in accessItems"
+          :key="item.name"
+          :to="item.path"
+          class="access-card"
         >
-          <!-- 数字角标（毛玻璃） -->
-          <span class="feature-badge">{{ card.count.value }}</span>
-
-          <!-- 图标容器：渐变底块 -->
-          <div class="feature-icon-wrapper" :style="{ background: card.gradient }">
-            <span class="feature-icon" v-html="card.svg"></span>
+          <div class="access-icon" :style="{ background: item.gradient }">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="white" stroke-width="1.5">
+              <path v-if="item.icon === 'letters'" d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+              <path v-if="item.icon === 'letters'" d="M22 6l-10 7L2 6" />
+              <rect v-if="item.icon === 'gallery'" x="3" y="3" width="18" height="18" rx="2" />
+              <circle v-if="item.icon === 'gallery'" cx="8.5" cy="8.5" r="1.5" />
+              <path v-if="item.icon === 'gallery'" d="M21 15l-5-5L5 21" />
+              <polygon v-if="item.icon === 'footprints'" points="1 6 1 22 8 18 16 22 21 18 21 2 16 6 8 2 1 6" />
+              <path v-if="item.icon === 'footprints'" d="M8 2v16M16 6v16" />
+              <polygon v-if="item.icon === 'wishlist'" points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+              <path v-if="item.icon === 'capsules'" d="M21 8v13H3V8" />
+              <path v-if="item.icon === 'capsules'" d="M1 3h22v5H1z" />
+              <path v-if="item.icon === 'capsules'" d="M10 12h4" />
+            </svg>
           </div>
-
-          <!-- 功能名称 -->
-          <span class="feature-name">{{ card.label }}</span>
+          <span class="access-label">{{ item.label }}</span>
+          <span v-if="item.count !== undefined" class="access-count">{{ item.count }}</span>
         </router-link>
       </div>
     </section>
 
-    <!-- 底部 -->
-    <footer class="home-footer">
-      <span>每天都是更爱你的一天 ❤️</span>
-    </footer>
+    <!-- 统计数据 -->
+    <section class="stats-section">
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-number">{{ store.letters.length }}</span>
+          <span class="stat-label">封情书</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ totalPhotos }}</span>
+          <span class="stat-label">张照片</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ store.footprints.length }}</span>
+          <span class="stat-label">个城市</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number">{{ store.completedWishes }}/{{ store.totalWishes }}</span>
+          <span class="stat-label">个愿望</span>
+        </div>
+      </div>
+    </section>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, computed } from 'vue'
-import { useAppStore } from '@/stores'
+import { computed, onMounted } from 'vue'
 import Countdown from '@/components/features/Countdown.vue'
+import { useAppStore } from '@/stores'
 
 const store = useAppStore()
 
-// 功能卡片配置（融合两版优势）
-const featureCards = [
+const totalPhotos = computed(() => {
+  return store.albums.reduce((sum, a) => sum + a.photos.length, 0)
+})
+
+const accessItems = computed(() => [
   {
     name: 'letters',
-    label: '情书馆',
     path: '/letters',
-    // 旧版渐变配色
-    gradient: 'linear-gradient(135deg, #C9A8A9 0%, #B8979A 100%)',
-    count: computed(() => store.letters.length),
-    // 图标：彩色填充块 + 白色线条（当前版风格）
-    svg: `<svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-            <!-- 信封主体 - 白色半透明填充 -->
-            <rect x="3" y="5" width="18" height="14" rx="2.5" fill="white" opacity="0.9"/>
-            <!-- 信封翻盖 - 白色线条 -->
-            <path d="M3 7L12 13L21 7" stroke="white" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-            <rect x="4" y="6" width="16" height="12" rx="2" stroke="rgba(255,255,255,0.7)" stroke-width="1.2" fill="none"/>
-            <!-- 小心形装饰 -->
-            <path d="M12 10.5C12 10.5 13 9 15 9C16.66 9 18 10.34 18 12C18 13.66 16.66 15 15 15C13 15 12 13.5 12 13.5C12 13.5 11 15 9 15C7.34 15 6 13.66 6 12C6 10.34 7.34 9 9 9C11 9 12 10.5 12 10.5Z" fill="white" opacity="0.75"/>
-          </svg>`,
+    label: '情书馆',
+    icon: 'letters',
+    gradient: 'linear-gradient(135deg, #C9A8A9, #B8979A)',
+    count: store.letters.length || undefined
   },
   {
     name: 'gallery',
-    label: '照片墙',
     path: '/gallery',
-    gradient: 'linear-gradient(135deg, #D8C4B6 0%, #C9A8A9 100%)',
-    count: computed(() => store.albums.reduce((s: number, a: any) => s + (a.photos?.length || 0), 0)),
-    svg: `<svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-            <!-- 相机机身 - 白色填充 -->
-            <rect x="2" y="6" width="20" height="14" rx="3" fill="white" opacity="0.9"/>
-            <!-- 镜头圈 - 白色线条 -->
-            <circle cx="12" cy="13" r="4.5" stroke="white" stroke-width="1.8" fill="none"/>
-            <circle cx="12" cy="13" r="2" fill="white" opacity="0.7"/>
-            <!-- 闪光灯 -->
-            <rect x="6" y="8.5" width="3" height="2" rx="1" fill="white" opacity="0.6"/>
-            <!-- 快门按钮 -->
-            <circle cx="18" cy="10" r="1.2" fill="white" opacity="0.5"/>
-          </svg>`,
+    label: '照片墙',
+    icon: 'gallery',
+    gradient: 'linear-gradient(135deg, #D8C4B6, #C9A8A9)',
+    count: totalPhotos.value || undefined
   },
   {
     name: 'footprints',
-    label: '足迹地图',
     path: '/footprints',
-    gradient: 'linear-gradient(135deg, #B5C2B7 0%, #A8C6C1 100%)',
-    count: computed(() => store.footprints.length),
-    svg: `<svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-            <!-- 地图折纸 - 白色填充 -->
-            <polygon points="12 2 22 8.5 22 18 12 23 2 18 2 8.5" fill="white" opacity="0.85" stroke="rgba(255,255,255,0.5)" stroke-width="0.8"/>
-            <!-- 地图线条 - 白色 -->
-            <line x1="2" y1="8.5" x2="12" y2="14" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-            <line x1="22" y1="8.5" x2="12" y2="14" stroke="white" stroke-width="1.2" stroke-linecap="round"/>
-            <circle cx="12" cy="14" r="2" fill="white" opacity="0.8"/>
-            <!-- 定位针 -->
-            <path d="M12 10C12 10 12 6 12 6C12 6 16 8 16 11C16 13 12 10 12 10Z" fill="white" opacity="0.6"/>
-          </svg>`,
+    label: '足迹地图',
+    icon: 'footprints',
+    gradient: 'linear-gradient(135deg, #B5C2B7, #A8C6C1)',
+    count: store.footprints.length || undefined
   },
   {
     name: 'wishlist',
-    label: '愿望清单',
     path: '/wishlist',
-    gradient: 'linear-gradient(135deg, #E6D3B8 0%, #D8C4B6 100%)',
-    count: computed(() => store.wishes.length),
-    svg: `<svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-            <!-- 星星主体 - 白色填充 -->
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="white" opacity="0.9"/>
-            <!-- 星星高光 - 白色线条 -->
-            <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77" stroke="rgba(255,255,255,0.8)" stroke-width="1.2" stroke-linejoin="round" fill="none"/>
-            <!-- 中心亮点 -->
-            <circle cx="12" cy="12" r="2" fill="white" opacity="0.5"/>
-          </svg>`,
+    label: '愿望清单',
+    icon: 'wishlist',
+    gradient: 'linear-gradient(135deg, #E6D3B8, #D8C4B6)',
+    count: store.totalWishes || undefined
   },
   {
     name: 'capsules',
-    label: '时间胶囊',
     path: '/capsules',
-    gradient: 'linear-gradient(135deg, #D4A5A5 0%, #C9A8A9 100%)',
-    count: computed(() => store.capsules.length),
-    svg: `<svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-            <!-- 胶囊主体 - 白色填充 -->
-            <rect x="3" y="7" width="18" height="10" rx="5" fill="white" opacity="0.9"/>
-            <!-- 胶囊分隔线 - 白色 -->
-            <line x1="12" y1="7" x2="12" y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-            <!-- 顶部盖子 -->
-            <rect x="3" y="6" width="18" height="4" rx="2" fill="white" opacity="0.6"/>
-            <!-- 沙漏装饰 -->
-            <path d="M10.5 10.5C10.5 10.5 11 9.5 12 9.5C13 9.5 13.5 10.5 13.5 10.5" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-            <circle cx="12" cy="12" r="0.8" fill="white" opacity="0.7"/>
-            <path d="M10.5 13.5C10.5 13.5 11 14.5 12 14.5C13 14.5 13.5 13.5 13.5 13.5" stroke="white" stroke-width="1.2" stroke-linecap="round" fill="none"/>
-          </svg>`,
-  },
-]
+    label: '时间胶囊',
+    icon: 'capsules',
+    gradient: 'linear-gradient(135deg, #D4A5A5, #C9A8A9)',
+    count: store.totalCapsules || undefined
+  }
+])
 
 onMounted(() => {
   store.loadAll()
@@ -159,10 +139,10 @@ onMounted(() => {
   padding-bottom: calc(var(--nav-height) + var(--space-xl));
 }
 
-/* ===== 顶部区域 ===== */
+/* 顶部区域 */
 .home-header {
   text-align: center;
-  padding: var(--space-2xl) var(--space-lg) var(--space-xl);
+  padding: var(--space-2xl) var(--space-lg);
   background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-body) 100%);
 }
 
@@ -171,10 +151,10 @@ onMounted(() => {
 }
 
 .avatar {
-  width: 140px;
-  height: 140px;
+  width: 120px;
+  height: 120px;
   margin: 0 auto;
-  border-radius: 50%;
+  border-radius: var(--radius-full);
   overflow: hidden;
   border: 4px solid var(--bg-container);
   box-shadow: var(--shadow-base);
@@ -184,7 +164,6 @@ onMounted(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
 }
 
 .home-title {
@@ -199,9 +178,9 @@ onMounted(() => {
   color: var(--text-secondary);
 }
 
-/* ===== 倒计时区域 ===== */
+/* 倒计时 */
 .countdown-section {
-  padding: var(--space-lg) var(--space-lg);
+  padding: var(--space-xl) var(--space-lg);
 }
 
 .love-quote {
@@ -212,192 +191,149 @@ onMounted(() => {
   margin-top: var(--space-lg);
 }
 
-/* ===== 功能卡片区 ===== */
-.feature-section {
-  padding: var(--space-lg) var(--space-md);
+/* 快捷入口 */
+.quick-access {
+  padding: var(--space-lg);
 }
 
 .section-title {
-  font-size: var(--font-size-lg);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
-  color: var(--text-primary);
   margin-bottom: var(--space-lg);
-  padding-left: var(--space-sm);
+  color: var(--text-primary);
 }
 
-/* 响应式 Grid：2列 → 3列 → 5列（移植旧版布局） */
-.feature-grid {
+.access-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--space-md);
 }
 
-/* 毛玻璃卡片 */
-.feature-card {
-  position: relative;
+.access-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  padding: var(--space-lg) var(--space-sm);
-  /* 毛玻璃效果 */
+  padding: var(--space-lg);
+  /* 毛玻璃卡片 */
   background: rgba(255, 255, 255, 0.55);
   backdrop-filter: blur(12px) saturate(180%);
   -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  border-radius: var(--radius-lg);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06),
               inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  text-decoration: none;
-  color: inherit;
   transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: visible;
+  text-decoration: none;
+  color: var(--text-primary);
+  position: relative;
 }
 
-.feature-card:hover {
+.access-card:hover {
   transform: translateY(-6px) scale(1.02);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
               inset 0 1px 0 rgba(255, 255, 255, 0.6);
   border-color: rgba(255, 255, 255, 0.6);
 }
 
-/* 数字角标（毛玻璃圆形） */
-.feature-badge {
+.access-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  /* 微调：增加阴影 */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.access-card:hover .access-icon {
+  transform: scale(1.08);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+
+.access-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--text-primary);
+  letter-spacing: 0.3px;
+}
+
+.access-count {
   position: absolute;
-  top: 6px;
-  right: 6px;
+  top: 8px;
+  right: 8px;
   min-width: 22px;
   height: 22px;
-  padding: 0 5px;
+  padding: 0 6px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 11px;
   font-weight: 600;
-  color: #5a4a4a;
+  color: var(--text-primary);
   /* 毛玻璃角标 */
   background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
   border-radius: 50%;
   border: 1px solid rgba(255, 255, 255, 0.5);
-  z-index: 1;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  z-index: 1;
 }
 
-/* 图标容器：渐变底块 + 圆角 */
-.feature-icon-wrapper {
-  width: 52px;
-  height: 52px;
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  /* 轻微阴影让图标浮起 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
+/* 统计数据 */
+.stats-section {
+  padding: var(--space-lg);
 }
 
-.feature-card:hover .feature-icon-wrapper {
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  background: var(--bg-container);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
 }
 
-.feature-icon {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
+.stat-item {
+  text-align: center;
 }
 
-.feature-icon :deep(svg) {
+.stat-number {
   display: block;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-primary);
 }
 
-/* 功能名称 */
-.feature-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: #5a4a4a;
-  text-align: center;
-  line-height: 1.2;
-}
-
-/* ===== 底部 ===== */
-.home-footer {
-  text-align: center;
-  padding: var(--space-2xl) var(--space-lg);
+.stat-label {
+  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
-  font-size: var(--font-size-sm);
 }
 
-/* ===== 响应式 ===== */
-
-/* ≤480px：2列（保持） */
-@media (max-width: 480px) {
-  .feature-grid {
-    gap: var(--space-sm);
-    padding: 0 2px;
-  }
-
-  .feature-card {
-    padding: var(--space-md) 4px;
-    gap: 6px;
-    border-radius: 16px;
-  }
-
-  .feature-icon-wrapper {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
-  }
-
-  .feature-icon :deep(svg) {
-    width: 24px !important;
-    height: 24px !important;
-  }
-
-  .feature-name {
-    font-size: 11px;
-  }
-
-  .feature-badge {
-    top: 4px;
-    right: 4px;
-    min-width: 20px;
-    height: 20px;
-    font-size: 10px;
-  }
-
-  .avatar {
-    width: 110px;
-    height: 110px;
-  }
-}
-
-/* ≥768px：3列 */
-@media (min-width: 481px) and (max-width: 1023px) {
-  .feature-grid {
+@media (min-width: 768px) {
+  .access-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-}
-
-/* ≥1024px：5列（旧版逻辑） */
-@media (min-width: 1024px) {
-  .feature-grid {
-    grid-template-columns: repeat(5, 1fr);
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
+  
   .home-title {
     font-size: var(--font-size-3xl);
   }
-
+  
   .avatar {
     width: 150px;
     height: 150px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .access-grid {
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 </style>
