@@ -134,7 +134,12 @@
     "tag": "daily",
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778516307/ykflhmrzcjqfnmz23ctx.jpg",
     "date": "2026-05-11",
-    "photos": []
+    "photos": [
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609716/q80zacld2zau40l5amkz.jpg",
+        "caption": ""
+      }
+    ]
   },
   {
     "id": "album-1778609490978",
