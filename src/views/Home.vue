@@ -4,7 +4,7 @@
     <header class="home-header">
       <div class="couple-avatars">
         <div class="avatar">
-          <img src="/assets/photos/hero.jpg" alt="我们的合照" />
+          <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80" alt="我们的合照" />
         </div>
       </div>
       <h1 class="home-title">Love Story with You</h1>
@@ -215,25 +215,20 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   padding: var(--space-lg);
-  /* 毛玻璃卡片 */
-  background: rgba(255, 255, 255, 0.55);
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: var(--bg-container);
+  border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06),
-              inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
   text-decoration: none;
   color: var(--text-primary);
   position: relative;
 }
 
 .access-card:hover {
-  transform: translateY(-6px) scale(1.02);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1),
-              inset 0 1px 0 rgba(255, 255, 255, 0.6);
-  border-color: rgba(255, 255, 255, 0.6);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--border-base);
 }
 
 .access-icon {
@@ -244,44 +239,22 @@ onMounted(() => {
   justify-content: center;
   border-radius: var(--radius-md);
   margin-bottom: var(--space-sm);
-  /* 微调：增加阴影 */
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  transition: transform 0.25s ease, box-shadow 0.25s ease;
-}
-
-.access-card:hover .access-icon {
-  transform: scale(1.08);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
 }
 
 .access-label {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-medium);
-  color: var(--text-primary);
-  letter-spacing: 0.3px;
 }
 
 .access-count {
   position: absolute;
-  top: 8px;
-  right: 8px;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-primary);
-  /* 毛玻璃角标 */
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 50%;
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  z-index: 1;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  font-size: var(--font-size-xs);
+  padding: 2px 8px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-full);
+  color: var(--text-tertiary);
 }
 
 /* 统计数据 */
