@@ -188,22 +188,82 @@ export const useAppStore = defineStore('app', () => {
   }
 
   // ================================================================
+  // localStorage 缓存 key 常量
+  // ⚠️ 核心资产：任何重构都不能删除这段缓存逻辑
+  // 策略：load 时优先读缓存（节省 GitHub API 请求），save 成功后同步更新缓存
+  // 失效策略：save 后缓存被最新数据覆盖；如需强制刷新，清除对应 key 即可
+  // ================================================================
+  const LS_KEYS = {
+    letters:    'love_site_letters',
+    albums:     'love_site_albums',
+    footprints: 'love_site_footprints',
+    wishes:     'love_site_wishes',
+    capsules:   'love_site_capsules',
+  } as const
+
+  /**
+   * 读取 localStorage 缓存（带类型安全的解析）
+   * 解析失败时返回 null，不抛错
+   */
+  function lsGet<T>(key: string): T | null {
+    try {
+      const raw = localStorage.getItem(key)
+      return raw ? (JSON.parse(raw) as T) : null
+    } catch {
+      return null
+    }
+  }
+
+  /** 写入 localStorage 缓存（序列化失败时静默忽略） */
+  function lsSet(key: string, data: unknown): void {
+    try {
+      localStorage.setItem(key, JSON.stringify(data))
+    } catch (e) {
+      console.warn(`[lsSet] ⚠️ localStorage 写入失败 (key: ${key})`, e)
+    }
+  }
+
+  // ================================================================
   // 加载数据
+  // 策略：优先读 localStorage 缓存 → 缓存不存在时请求 GitHub → 写入缓存
   // ================================================================
 
   async function loadLetters() {
     try {
       isLoading.value = true
+
+      // 第一步：优先读取本地缓存（避免每次刷新都请求 GitHub）
+      const cached = lsGet<any[]>(LS_KEYS.letters)
+      if (cached && cached.length > 0) {
+        console.log(`[loadLetters] 📦 从缓存读取 (${cached.length} 条)`)
+        letters.value = cached.map((item: any) => ({
+          id: item.id,
+          title: item.title,
+          content: item.content,
+          date: item.date,
+          year: new Date(item.date).getFullYear(),
+          tag: item.tag,
+          isFavorite: item.isFavorite ?? false,
+        }))
+        return
+      }
+
+      // 第二步：缓存不存在，从 GitHub 读取
+      console.log('[loadLetters] 🌐 缓存未命中，从 GitHub 读取...')
       const data = await fetchLatest('public/data/diaries.json', './data/diaries.json')
-      letters.value = data.map((item: any) => ({
+      const mapped = data.map((item: any) => ({
         id: item.id,
         title: item.title,
         content: item.content,
         date: item.date,
         year: new Date(item.date).getFullYear(),
         tag: item.tag,
-        isFavorite: false,
+        isFavorite: item.isFavorite ?? false,
       }))
+      letters.value = mapped
+
+      // 第三步：写入缓存（存原始格式，下次直接用）
+      lsSet(LS_KEYS.letters, data)
     } catch (err) {
       error.value = '加载情书失败'
       console.error(err)
@@ -214,7 +274,16 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
-      albums.value = await fetchLatest('public/data/photos.json', './data/photos.json')
+      const cached = lsGet<any[]>(LS_KEYS.albums)
+      if (cached && cached.length > 0) {
+        console.log(`[loadAlbums] 📦 从缓存读取 (${cached.length} 个相册)`)
+        albums.value = cached
+        return
+      }
+      console.log('[loadAlbums] 🌐 缓存未命中，从 GitHub 读取...')
+      const data = await fetchLatest('public/data/photos.json', './data/photos.json')
+      albums.value = data
+      lsSet(LS_KEYS.albums, data)
     } catch (err) {
       console.error('[loadAlbums] ❌ 加载照片失败:', err)
     }
@@ -222,7 +291,16 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadFootprints() {
     try {
-      footprints.value = await fetchLatest('public/data/travels.json', './data/travels.json')
+      const cached = lsGet<any[]>(LS_KEYS.footprints)
+      if (cached && cached.length > 0) {
+        console.log(`[loadFootprints] 📦 从缓存读取 (${cached.length} 条足迹)`)
+        footprints.value = cached
+        return
+      }
+      console.log('[loadFootprints] 🌐 缓存未命中，从 GitHub 读取...')
+      const data = await fetchLatest('public/data/travels.json', './data/travels.json')
+      footprints.value = data
+      lsSet(LS_KEYS.footprints, data)
     } catch (err) {
       console.error('[loadFootprints] ❌ 加载足迹失败:', err)
     }
@@ -230,9 +308,16 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadWishes() {
     try {
-      // 统一从 GitHub 读取（生产环境无本地文件可用）
-      // localStorage 仅作本次会话内的写操作缓存，不用于初始加载
-      wishes.value = await fetchLatest('public/data/wishes.json', './data/wishes.json')
+      const cached = lsGet<any[]>(LS_KEYS.wishes)
+      if (cached && cached.length > 0) {
+        console.log(`[loadWishes] 📦 从缓存读取 (${cached.length} 条愿望)`)
+        wishes.value = cached
+        return
+      }
+      console.log('[loadWishes] 🌐 缓存未命中，从 GitHub 读取...')
+      const data = await fetchLatest('public/data/wishes.json', './data/wishes.json')
+      wishes.value = data
+      lsSet(LS_KEYS.wishes, data)
     } catch (err) {
       console.error('[loadWishes] ❌ 加载愿望失败:', err)
     }
@@ -240,8 +325,16 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadCapsules() {
     try {
-      // 统一从 GitHub 读取（之前只读 localStorage，新用户永远为空）
-      capsules.value = await fetchLatest('public/data/capsules.json', './data/capsules.json')
+      const cached = lsGet<any[]>(LS_KEYS.capsules)
+      if (cached && cached.length > 0) {
+        console.log(`[loadCapsules] 📦 从缓存读取 (${cached.length} 个胶囊)`)
+        capsules.value = cached
+        return
+      }
+      console.log('[loadCapsules] 🌐 缓存未命中，从 GitHub 读取...')
+      const data = await fetchLatest('public/data/capsules.json', './data/capsules.json')
+      capsules.value = data
+      lsSet(LS_KEYS.capsules, data)
     } catch (err) {
       console.error('[loadCapsules] ❌ 加载胶囊失败:', err)
     }
@@ -385,16 +478,23 @@ export const useAppStore = defineStore('app', () => {
         if (ghPath === 'public/data/photos.json') albums.value = mergedData
         else if (ghPath === 'public/data/travels.json') footprints.value = mergedData
         else if (ghPath === 'public/data/diaries.json') letters.value = mergedData
+        else if (ghPath === 'public/data/wishes.json') wishes.value = mergedData
+        else if (ghPath === 'public/data/capsules.json') capsules.value = mergedData
       }
 
-      // 写入 localStorage 作为缓存
-      localStorage.setItem(
-        ghPath.includes('photos') ? 'love_site_albums'
-          : ghPath.includes('travels') ? 'love_site_footprints'
-          : ghPath.includes('diaries') ? 'love_site_letters'
-          : '',
-        JSON.stringify(mergedData),
-      )
+      // 写入 localStorage 缓存（使用 LS_KEYS 常量，避免 key 写错）
+      const lsKeyMap: Record<string, string> = {
+        'public/data/photos.json':   LS_KEYS.albums,
+        'public/data/travels.json':  LS_KEYS.footprints,
+        'public/data/diaries.json':  LS_KEYS.letters,
+        'public/data/wishes.json':   LS_KEYS.wishes,
+        'public/data/capsules.json': LS_KEYS.capsules,
+      }
+      const lsKey = lsKeyMap[ghPath]
+      if (lsKey) {
+        lsSet(lsKey, mergedData)
+        console.log(`  📦 缓存已更新: ${lsKey}`)
+      }
 
       console.log(`  ✅ [saveViaGithub] 保存成功! ${ghPath}`)
       console.groupEnd()
@@ -441,7 +541,7 @@ export const useAppStore = defineStore('app', () => {
         if (contentType.includes('application/json')) {
           const result = await resp.json()
           if (result.success) {
-            localStorage.setItem('love_site_albums', JSON.stringify(albums.value))
+            lsSet(LS_KEYS.albums, albums.value)
             console.log('[saveAlbums] ✅ CF Function 保存成功')
             return { success: true }
           }
@@ -476,7 +576,7 @@ export const useAppStore = defineStore('app', () => {
         const ct = resp.headers.get('content-type') || ''
         if (ct.includes('application/json')) {
           const r = await resp.json()
-          if (r.success) { localStorage.setItem('love_site_footprints', JSON.stringify(footprints.value)); return { success: true } }
+          if (r.success) { lsSet(LS_KEYS.footprints, footprints.value); return { success: true } }
         }
       } catch { /* 回退 */ }
     }
@@ -498,7 +598,7 @@ export const useAppStore = defineStore('app', () => {
         const ct = resp.headers.get('content-type') || ''
         if (ct.includes('application/json')) {
           const r = await resp.json()
-          if (r.success) { localStorage.setItem('love_site_letters', JSON.stringify(dataToSave)); return { success: true } }
+          if (r.success) { lsSet(LS_KEYS.letters, dataToSave); return { success: true } }
         }
       } catch { /* 回退 */ }
     }
@@ -509,7 +609,7 @@ export const useAppStore = defineStore('app', () => {
     try {
       const result = await saveViaGithub(wishes.value, 'data/wishes.json', password)
       if (result.success) {
-        localStorage.setItem('love_site_wishes', JSON.stringify(wishes.value))
+        lsSet(LS_KEYS.wishes, wishes.value)
       }
       return result
     } catch (e: any) {
@@ -522,7 +622,7 @@ export const useAppStore = defineStore('app', () => {
     try {
       const result = await saveViaGithub(capsules.value, 'data/capsules.json', password)
       if (result.success) {
-        localStorage.setItem('love_site_capsules', JSON.stringify(capsules.value))
+        lsSet(LS_KEYS.capsules, capsules.value)
       }
       return result
     } catch (e: any) {
