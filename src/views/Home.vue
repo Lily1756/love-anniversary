@@ -17,7 +17,7 @@
         target-date="2025-05-17T00:00:00"
         label="我们已经在一起了"
       />
-      <p class="love-quote">"遇见你，是我这辈子做过最正确的事"</p>
+      <p class="love-quote">"相遇，是我们共同的幸运"</p>
     </section>
 
     <!-- 快捷入口 -->
@@ -51,27 +51,6 @@
       </div>
     </section>
 
-    <!-- 统计数据 -->
-    <section class="stats-section">
-      <div class="stats-grid">
-        <div class="stat-item">
-          <span class="stat-number">{{ store.letters.length }}</span>
-          <span class="stat-label">封情书</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">{{ totalPhotos }}</span>
-          <span class="stat-label">张照片</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">{{ store.footprints.length }}</span>
-          <span class="stat-label">个城市</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-number">{{ store.completedWishes }}/{{ store.totalWishes }}</span>
-          <span class="stat-label">个愿望</span>
-        </div>
-      </div>
-    </section>
   </div>
 </template>
 
@@ -254,38 +233,6 @@ onMounted(() => {
   padding: 2px 8px;
   background: var(--bg-surface);
   border-radius: var(--radius-full);
-  color: var(--text-tertiary);
-}
-
-/* 统计数据 */
-.stats-section {
-  padding: var(--space-lg);
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-md);
-  background: var(--bg-container);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: var(--space-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.stat-item {
-  text-align: center;
-}
-
-.stat-number {
-  display: block;
-  font-size: var(--font-size-2xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-primary);
-}
-
-.stat-label {
-  font-size: var(--font-size-xs);
   color: var(--text-tertiary);
 }
 

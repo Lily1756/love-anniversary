@@ -16,7 +16,6 @@ export default defineConfig({
     },
   },
   server: {
-    historyApiFallback: true,
     // 代理 GitHub API 请求，解决本地开发的 TLS 证书问题
     proxy: {
       '/api/github': {
@@ -24,6 +23,13 @@ export default defineConfig({
         changeOrigin: true,
         secure: false, // 禁用 SSL 证书验证（本地开发环境）
         rewrite: (path) => path.replace(/^\/api\/github/, '')
+      },
+      // 代理 Cloudinary 上传请求，解决本地开发的 CORS 问题
+      '/api/cloudinary': {
+        target: 'https://api.cloudinary.com',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api\/cloudinary/, '')
       }
     }
   },
