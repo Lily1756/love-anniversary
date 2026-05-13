@@ -5,12 +5,14 @@
       <router-view />
     </main>
     <FooterNav />
+    <MusicPlayer />
   </div>
 </template>
 
 <script setup lang="ts">
 import FooterNav from '@/components/layout/FooterNav.vue'
 import PasswordLock from '@/components/features/PasswordLock.vue'
+import MusicPlayer from '@/components/features/MusicPlayer.vue'
 </script>
 
 <style>

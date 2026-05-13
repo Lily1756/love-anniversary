@@ -21,7 +21,7 @@
     @ended="onEnded"
     @timeupdate="onTimeUpdate"
   >
-    <source src="./music/once.mp3" type="audio/mpeg" />
+    <source src="/music/once.mp3" type="audio/mpeg" />
   </audio>
 </template>
 
