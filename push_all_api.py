@@ -25,10 +25,16 @@ with open(CONFIG_PATH, "r", encoding="utf-8") as f:
 
 # 需要推送的文件列表（本地路径, 仓库路径）
 FILES_TO_PUSH = [
-    ("dist", "dist"),
+    ("src", "src"),           # 源码 - CF Pages 拉取并重新构建
+    ("public", "public"),     # 静态资源
+    ("dist", "dist"),         # 编译产物
     ("vite.config.ts", "vite.config.ts"),
-    ("public/_redirects", "public/_redirects"),
-    ("public/_headers", "public/_headers"),
+    ("package.json", "package.json"),
+    ("package-lock.json", "package-lock.json"),
+    ("tsconfig.json", "tsconfig.json"),
+    ("tsconfig.app.json", "tsconfig.app.json"),
+    ("tsconfig.node.json", "tsconfig.node.json"),
+    ("index.html", "index.html"),
 ]
 
 def github_get(path):
@@ -84,9 +90,9 @@ def push_directory(local_dir, repo_dir):
                 with open(local_path, "rb") as f:
                     content = f.read()
 
-                # Skip large files
-                if len(content) > 5 * 1024 * 1024:  # 5MB
-                    print(f"  ⚠️  跳过大文件: {repo_path}")
+                # Skip large files (>50MB, GitHub API limit is 100MB, leave some margin)
+                if len(content) > 50 * 1024 * 1024:  # 50MB
+                    print(f"  ⚠️  跳过大文件 (>50MB): {repo_path}")
                     continue
 
                 # Get SHA if file exists
