@@ -159,24 +159,19 @@ export const useAppStore = defineStore('app', () => {
     } catch (e: any) {
       console.error(`[fetchLatest] ❌ 读取失败: ${ghPath}`, e)
 
-      // 降级方案 1：从 localStorage 缓存读取
-      const lsKeyMap: Record<string, string> = {
-        'public/data/photos.json':   LS_KEYS.albums,
-        'public/data/travels.json':  LS_KEYS.footprints,
-        'public/data/diaries.json':  LS_KEYS.letters,
-        'public/data/wishes.json':   LS_KEYS.wishes,
-        'public/data/capsules.json': LS_KEYS.capsules,
-      }
-      const lsKey = lsKeyMap[ghPath]
-      if (lsKey) {
-        const cached = lsGet<any[]>(lsKey)
-        if (cached && cached.length > 0) {
-          console.warn(`[fetchLatest] ⚠️ 降级使用缓存数据: ${lsKey}`)
-          return cached
-        }
-      }
+      // ⚠️ 紧急修复：降级方案不再使用 localStorage 作为最终数据源
+      // 原因：旧版代码缓存导致 localStorage 包含过期数据
+      // 解决方案：骨架渲染（返回空数组避免白屏），由组件自行决定是否显示空状态
+      //         真正修复需要依赖 GitHub 数据
+      // if (lsKey) {
+      //   const cached = lsGet<any[]>(lsKey)
+      //   if (cached && cached.length > 0) {
+      //     console.warn(`[fetchLatest] ⚠️ 降级使用缓存数据: ${lsKey}`)
+      //     return cached
+      //   }
+      // }
 
-      // 降级方案 2：返回空数组（避免页面崩溃）
+      // 降级方案：返回空数组（避免页面崩溃）
       console.error(`[fetchLatest] ❌ 无缓存，返回空数据: ${ghPath}`)
       return []
     }
@@ -215,6 +210,23 @@ export const useAppStore = defineStore('app', () => {
   // 策略：load 时优先读缓存（节省 GitHub API 请求），save 成功后同步更新缓存
   // 失效策略：save 后缓存被最新数据覆盖；如需强制刷新，清除对应 key 即可
   // ================================================================
+  
+  /** 缓存版本号 - 变更时自动清除旧缓存 */
+  const CACHE_VERSION = '2026-05-16-v2'
+  
+  /** 清除过期缓存 */
+  function clearStaleCache() {
+    const storedVersion = localStorage.getItem('love_site_cache_version')
+    if (storedVersion !== CACHE_VERSION) {
+      console.log('[Store] 🧹 检测到缓存版本变更，清除旧缓存...')
+      Object.values(LS_KEYS).forEach(key => localStorage.removeItem(key))
+      localStorage.setItem('love_site_cache_version', CACHE_VERSION)
+    }
+  }
+  
+  /** 初始化时检查缓存版本 */
+  clearStaleCache()
+  
   const LS_KEYS = {
     letters:    'love_site_letters',
     albums:     'love_site_albums',
