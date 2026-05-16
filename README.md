@@ -17,6 +17,15 @@ bash .ai_agent_init.sh
 - ❌ 禁止 `git push` → ✅ 使用 `python3 push_all_api.py`
 - ❌ 禁止全量覆盖写 JSON → ✅ 保持读→改→写三步流程
 - ❌ 禁止删除 `localStorage` 缓存逻辑（`LS_KEYS` / `lsGet` / `lsSet`）
+- ❌ 禁止创建根目录 `data/` 文件夹 → ✅ 使用 `public/data/`
+
+**数据操作规范（必读）：**
+当需要修改、添加或删除数据时，必须阅读 [AI_DATA_GUIDE.md](AI_DATA_GUIDE.md) 中的完整规范。
+
+**开发模式说明：**
+- 本地开发时，数据保存会写入 localStorage（Mock），不会调用 GitHub API
+- 避免频繁调用 GitHub API，节省 rate limit
+- 如需测试 GitHub API 逻辑，临时修改代码移除 Mock 判断
 
 ---
 
@@ -175,6 +184,11 @@ const resp = await safeFetch('/save-photos', { ... })
 
 ## 版本历史
 
+- **2026-05-16**：重构数据架构，引入路径隔离与Mock机制
+  - 开发模式 localStorage Mock 保存
+  - fetchLatest 降级方案 (GitHub → localStorage → 空数组)
+  - 403/401 错误友好提示
+  - CF Function JSON 响应类型检测
 - **2026-05-13**：完善 localStorage 缓存架构，修复 wishes/capsules 缓存写入 bug
 - **2026-05-12**：修复 base64 中文乱码（TextDecoder），修复 loadWishes/loadCapsules 空数据
 - **2026-05-11**：修复 Cloudinary 上传 SSL 证书问题，修复幽灵保存 bug
