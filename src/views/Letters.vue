@@ -61,6 +61,13 @@
       @date-selected="handleDateSelect"
     />
 
+    <!-- 情书关键词云 -->
+    <WordCloud
+      v-if="wordCloudData.length > 0"
+      :words="wordCloudData"
+      @word-click="handleWordCloudClick"
+    />
+
     <!-- 筛选状态提示 -->
     <div v-if="selectedDate !== null || selectedYear !== 'all' || selectedMonth !== 'all'" class="filter-hint">
       <span v-if="selectedDate !== null">📅 正在查看 {{ selectedDate }} 的情书</span>
@@ -162,7 +169,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAppStore } from '@/stores'
 import LoveLetterCard from '@/components/features/LoveLetterCard.vue'
@@ -170,6 +177,7 @@ import Modal from '@/components/common/Modal.vue'
 import EditAuthModal from '@/components/common/EditAuthModal.vue'
 // @ts-ignore: StarryNightChart.vue 无类型声明文件
 import StarryNightChart from '@/components/features/StarryNightChart.vue'
+import WordCloud from '@/components/features/WordCloud.vue'
 import { useEditAuth } from '@/composables/useEditAuth'
 import { useDebouncedSave } from '@/composables/useDebouncedSave'
 import { useYearbookGenerator } from '@/composables/useYearbookGenerator'
@@ -306,6 +314,57 @@ async function autoSave() {
   triggerDebouncedSave(() => store.saveLetters('2025'))
 }
 
+/* ---------- 词云数据 ---------- */
+const STOP_WORDS = ['我们', '一起', '这个', '那个', '然后', '因为', '所以', '可以', '已经', '还是',
+  '没有', '不是', '只是', '但是', '如果', '知道', '觉得', '现在', '今天', '昨天',
+  '明天', '想要', '不会', '不能', '她的', '什么', '怎么', '这么', '真的', '非常']
+
+const wordCloudData = ref<{ text: string; weight: number; id?: string }[]>([])
+
+function extractWordCloudData() {
+  if (store.letters.length === 0) {
+    wordCloudData.value = []
+    return
+  }
+
+  const allContent = store.letters
+    .map(l => `${l.title} ${l.content}`)
+    .join(' ')
+
+  // 匹配 2 个及以上中文字符
+  const words = allContent.match(/[\u4e00-\u9fa5]{2,}/g) || []
+
+  const freq: Record<string, number> = {}
+  words.forEach(w => {
+    freq[w] = (freq[w] || 0) + 1
+  })
+
+  // 过滤停用词
+  STOP_WORDS.forEach(w => { delete freq[w] })
+
+  const entries = Object.entries(freq)
+    .filter(([text]) => text.length >= 2)
+    .map(([text, weight], idx) => ({
+      text,
+      weight,
+      id: store.letters[idx % store.letters.length]?.id
+    }))
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 80)
+
+  wordCloudData.value = entries
+}
+
+function handleWordCloudClick(letterId: string) {
+  const target = document.getElementById(`letter-${letterId}`)
+  if (target) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    target.classList.add('highlight')
+    setTimeout(() => target.classList.remove('highlight'), 2000)
+  }
+}
+
+/* ---------- 情书列表 ---------- */
 const filteredLetters = computed(() => {
   let result = store.letters
 
@@ -347,7 +406,12 @@ onMounted(() => {
   if (store.letters.length === 0) {
     store.loadLetters()
   }
+  extractWordCloudData()
 })
+
+watch(() => store.letters, () => {
+  extractWordCloudData()
+}, { deep: true })
 </script>
 
 <style scoped>
@@ -436,6 +500,17 @@ onMounted(() => {
 
 .letter-card-wrapper.edit-mode :deep(.letter-card) {
   cursor: default;
+}
+
+/* 词云点击高亮效果 */
+.letter-card-wrapper.highlight {
+  animation: pulse-highlight 2s ease;
+  box-shadow: 0 0 0 3px rgba(224, 99, 119, 0.3);
+}
+
+@keyframes pulse-highlight {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(224, 99, 119, 0); }
+  50% { box-shadow: 0 0 0 3px rgba(224, 99, 119, 0.6); }
 }
 
 .delete-letter-btn {

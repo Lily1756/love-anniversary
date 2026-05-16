@@ -2,6 +2,11 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8">
+    <!-- 禁止浏览器缓存 HTML 入口，确保 SPA 路由和版本更新立即生效 -->
+    <!-- 特别针对：微信浏览器、iOS Safari 的激进缓存策略 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <link rel="icon" href="/favicon.ico">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">

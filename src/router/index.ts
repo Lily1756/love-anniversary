@@ -58,10 +58,14 @@ const router = createRouter({
   }
 })
 
-// 页面标题
-router.beforeEach((to, from, next) => {
+// 页面标题（Vue Router 4 写法：直接 return，不用 next()）
+router.beforeEach((to) => {
   document.title = to.meta.title ? `${to.meta.title} - Love Story` : 'Love Story'
-  next()
+})
+
+// 开发调试：记录每次导航
+router.afterEach((to, from) => {
+  console.log(`[Router] ${from.path} → ${to.path}`)
 })
 
 export default router

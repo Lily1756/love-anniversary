@@ -8,6 +8,7 @@ import os
 import ssl
 import urllib.request
 import urllib.error
+from urllib.parse import quote
 
 GITHUB_API = "https://api.github.com"
 REPO_OWNER = "Lily1756"
@@ -39,7 +40,9 @@ FILES_TO_PUSH = [
 
 def github_get(path):
     """GET request to GitHub API - get file info"""
-    url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}"
+    # 对路径中的中文和特殊字符进行 percent-encoding（/ 保留不编码）
+    encoded_path = quote(path, safe='/')
+    url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{encoded_path}"
     req = urllib.request.Request(url)
     req.add_header("Authorization", f"token {GITHUB_TOKEN}")
     req.add_header("Accept", "application/vnd.github.v3+json")
@@ -53,7 +56,9 @@ def github_get(path):
 
 def github_put(path, content, sha=None, message="Update via API"):
     """PUT request to GitHub API to create/update file"""
-    url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{path}"
+    # 对路径中的中文和特殊字符进行 percent-encoding（/ 保留不编码）
+    encoded_path = quote(path, safe='/')
+    url = f"{GITHUB_API}/repos/{REPO_OWNER}/{REPO_NAME}/contents/{encoded_path}"
     data = {
         "message": message,
         "content": base64.b64encode(content).decode("ascii"),
@@ -61,7 +66,8 @@ def github_put(path, content, sha=None, message="Update via API"):
     if sha:
         data["sha"] = sha
 
-    body = json.dumps(data).encode("utf-8")
+    # ensure body is bytes (json.dumps produces str, encode to utf-8 for safety)
+    body = json.dumps(data, ensure_ascii=False).encode("utf-8")
     req = urllib.request.Request(url, data=body, method="PUT")
     req.add_header("Authorization", f"token {GITHUB_TOKEN}")
     req.add_header("Accept", "application/vnd.github.v3+json")
@@ -85,6 +91,11 @@ def push_directory(local_dir, repo_dir):
             local_path = os.path.join(root, filename)
             rel_path = os.path.relpath(local_path, REPO_PATH)
             repo_path = rel_path.replace("\\", "/")
+
+            # ⚠️ 跳过数据文件（这些文件由应用通过 GitHub API 动态更新，避免本地旧数据覆盖远程新数据）
+            if repo_path.startswith("public/data/"):
+                print(f"  ⚠️  跳过数据文件: {repo_path}")
+                continue
 
             try:
                 with open(local_path, "rb") as f:

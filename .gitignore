@@ -2,3 +2,27 @@
 config.json
 node_modules/
 dist/
+build/
+.next/
+.out/
+
+# ====================
+# 项目目录隔离规则
+# ====================
+
+# 本地隔离区 - 严禁提交
+.local_backup/
+
+# 开发环境文件
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# 日志文件
+*.log
+logs/
+
+# 系统文件
+.DS_Store
+Thumbs.db

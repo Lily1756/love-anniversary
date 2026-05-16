@@ -125,8 +125,9 @@ export const useAppStore = defineStore('app', () => {
     const isDevMode = isDev()
 
     try {
-      // 所有环境统一走 Contents API
-      const url = `${getRawBase()}/${ghPath}`
+      // 所有环境统一走 Contents API + 时间戳防缓存
+      const cacheBuster = Date.now()
+      const url = `${getRawBase()}/${ghPath}?_=${cacheBuster}`
       console.log(`[fetchLatest] ${isDevMode ? '🔧 开发模式' : '🚀 生产模式'} 读取: ${url}`)
 
       const resp = await safeFetch(url, {
@@ -136,11 +137,12 @@ export const useAppStore = defineStore('app', () => {
 
       if (resp.ok) {
         const data = await resp.json()
+        console.log(`[fetchLatest] 📡 响应状态: ${resp.status}, headers:`, [...resp.headers.entries()].slice(0, 3))
 
         // Contents API 返回的是 base64 编码的内容
         if (data.content) {
           const decoded = decodeGitHubContent(data.content)
-          console.log(`[fetchLatest] ✅ 读取成功 ${ghPath} (${isDevMode ? '代理' : '直连'})`)
+          console.log(`[fetchLatest] ✅ 读取成功 ${ghPath} (${isDevMode ? '代理' : '直连'})，数据条数: ${Array.isArray(decoded) ? decoded.length : '非数组'}`)
           return decoded
         }
 
@@ -156,7 +158,27 @@ export const useAppStore = defineStore('app', () => {
       throw new Error(`GitHub 读取失败 (${resp.status}): ${ghPath}`)
     } catch (e: any) {
       console.error(`[fetchLatest] ❌ 读取失败: ${ghPath}`, e)
-      throw new Error(`无法从 GitHub 加载 ${ghPath}，请检查网络或 Token 配置。原始错误: ${e.message}`)
+
+      // 降级方案 1：从 localStorage 缓存读取
+      const lsKeyMap: Record<string, string> = {
+        'public/data/photos.json':   LS_KEYS.albums,
+        'public/data/travels.json':  LS_KEYS.footprints,
+        'public/data/diaries.json':  LS_KEYS.letters,
+        'public/data/wishes.json':   LS_KEYS.wishes,
+        'public/data/capsules.json': LS_KEYS.capsules,
+      }
+      const lsKey = lsKeyMap[ghPath]
+      if (lsKey) {
+        const cached = lsGet<any[]>(lsKey)
+        if (cached && cached.length > 0) {
+          console.warn(`[fetchLatest] ⚠️ 降级使用缓存数据: ${lsKey}`)
+          return cached
+        }
+      }
+
+      // 降级方案 2：返回空数组（避免页面崩溃）
+      console.error(`[fetchLatest] ❌ 无缓存，返回空数据: ${ghPath}`)
+      return []
     }
   }
 
@@ -274,18 +296,26 @@ export const useAppStore = defineStore('app', () => {
 
   async function loadAlbums() {
     try {
+      // 步骤 1：先用缓存做骨架渲染（让页面瞬间显示旧数据，避免白屏）
       const cached = lsGet<any[]>(LS_KEYS.albums)
       if (cached && cached.length > 0) {
-        console.log(`[loadAlbums] 📦 从缓存读取 (${cached.length} 个相册)`)
         albums.value = cached
-        return
+        console.log(`[loadAlbums] 📦 骨架缓存命中 (${cached.length} 个相册)，后台拉取最新...`)
       }
-      console.log('[loadAlbums] 🌐 缓存未命中，从 GitHub 读取...')
+
+      // 步骤 2：始终从 GitHub 拉取最新数据（解决跨设备缓存不同步问题）
+      // 这是关键修复：其他设备上传后，当前设备刷新能立即看到新图片
       const data = await fetchLatest('public/data/photos.json', './data/photos.json')
       albums.value = data
       lsSet(LS_KEYS.albums, data)
+      console.log(`[loadAlbums] ✅ 已同步最新数据 (${data.length} 个相册)`)
+      // 🔍 调试：打印每个相册的名称和照片数
+      data.forEach((a: any) => {
+        console.log(`  [loadAlbums] 📸 相册: "${a.title}" tag=${a.tag} 照片数=${a.photos?.length || 0}`)
+      })
     } catch (err) {
       console.error('[loadAlbums] ❌ 加载照片失败:', err)
+      // 如果网络失败，保留骨架缓存数据（不清空），让用户至少能看到旧数据
     }
   }
 
@@ -356,6 +386,10 @@ export const useAppStore = defineStore('app', () => {
    *  2. 智能合并（以本地为基础，补充远程独有条目）
    *  3. PUT /repos/:owner/:repo/contents/:path  → 写入合并后的数据
    *  4. 只有 PUT 返回 200/201 才算成功，否则抛出明确错误
+   *
+   * 开发模式：
+   *  - 如果启用本地 Mock（localStorage），则保存到 Mock 而非 GitHub
+   *  - 避免频繁调用 GitHub API，节省 rate limit
    */
   async function saveViaGithub(localData: any[], path: string, _password: string): Promise<SaveResult> {
     const owner = 'Lily1756'
@@ -365,6 +399,20 @@ export const useAppStore = defineStore('app', () => {
     console.group(`[saveViaGithub] 🔧 开始保存 ${ghPath}`)
     console.log(`  本地数据条目:`, localData.length)
     console.log(`  环境:`, isDev() ? '开发（走代理）' : '生产（直连）')
+
+    // ====== 开发模式 Mock 保存 ======
+    if (isDev()) {
+      // 尝试使用 localStorage Mock
+      const mockKey = ghPath.replace('public/data/', '').replace('.json', '')
+      try {
+        localStorage.setItem(`love_site_mock_${mockKey}`, JSON.stringify(localData, null, 2))
+        console.log(`  [Mock] 💾 已保存到 localStorage: ${mockKey}`)
+        console.groupEnd()
+        return { success: true }
+      } catch (e: any) {
+        console.warn(`  [Mock] ⚠️ localStorage 保存失败，继续使用 GitHub API`, e)
+      }
+    }
 
     let primarySha: string | null = null
     let mergedData = localData
@@ -399,16 +447,21 @@ export const useAppStore = defineStore('app', () => {
 
           if (rawResp.ok) {
             const data = await rawResp.json()
-
+            
             // Contents API 返回 base64 编码内容
             if (data.content) {
               remoteData = decodeGitHubContent(data.content)
             }
 
             console.log(`  [合并] 远程数据条目:`, remoteData.length)
+          } else {
+            // ❌ 读取失败（非 200），中止保存以避免数据丢失
+            throw new Error(`读取远程内容失败 (${rawResp.status})，为避免数据丢失，已中止保存。请检查网络后重试。`)
           }
-        } catch (e) {
-          console.warn('  [合并] ⚠️ 读取远程内容失败，跳过合并', e)
+        } catch (e: any) {
+          // 读取远程内容失败，重新抛出错误，中止保存
+          console.error('  [合并] ❌ 读取远程内容失败，中止保存', e)
+          throw new Error(`无法验证远程数据完整性：${e.message || e}。为避免覆盖新数据，已中止保存。请稍后重试。`)
         }
 
         // 智能合并
@@ -467,7 +520,20 @@ export const useAppStore = defineStore('app', () => {
       if (!updateResp.ok) {
         const errorText = await updateResp.text().catch(() => '(无法读取响应)')
         console.error(`  ❌ GitHub API 错误 ${updateResp.status}:`, errorText)
-        throw new Error(`写入失败 (${updateResp.status}): ${errorText.slice(0, 300)}`)
+        
+        // 解析错误类型，提供用户友好的提示
+        let userMessage = `写入失败 (${updateResp.status})`
+        if (updateResp.status === 403) {
+          if (errorText.includes('rate limit') || errorText.includes('API rate')) {
+            userMessage = `GitHub API 限流（每小时 5000 次）。请等待 1 分钟后重试，或手动编辑 public/data/ 中的文件。`
+          } else {
+            userMessage = `GitHub Token 已失效。请重新生成 Token 并更新配置。`
+          }
+        } else if (updateResp.status === 401) {
+          userMessage = `GitHub Token 鉴权失败。请检查 Token 是否有效。`
+        }
+        
+        throw new Error(userMessage)
       }
 
       // ====== 步骤 3：同步更新本地状态 ======
@@ -532,7 +598,7 @@ export const useAppStore = defineStore('app', () => {
         const resp = await safeFetch('/save-photos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password, data: albums.value, path: 'data/photos.json' }),
+          body: JSON.stringify({ password, data: albums.value, path: 'public/data/photos.json' }),
           timeoutMs: 5000,
         })
 
@@ -553,7 +619,7 @@ export const useAppStore = defineStore('app', () => {
 
     // --- 阶段 2：通过 GitHub API 保存 ---
     console.log('[saveAlbums] 📡 调用 GitHub API...')
-    const result = await saveViaGithub(albums.value, 'data/photos.json', password)
+    const result = await saveViaGithub(albums.value, 'public/data/photos.json', password)
 
     if (result.success) {
       console.log('[saveAlbums] ✅ 保存完成')
@@ -570,7 +636,7 @@ export const useAppStore = defineStore('app', () => {
         const resp = await safeFetch('/save-photos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password, data: footprints.value, path: 'data/travels.json' }),
+          body: JSON.stringify({ password, data: footprints.value, path: 'public/data/travels.json' }),
           timeoutMs: 5000,
         })
         const ct = resp.headers.get('content-type') || ''
@@ -580,7 +646,7 @@ export const useAppStore = defineStore('app', () => {
         }
       } catch { /* 回退 */ }
     }
-    return saveViaGithub(footprints.value, 'data/travels.json', password)
+    return saveViaGithub(footprints.value, 'public/data/travels.json', password)
   }
 
   async function saveLetters(password: string): Promise<SaveResult> {
@@ -592,7 +658,7 @@ export const useAppStore = defineStore('app', () => {
         const resp = await safeFetch('/save-photos', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ password, data: dataToSave, path: 'data/diaries.json' }),
+          body: JSON.stringify({ password, data: dataToSave, path: 'public/data/diaries.json' }),
           timeoutMs: 5000,
         })
         const ct = resp.headers.get('content-type') || ''
@@ -602,12 +668,12 @@ export const useAppStore = defineStore('app', () => {
         }
       } catch { /* 回退 */ }
     }
-    return saveViaGithub(dataToSave, 'data/diaries.json', password)
+    return saveViaGithub(dataToSave, 'public/data/diaries.json', password)
   }
 
   async function saveWishes(password: string): Promise<SaveResult> {
     try {
-      const result = await saveViaGithub(wishes.value, 'data/wishes.json', password)
+      const result = await saveViaGithub(wishes.value, 'public/data/wishes.json', password)
       if (result.success) {
         lsSet(LS_KEYS.wishes, wishes.value)
       }
@@ -620,7 +686,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function saveCapsules(password: string): Promise<SaveResult> {
     try {
-      const result = await saveViaGithub(capsules.value, 'data/capsules.json', password)
+      const result = await saveViaGithub(capsules.value, 'public/data/capsules.json', password)
       if (result.success) {
         lsSet(LS_KEYS.capsules, capsules.value)
       }

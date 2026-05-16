@@ -10,6 +10,20 @@
   Content-Type: text/css
   Cache-Control: public, max-age=31536000, immutable
 
+# HTML 入口文件：禁止缓存，确保每次都拿最新的 SPA 入口
+/
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+/index.html
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
+
+# 数据文件：绝对禁止缓存（跨设备同步的核心）
 /data/*
-  Cache-Control: no-cache
+  Cache-Control: no-cache, no-store, must-revalidate
+  Pragma: no-cache
+  Expires: 0
   X-Content-Type-Options: nosniff

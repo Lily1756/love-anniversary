@@ -89,6 +89,83 @@ love-site/
     └── AI_AGENT_GUIDELINES.md  # AI Agent 协作规范
 ```
 
+## 📐 架构规范（ARCHITECTURE）
+
+> 💡 新人快速上手：本文档汇总目录隔离规范和路径使用原则。
+
+### 目录隔离规则
+
+```
+love-site/
+├── public/data/           # ✅ 唯一正确的数据存放目录
+│   ├── photos.json        # 照片元数据
+│   ├── travels.json       # 足迹数据
+│   ├── diaries.json       # 情书数据
+│   ├── wishes.json        # 愿望数据
+│   └── capsules.json      # 时间胶囊数据
+├── .local_backup/        # ❌ 严禁提交（本地隔离区）
+│   ├── test_data/        # 测试数据
+│   ├── data_history/     # 数据历史备份
+│   └── archived_versions/ # 归档版本
+├── dist/                  # ❌ 严禁提交（构建产物）
+└── data/                  # ❌ 禁止创建（根目录数据文件夹）
+```
+
+**规则**：
+1. ✅ 线上数据 → 必须存放在 `public/data/`
+2. ✅ 本地测试 → 必须存放在 `.local_backup/test_data/`
+3. ✅ 历史备份 → 必须存放在 `.local_backup/data_history/`
+4. ❌ 禁止在根目录创建 `data/` 文件夹
+5. ❌ 禁止在 `dist/` 中存放源数据
+
+### 路径使用原则
+
+**读取数据**（fetchLatest）：
+```typescript
+// ✅ 正确：使用 public/data/ 路径
+const data = await fetchLatest('public/data/photos.json', './data/photos.json')
+
+// ❌ 错误：使用相对路径
+fetch('./data/photos.json')
+```
+
+**写入数据**（saveViaGithub）：
+```typescript
+// ✅ 正确：明确指定 public/data/ 路径
+await saveViaGithub(data, 'public/data/photos.json', password)
+
+// ❌ 错误：省略 public/ 前缀（虽然会自动补全，但不清晰）
+await saveViaGithub(data, 'photos.json', password)
+```
+
+**GitHub API 调用**：
+```typescript
+// ✅ 正确：使用 ghApiUrl() 包装（自动适配开发/生产环境）
+const url = ghApiUrl(`repos/${owner}/${repo}/contents/${ghPath}`)
+
+// ✅ 正确：CF Function 使用绝对路径
+const resp = await safeFetch('/save-photos', { ... })
+```
+
+### 重构文档索引
+
+| 文档 | 说明 |
+|------|------|
+| [CODE_AUDIT_REPORT.md](CODE_AUDIT_REPORT.md) | 代码审计报告（路径一致性、数据完整性） |
+| [API_PATH_AUDIT.md](API_PATH_AUDIT.md) | API 调用路径审计报告 |
+| [ERROR_HANDLING_ENHANCEMENT.md](ERROR_HANDLING_ENHANCEMENT.md) | 错误处理增强方案 |
+| [AI_DATA_GUIDE.md](AI_DATA_GUIDE.md) | AI 数据操作规范 |
+
+### 快速检查清单
+
+- [ ] 所有数据文件存在于 `public/data/`
+- [ ] 所有代码引用使用 `public/data/xxx.json`
+- [ ] `.gitignore` 包含 `.local_backup/` 和 `dist/`
+- [ ] GitHub API 路径使用 `ghApiUrl()` 包装
+- [ ] 无相对路径引用（如 `./data/xxx.json`）
+
+---
+
 ## 数据管理
 
 - **编辑密码**：`2025`

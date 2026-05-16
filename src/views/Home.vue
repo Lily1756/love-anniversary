@@ -2,10 +2,9 @@
   <div class="home">
     <!-- 顶部区域 -->
     <header class="home-header">
-      <div class="couple-avatars">
-        <div class="avatar">
-          <img src="https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=400&q=80" alt="我们的合照" />
-        </div>
+      <!-- 专业级头像容器 -->
+      <div class="avatar-container">
+        <img src="/assets/photos/hero.jpg" alt="我们的故事" class="avatar-image" />
       </div>
       <h1 class="home-title">Love Story with You</h1>
       <p class="home-subtitle">张祎 & 方志浩</p>
@@ -125,24 +124,33 @@ onMounted(() => {
   background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-body) 100%);
 }
 
-.couple-avatars {
-  margin-bottom: var(--space-lg);
-}
-
-.avatar {
-  width: 120px;
-  height: 120px;
-  margin: 0 auto;
-  border-radius: var(--radius-full);
+/* 专业级头像容器 */
+.avatar-container {
+  width: 180px;
+  height: 135px;
+  border-radius: 20px;
   overflow: hidden;
-  border: 4px solid var(--bg-container);
-  box-shadow: var(--shadow-base);
+  margin: 0 auto 24px auto;
+  border: 3px solid #FFFFFF;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.08),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.avatar img {
+.avatar-container:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow:
+    0 8px 30px rgba(0, 0, 0, 0.12),
+    0 2px 5px rgba(0, 0, 0, 0.08);
+}
+
+.avatar-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .home-title {
@@ -240,14 +248,24 @@ onMounted(() => {
   .access-grid {
     grid-template-columns: repeat(3, 1fr);
   }
-  
+
   .home-title {
     font-size: var(--font-size-3xl);
   }
-  
-  .avatar {
-    width: 150px;
+
+  .avatar-container {
+    width: 200px;
     height: 150px;
+    border-radius: 24px;
+  }
+}
+
+@media (max-width: 768px) {
+  .avatar-container {
+    width: 140px;
+    height: 105px;
+    border-radius: 16px;
+    margin-bottom: 20px;
   }
 }
 

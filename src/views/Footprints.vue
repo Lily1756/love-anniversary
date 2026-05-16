@@ -157,6 +157,8 @@ import { useUpload } from '@/composables/useUpload'
 import { useEditAuth } from '@/composables/useEditAuth'
 import { useDebouncedSave } from '@/composables/useDebouncedSave'
 import type { Footprint } from '@/types'
+// 静态导入 Leaflet CSS，动态 import() CSS 在浏览器中会崩溃
+import 'leaflet/dist/leaflet.css'
 
 const store = useAppStore()
 const upload = useUpload()
@@ -240,8 +242,7 @@ const selectFootprint = (fp: Footprint) => {
 const initMap = async () => {
   if (!mapRef.value) return
 
-  // 必须先导入 Leaflet CSS，否则瓦片出现空白块/间隙
-  await import('leaflet/dist/leaflet.css')
+  // Leaflet CSS 已在文件顶部静态导入，这里直接导入 JS 模块
   L = await import('leaflet')
 
   map = L.map(mapRef.value, {
