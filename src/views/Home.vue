@@ -2,9 +2,13 @@
   <div class="home">
     <!-- 顶部区域 -->
     <header class="home-header">
-      <!-- 专业级头像容器 -->
-      <div class="avatar-container">
-        <img src="/assets/photos/hero.jpg" alt="我们的故事" class="avatar-image" />
+      <!-- 主头像容器：仅作为图片承载，无任何视觉修饰 -->
+      <div class="main-avatar-container">
+        <img
+          src="/assets/photos/hero.jpg"
+          class="main-avatar-image"
+          alt="我们的故事"
+        />
       </div>
       <h1 class="home-title">Love Story with You</h1>
       <p class="home-subtitle">张祎 & 方志浩</p>
@@ -117,40 +121,57 @@ onMounted(() => {
   padding-bottom: calc(var(--nav-height) + var(--space-xl));
 }
 
+/* ============================================
+   主头像容器：仅作为图片的承载盒子，不提供任何视觉修饰
+   ============================================ */
+.main-avatar-container {
+  width: 100%;
+  max-width: 350px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  margin: 0 auto 24px auto;
+  overflow: visible;
+
+  /* 强制移除所有装饰 */
+  border-radius: 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+
+/* ============================================
+   图片核心样式：彻底取消所有修饰
+   ============================================ */
+.main-avatar-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+
+  /* 保持原图比例，完整显示 */
+  object-fit: contain;
+
+  /* 强制取消圆角 */
+  border-radius: 0 !important;
+
+  /* 彻底移除装饰属性 */
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  filter: none !important;
+
+  /* 移除过渡动画，保持静态 */
+  transition: none;
+}
+
 /* 顶部区域 */
 .home-header {
   text-align: center;
   padding: var(--space-2xl) var(--space-lg);
   background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-body) 100%);
-}
-
-/* 专业级头像容器 */
-.avatar-container {
-  width: 180px;
-  height: 135px;
-  border-radius: 20px;
-  overflow: hidden;
-  margin: 0 auto 24px auto;
-  border: 3px solid #FFFFFF;
-  box-shadow:
-    0 4px 20px rgba(0, 0, 0, 0.08),
-    0 1px 3px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.avatar-container:hover {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow:
-    0 8px 30px rgba(0, 0, 0, 0.12),
-    0 2px 5px rgba(0, 0, 0, 0.08);
-}
-
-.avatar-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
 }
 
 .home-title {
@@ -253,25 +274,18 @@ onMounted(() => {
     font-size: var(--font-size-3xl);
   }
 
-  .avatar-container {
-    width: 200px;
-    height: 150px;
-    border-radius: 24px;
-  }
-}
-
-@media (max-width: 768px) {
-  .avatar-container {
-    width: 140px;
-    height: 105px;
-    border-radius: 16px;
-    margin-bottom: 20px;
+  .main-avatar-container {
+    max-width: 400px;
   }
 }
 
 @media (min-width: 1024px) {
   .access-grid {
     grid-template-columns: repeat(5, 1fr);
+  }
+
+  .main-avatar-container {
+    max-width: 450px;
   }
 }
 </style>
