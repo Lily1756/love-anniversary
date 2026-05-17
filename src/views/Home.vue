@@ -2,13 +2,88 @@
   <div class="home">
     <!-- 顶部区域 -->
     <header class="home-header">
-      <!-- 专业级头像容器 -->
-      <div class="avatar-container">
+      <!-- 专业级头像容器 - 支持三种边框样式 -->
+      <div 
+        class="avatar-container"
+        :class="avatarStyleClass"
+        @click="toggleComparison"
+        title="点击更换边框样式"
+      >
         <img src="/assets/photos/hero.jpg" alt="我们的故事" class="avatar-image" />
       </div>
       <h1 class="home-title">Love Story with You</h1>
       <p class="home-subtitle">张祎 & 方志浩</p>
     </header>
+
+    <!-- 边框样式对比测试区域 -->
+    <section v-if="showBorderComparison" class="border-comparison-section">
+      <div class="comparison-header">
+        <h3 class="comparison-title">🎨 头像边框样式对比</h3>
+        <p class="comparison-subtitle">点击选择你喜欢的样式</p>
+      </div>
+      
+      <div class="border-options">
+        <!-- 方案A：精致立体感 -->
+        <div 
+          class="border-option"
+          :class="{ 'selected': selectedBorderStyle === '3d' }"
+          @click="selectBorderStyle('3d')"
+        >
+          <div class="option-preview">
+            <div class="avatar-container avatar-3d">
+              <img src="/assets/photos/hero.jpg" alt="精致立体感" class="avatar-image">
+            </div>
+          </div>
+          <div class="option-info">
+            <h4>✨ 精致立体感</h4>
+            <p>增强光影层次，专业现代感</p>
+          </div>
+        </div>
+        
+        <!-- 方案B：情感温度 -->
+        <div 
+          class="border-option"
+          :class="{ 'selected': selectedBorderStyle === 'soft' }"
+          @click="selectBorderStyle('soft')"
+        >
+          <div class="option-preview">
+            <div class="avatar-container avatar-soft">
+              <img src="/assets/photos/hero.jpg" alt="情感温度" class="avatar-image">
+            </div>
+          </div>
+          <div class="option-info">
+            <h4>💕 情感温度</h4>
+            <p>柔和温馨，浪漫氛围</p>
+          </div>
+        </div>
+        
+        <!-- 方案C：极简统一 -->
+        <div 
+          class="border-option"
+          :class="{ 'selected': selectedBorderStyle === 'minimal' }"
+          @click="selectBorderStyle('minimal')"
+        >
+          <div class="option-preview">
+            <div class="avatar-container avatar-minimal">
+              <img src="/assets/photos/hero.jpg" alt="极简统一" class="avatar-image">
+            </div>
+          </div>
+          <div class="option-info">
+            <h4>⬜ 极简统一</h4>
+            <p>简约现代，与页面统一</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="comparison-actions">
+        <button @click="applySelectedStyle" class="apply-btn">
+          应用选中样式
+        </button>
+        <button @click="toggleComparison" class="cancel-btn">
+          保持当前样式
+        </button>
+      </div>
+    </section>
 
     <!-- 核心倒计时 -->
     <section class="countdown-section">
@@ -54,11 +129,40 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import Countdown from '@/components/features/Countdown.vue'
 import { useAppStore } from '@/stores'
 
 const store = useAppStore()
+
+// 头像边框样式状态
+const showBorderComparison = ref(false)
+const selectedBorderStyle = ref<'3d' | 'soft' | 'minimal'>('3d')
+const currentAvatarStyle = ref<'3d' | 'soft' | 'minimal'>('3d')
+
+// 计算当前头像样式类名
+const avatarStyleClass = computed(() => {
+  return `avatar-${currentAvatarStyle.value}`
+})
+
+// 选择边框样式
+const selectBorderStyle = (style: '3d' | 'soft' | 'minimal') => {
+  selectedBorderStyle.value = style
+}
+
+// 应用选中样式
+const applySelectedStyle = () => {
+  currentAvatarStyle.value = selectedBorderStyle.value
+  // 保存到 localStorage
+  localStorage.setItem('avatarBorderStyle', selectedBorderStyle.value)
+  // 隐藏对比界面
+  showBorderComparison.value = false
+}
+
+// 切换对比界面显示
+const toggleComparison = () => {
+  showBorderComparison.value = !showBorderComparison.value
+}
 
 const totalPhotos = computed(() => {
   return store.albums.reduce((sum, a) => sum + a.photos.length, 0)
@@ -109,6 +213,12 @@ const accessItems = computed(() => [
 
 onMounted(() => {
   store.loadAll()
+  // 从 localStorage 读取保存的样式
+  const savedStyle = localStorage.getItem('avatarBorderStyle') as '3d' | 'soft' | 'minimal' | null
+  if (savedStyle && ['3d', 'soft', 'minimal'].includes(savedStyle)) {
+    currentAvatarStyle.value = savedStyle
+    selectedBorderStyle.value = savedStyle
+  }
 })
 </script>
 
@@ -117,14 +227,11 @@ onMounted(() => {
   padding-bottom: calc(var(--nav-height) + var(--space-xl));
 }
 
-/* 顶部区域 */
-.home-header {
-  text-align: center;
-  padding: var(--space-2xl) var(--space-lg);
-  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-body) 100%);
-}
+/* ============================================
+   三种头像边框样式
+   ============================================ */
 
-/* 专业级头像容器 */
+/* 当前默认样式（基准）- 方案A：精致立体感 */
 .avatar-container {
   width: 180px;
   height: 135px;
@@ -145,12 +252,303 @@ onMounted(() => {
     0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
+/* 方案A：精致立体感边框 - avatar-3d */
+.avatar-3d {
+  border-radius: 18px;
+  border: 4px solid #fff;
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.8),
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 8px 24px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(255, 250, 250, 0.9) 100%);
+}
+
+.avatar-3d:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 0 0 1px rgba(255, 255, 255, 0.9),
+    0 8px 20px rgba(0, 0, 0, 0.12),
+    0 12px 32px rgba(0, 0, 0, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.avatar-3d::before,
+.avatar-3d::after {
+  content: '';
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid rgba(255, 107, 139, 0.3);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.avatar-3d::before {
+  top: 8px;
+  left: 8px;
+  border-right: none;
+  border-bottom: none;
+}
+
+.avatar-3d::after {
+  top: 8px;
+  right: 8px;
+  border-left: none;
+  border-bottom: none;
+}
+
+/* 方案B：情感温度柔和边框 - avatar-soft */
+.avatar-soft {
+  width: 180px;
+  height: 135px;
+  border-radius: 24px;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 
+    0 0 0 8px rgba(255, 235, 235, 0.4),
+    0 0 0 4px rgba(255, 245, 245, 0.6),
+    0 4px 16px rgba(255, 182, 193, 0.2),
+    0 8px 24px rgba(255, 182, 193, 0.15);
+  background: linear-gradient(135deg, 
+    rgba(255, 250, 250, 0.95) 0%,
+    rgba(255, 240, 240, 0.9) 50%,
+    rgba(255, 235, 235, 0.85) 100%);
+}
+
+.avatar-soft:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 
+    0 0 0 10px rgba(255, 220, 220, 0.5),
+    0 0 0 6px rgba(255, 230, 230, 0.7),
+    0 8px 24px rgba(255, 182, 193, 0.3),
+    0 12px 32px rgba(255, 182, 193, 0.2);
+  border-color: rgba(255, 255, 255, 1);
+}
+
+.avatar-soft::before {
+  content: '❤️';
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  font-size: 16px;
+  z-index: 3;
+  opacity: 0.7;
+  transform: rotate(15deg);
+  transition: transform 0.3s ease;
+}
+
+.avatar-soft:hover::before {
+  transform: rotate(0deg) scale(1.2);
+  opacity: 1;
+}
+
+/* 方案C：极简统一边框 - avatar-minimal */
+.avatar-minimal {
+  width: 180px;
+  height: 135px;
+  border-radius: 12px;
+  border: 1.5px solid rgba(255, 255, 255, 0.8);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.04);
+  background: transparent;
+}
+
+.avatar-minimal:hover {
+  transform: translateY(-1px);
+  box-shadow: 
+    0 4px 12px rgba(0, 0, 0, 0.08),
+    0 6px 16px rgba(0, 0, 0, 0.05);
+  border-color: rgba(255, 255, 255, 0.95);
+}
+
+.avatar-minimal::before,
+.avatar-minimal::after {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  border: 1px solid rgba(255, 107, 139, 0.2);
+  pointer-events: none;
+}
+
+.avatar-minimal::before {
+  top: 0;
+  left: 0;
+  border-right: none;
+  border-bottom: none;
+}
+
+.avatar-minimal::after {
+  bottom: 0;
+  right: 0;
+  border-left: none;
+  border-top: none;
+}
+
+/* ============================================
+   头像图片通用样式
+   ============================================ */
 .avatar-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: center;
   display: block;
+  transition: transform 0.3s ease;
+}
+
+.avatar-3d .avatar-image:hover {
+  transform: scale(1.05);
+}
+
+.avatar-soft .avatar-image:hover {
+  transform: scale(1.03);
+}
+
+.avatar-minimal .avatar-image:hover {
+  transform: scale(1.02);
+}
+
+/* ============================================
+   边框样式对比测试区域
+   ============================================ */
+.border-comparison-section {
+  max-width: 800px;
+  margin: 0 auto var(--space-xl) auto;
+  padding: var(--space-xl);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.comparison-header {
+  text-align: center;
+  margin-bottom: var(--space-xl);
+}
+
+.comparison-title {
+  font-size: var(--font-size-xl);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.comparison-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+}
+
+.border-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.border-option {
+  background: var(--bg-container);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  text-align: center;
+}
+
+.border-option:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+}
+
+.border-option.selected {
+  border-color: #ff6b8b;
+  background: rgba(255, 107, 139, 0.05);
+}
+
+.option-preview {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-md);
+  padding: var(--space-md);
+  background: var(--bg-body);
+  border-radius: var(--radius-md);
+}
+
+.option-info h4 {
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.option-info p {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.comparison-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+}
+
+.apply-btn,
+.cancel-btn {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: none;
+}
+
+.apply-btn {
+  background: linear-gradient(135deg, #ff6b8b, #ff5080);
+  color: white;
+  box-shadow: 0 4px 12px rgba(255, 107, 139, 0.3);
+}
+
+.apply-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(255, 107, 139, 0.4);
+}
+
+.cancel-btn {
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-light);
+}
+
+.cancel-btn:hover {
+  background: var(--bg-container);
+  border-color: var(--border-base);
+}
+
+/* 顶部区域 */
+.home-header {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+  background: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-body) 100%);
 }
 
 .home-title {
@@ -256,16 +654,40 @@ onMounted(() => {
   .avatar-container {
     width: 200px;
     height: 150px;
-    border-radius: 24px;
+  }
+
+  .avatar-3d {
+    width: 200px;
+    height: 150px;
+  }
+
+  .avatar-soft {
+    width: 200px;
+    height: 150px;
+  }
+
+  .avatar-minimal {
+    width: 200px;
+    height: 150px;
   }
 }
 
 @media (max-width: 768px) {
-  .avatar-container {
+  .avatar-container,
+  .avatar-3d,
+  .avatar-soft,
+  .avatar-minimal {
     width: 140px;
     height: 105px;
-    border-radius: 16px;
     margin-bottom: 20px;
+  }
+
+  .avatar-soft {
+    border-radius: 20px;
+  }
+
+  .avatar-minimal {
+    border-radius: 10px;
   }
 }
 
