@@ -3,7 +3,6 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
-import history from 'connect-history-api-fallback'
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -17,33 +16,15 @@ export default defineConfig({
     },
   },
   server: {
-    // ❌ 移除无效的 appType: 'spa'（与 proxy 共存时行为不符合预期）
-    // appType: 'spa',  // ← 删除此行
-
-    // ✅ 方案：使用 configureServer 显式挂载 history 回退中间件
-    configureServer(server) {
-      // 必须在 Vite 内置中间件之前挂载，才能正确回退到 index.html
-      server.middlewares.use(
-        history({
-          // 可选：排除 API 代理路径，防止干扰
-          rewrites: [
-            // 代理路径直接放行，不走 SPA 回退
-            { from: /^\/api\/github/, to: context => context.parsedUrl.pathname },
-            { from: /^\/api\/cloudinary/, to: context => context.parsedUrl.pathname },
-          ],
-          verbose: false, // 设为 true 可查看回退日志，方便调试
-        })
-      )
-    },
-
-    // 代理配置保持不变
+    // 代理 GitHub API 请求，解决本地开发的 TLS 证书问题
     proxy: {
       '/api/github': {
         target: 'https://api.github.com',
         changeOrigin: true,
-        secure: false,
+        secure: false, // 禁用 SSL 证书验证（本地开发环境）
         rewrite: (path) => path.replace(/^\/api\/github/, '')
       },
+      // 代理 Cloudinary 上传请求，解决本地开发的 CORS 问题
       '/api/cloudinary': {
         target: 'https://api.cloudinary.com',
         changeOrigin: true,
