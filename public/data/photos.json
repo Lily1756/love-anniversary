@@ -129,35 +129,6 @@
     ]
   },
   {
-    "id": "album-1778609490978",
-    "title": "1234",
-    "tag": "daily",
-    "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609488/yqsoq0qbcj2r7cevi8ue.jpg",
-    "date": "2026-05-12",
-    "photos": [
-      {
-        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609527/ldgosglwauioleiu7v5z.jpg",
-        "caption": ""
-      },
-      {
-        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609534/caseflmyoufsmmyt1rqh.jpg",
-        "caption": ""
-      },
-      {
-        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609537/u3kiuopxcctke68ts4gq.jpg",
-        "caption": ""
-      },
-      {
-        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609548/apzlu4bynmjf2md3bjmg.jpg",
-        "caption": ""
-      },
-      {
-        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1778609555/ehyti6wuyxggrul8j2ci.jpg",
-        "caption": ""
-      }
-    ]
-  },
-  {
     "id": "album-1778999460889",
     "title": "爱之初体验",
     "tag": "daily",
