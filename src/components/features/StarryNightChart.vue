@@ -134,7 +134,9 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 const props = defineProps({
-  letters: { type: Array, default: () => [] }
+  letters: { type: Array, default: () => [] },
+  // 接收年份筛选条件，'all' 表示全部年份
+  activeYear: { type: String, default: 'all' }
 })
 
 const emit = defineEmits(['month-selected', 'date-selected'])
@@ -382,7 +384,7 @@ function getCountCategory(count) {
   return "7+"
 }
 
-// ── 进度按不同日期数/365计算 ──────────────
+// ── 进度按不同日期数/动态天数计算 ──────────────
 const progressData = computed(() => {
   if (!props.letters || props.letters.length === 0) {
     return { percentage: 0, count: 0, total: 365 }
@@ -392,7 +394,6 @@ const progressData = computed(() => {
   const dateSet = new Set()
   for (const letter of props.letters) {
     if (letter.date) {
-      // 确保日期格式一致
       const dateObj = new Date(letter.date)
       if (!isNaN(dateObj.getTime())) {
         const dateStr = dateObj.toISOString().split('T')[0]
@@ -402,12 +403,47 @@ const progressData = computed(() => {
   }
 
   const uniqueDatesCount = dateSet.size
-  const percentage = Math.min(Math.round((uniqueDatesCount / 365) * 100), 100)
+
+  // 计算目标天数（分母）
+  let totalTargetDays = 365 // 默认全年
+
+  if (props.letters.length > 0) {
+    if (props.activeYear !== 'all') {
+      // 筛选了特定年份：计算该年的实际跨度
+      const year = parseInt(props.activeYear)
+      const datesInYear = [...dateSet].filter(d => d.startsWith(`${year}-`))
+      if (datesInYear.length > 0) {
+        // 该年内从第一篇到最后一篇的天数跨度
+        const yearDates = datesInYear.map(d => new Date(d)).sort((a, b) => a - b)
+        const firstDate = yearDates[0]
+        const lastDate = yearDates[yearDates.length - 1]
+        const timeDiff = lastDate.getTime() - firstDate.getTime()
+        totalTargetDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1
+      } else {
+        // 该年没有数据，使用全年
+        totalTargetDays = 365
+      }
+    } else {
+      // 全部年份：使用恋爱开始到今天的天数跨度
+      const allDates = [...dateSet].map(d => new Date(d)).sort((a, b) => a - b)
+      if (allDates.length > 0) {
+        const firstDate = allDates[0]
+        const today = new Date()
+        const timeDiff = today.getTime() - firstDate.getTime()
+        totalTargetDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24)) + 1
+      }
+    }
+  }
+
+  // 确保分母至少为 1（避免除以零）
+  if (totalTargetDays === 0) totalTargetDays = 1
+
+  const percentage = Math.min(Math.round((uniqueDatesCount / totalTargetDays) * 100), 100)
 
   return {
     percentage,
     count: uniqueDatesCount,
-    total: 365
+    total: totalTargetDays
   }
 })
 
