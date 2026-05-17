@@ -418,6 +418,43 @@
     "tag": "travel",
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010554/flcoaqvqnrjpkzkiynyr.jpg",
     "date": "2026-10-25",
-    "photos": []
+    "photos": [
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010666/p2qvxrkvixrfecmnt9ew.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010667/pn7nihw8rb8adkfewusq.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010668/xaxx6du5bq66p73qwf1s.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010669/b5eg8iew7xniph8byixm.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010670/ynmxxyxjbgfkrqwafs9z.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010671/fzsqyies7dapbwtrlx57.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010672/kegepaokse5grfodpnpq.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010673/bcwilf6dua5ywdcjlup5.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010674/dkt1rlapwacc6nvbso6f.jpg",
+        "caption": ""
+      }
+    ]
   }
 ]
