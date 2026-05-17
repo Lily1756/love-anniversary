@@ -247,17 +247,16 @@ export const useAppStore = defineStore('app', () => {
 
   // ================================================================
   // 加载数据
-  // 策略：优先读 localStorage 缓存 → 缓存不存在时请求 GitHub → 写入缓存
+  // 策略：骨架渲染 + 始终从 GitHub 拉取最新（解决跨设备缓存不同步问题）
   // ================================================================
 
   async function loadLetters() {
     try {
       isLoading.value = true
 
-      // 第一步：优先读取本地缓存（避免每次刷新都请求 GitHub）
+      // 第一步：先用缓存做骨架渲染（让页面瞬间显示旧数据，避免白屏）
       const cached = lsGet<any[]>(LS_KEYS.letters)
       if (cached && cached.length > 0) {
-        console.log(`[loadLetters] 📦 从缓存读取 (${cached.length} 条)`)
         letters.value = cached.map((item: any) => ({
           id: item.id,
           title: item.title,
@@ -267,11 +266,10 @@ export const useAppStore = defineStore('app', () => {
           tag: item.tag,
           isFavorite: item.isFavorite ?? false,
         }))
-        return
+        console.log(`[loadLetters] 📦 骨架缓存命中 (${cached.length} 条)，后台拉取最新...`)
       }
 
-      // 第二步：缓存不存在，从 GitHub 读取
-      console.log('[loadLetters] 🌐 缓存未命中，从 GitHub 读取...')
+      // 第二步：始终从 GitHub 拉取最新数据（解决跨设备缓存不同步问题）
       const data = await fetchLatest('public/data/diaries.json', './data/diaries.json')
       const mapped = data.map((item: any) => ({
         id: item.id,
@@ -284,7 +282,7 @@ export const useAppStore = defineStore('app', () => {
       }))
       letters.value = mapped
 
-      // 第三步：写入缓存（存原始格式，下次直接用）
+      // 第三步：写入缓存
       lsSet(LS_KEYS.letters, data)
     } catch (err) {
       error.value = '加载情书失败'
