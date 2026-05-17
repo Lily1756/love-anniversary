@@ -803,6 +803,7 @@ const batchPreviewPhotos = computed(() => {
     .filter(p => p.src)
 })
 
+// 监听 showPhotoModal 打开时重置状态
 watch(showPhotoModal, (val) => {
   if (val) {
     uploadedPhotosQueue.value = []
@@ -810,6 +811,21 @@ watch(showPhotoModal, (val) => {
     showPhotoUrl.value = false
     photoTargetAlbumId.value = store.albums[0]?.id || ''
     upload.clearTasks()
+  }
+})
+
+// 监听 showAlbumModal 关闭时释放 blob URL，防止内存泄漏
+watch(showAlbumModal, (val) => {
+  if (!val) {
+    // 关闭时清理 blob URL
+    if (coverPreviewUrl.value) {
+      URL.revokeObjectURL(coverPreviewUrl.value)
+      coverPreviewUrl.value = ''
+    }
+    // 重置文件输入（允许重新选择相同文件）
+    if (coverFileInput.value) {
+      coverFileInput.value.value = ''
+    }
   }
 })
 
