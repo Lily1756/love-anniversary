@@ -233,5 +233,13 @@
         "caption": ""
       }
     ]
+  },
+  {
+    "id": "album-1779010157131",
+    "title": "颐和园",
+    "tag": "travel",
+    "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779010134/m6nwwzddtgt173fnt1yf.jpg",
+    "date": "2025-09-14",
+    "photos": []
   }
 ]
