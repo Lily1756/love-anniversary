@@ -314,45 +314,64 @@ async function autoSave() {
   triggerDebouncedSave(() => store.saveLetters('2025'))
 }
 
-/* ---------- 词云数据 ---------- */
+/* ---------- 词云数据（响应式筛选） ---------- */
 const STOP_WORDS = ['我们', '一起', '这个', '那个', '然后', '因为', '所以', '可以', '已经', '还是',
   '没有', '不是', '只是', '但是', '如果', '知道', '觉得', '现在', '今天', '昨天',
   '明天', '想要', '不会', '不能', '她的', '什么', '怎么', '这么', '真的', '非常']
 
 const wordCloudData = ref<{ text: string; weight: number; id?: string }[]>([])
 
+// 防抖定时器
+let wordCloudDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+/**
+ * 从情书内容提取词云数据
+ * 使用 filteredLetters（筛选后）而非 store.letters（全部）
+ */
 function extractWordCloudData() {
-  if (store.letters.length === 0) {
-    wordCloudData.value = []
-    return
+  // 清除之前的防抖定时器
+  if (wordCloudDebounceTimer) {
+    clearTimeout(wordCloudDebounceTimer)
   }
 
-  const allContent = store.letters
-    .map(l => `${l.title} ${l.content}`)
-    .join(' ')
+  // 防抖：100ms 后执行
+  wordCloudDebounceTimer = setTimeout(() => {
+    const letters = filteredLetters.value
 
-  // 匹配 2 个及以上中文字符
-  const words = allContent.match(/[\u4e00-\u9fa5]{2,}/g) || []
+    if (letters.length === 0) {
+      wordCloudData.value = []
+      return
+    }
 
-  const freq: Record<string, number> = {}
-  words.forEach(w => {
-    freq[w] = (freq[w] || 0) + 1
-  })
+    // 合并标题和内容
+    const allContent = letters
+      .map(l => `${l.title} ${l.content}`)
+      .join(' ')
 
-  // 过滤停用词
-  STOP_WORDS.forEach(w => { delete freq[w] })
+    // 匹配 2 个及以上中文字符
+    const words = allContent.match(/[\u4e00-\u9fa5]{2,}/g) || []
 
-  const entries = Object.entries(freq)
-    .filter(([text]) => text.length >= 2)
-    .map(([text, weight], idx) => ({
-      text,
-      weight,
-      id: store.letters[idx % store.letters.length]?.id
-    }))
-    .sort((a, b) => b.weight - a.weight)
-    .slice(0, 80)
+    const freq: Record<string, number> = {}
+    words.forEach(w => {
+      freq[w] = (freq[w] || 0) + 1
+    })
 
-  wordCloudData.value = entries
+    // 过滤停用词
+    STOP_WORDS.forEach(w => { delete freq[w] })
+
+    // 转换为词云数据格式
+    const entries = Object.entries(freq)
+      .filter(([text]) => text.length >= 2)
+      .map(([text, weight]) => ({
+        text,
+        weight,
+        id: letters.find(l => l.title.includes(text) || l.content.includes(text))?.id
+      }))
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 80)
+
+    wordCloudData.value = entries
+  }, 100)
 }
 
 function handleWordCloudClick(letterId: string) {
@@ -409,9 +428,19 @@ onMounted(() => {
   extractWordCloudData()
 })
 
+// 监听 store.letters 变化（数据加载）
 watch(() => store.letters, () => {
   extractWordCloudData()
 }, { deep: true })
+
+// 监听筛选条件变化 → 重新生成词云
+watch(
+  [selectedYear, selectedMonth, selectedDate, searchQuery],
+  () => {
+    extractWordCloudData()
+  },
+  { flush: 'post' }
+)
 </script>
 
 <style scoped>
