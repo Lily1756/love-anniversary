@@ -764,6 +764,31 @@
     "tag": "travel",
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011576/l3iywvvm9ipynktlf4pr.jpg",
     "date": "2026-03-22",
-    "photos": []
+    "photos": [
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011612/zjh2ygscsgovnlkaccqx.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011613/gedgqfpspvit72mn79hv.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011614/b3j1w5phnup1pimnqf2d.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011615/gc6sysudfb10jq88bbya.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011616/ejv9sxluuygaekfze7cy.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011617/eznp2odueppfibzyism6.jpg",
+        "caption": ""
+      }
+    ]
   }
 ]
