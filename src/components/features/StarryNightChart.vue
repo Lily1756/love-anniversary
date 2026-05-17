@@ -412,7 +412,24 @@ const progressData = computed(() => {
 })
 
 // ─── 统计计算 ────────────────────────────────────────
-const totalLetters = computed(() => props.letters.length)
+// 星光总数：按日期去重（与进度条逻辑一致）
+const totalLetters = computed(() => {
+  if (!props.letters || props.letters.length === 0) return 0
+  
+  // 使用 Set 按完整日期（YYYY-MM-DD）去重
+  const dateSet = new Set()
+  for (const letter of props.letters) {
+    if (letter.date) {
+      const dateObj = new Date(letter.date)
+      if (!isNaN(dateObj.getTime())) {
+        const dateStr = dateObj.toISOString().split('T')[0]
+        dateSet.add(dateStr)
+      }
+    }
+  }
+  
+  return dateSet.size
+})
 
 const activeMonthCount = computed(() => {
   const monthsWithLetters = Object.entries(monthsData.value)
