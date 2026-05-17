@@ -723,6 +723,39 @@
     "tag": "daily",
     "cover": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011446/qfjcj9jgqchkrnnxlmeu.jpg",
     "date": "2026-02-07",
-    "photos": []
+    "photos": [
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011482/fwj9jhcgstff6k1o4t30.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011484/f5v1xzvtzbs2lpfcuigs.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011484/zgqtfunu8xuy3toqp69k.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011485/g08epgxnfu2do2z91orr.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011486/ydwbzcdve0ya7tdzcbkq.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011487/t6q8q6r7b4o4lrzaqbdb.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011488/bmgeniaezj2rvgfayb0p.jpg",
+        "caption": ""
+      },
+      {
+        "src": "https://res.cloudinary.com/dcpzdsdxc/image/upload/v1779011488/roavwdc7o3ameb8nvsqj.jpg",
+        "caption": ""
+      }
+    ]
   }
 ]
