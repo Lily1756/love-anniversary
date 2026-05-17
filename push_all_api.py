@@ -29,6 +29,7 @@ FILES_TO_PUSH = [
     ("src", "src"),           # 源码 - CF Pages 拉取并重新构建
     ("public", "public"),     # 静态资源
     ("dist", "dist"),         # 编译产物
+    ("_headers", "_headers"), # Cloudflare Pages HTTP 头配置
     ("vite.config.ts", "vite.config.ts"),
     ("package.json", "package.json"),
     ("package-lock.json", "package-lock.json"),
