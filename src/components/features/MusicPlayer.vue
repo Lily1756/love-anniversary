@@ -4,10 +4,12 @@
     ref="audioRef"
     :src="store.currentSong?.url"
     :loop="store.loopMode === 'one'"
-    preload="auto"
+    preload="metadata"
     @canplay="onCanPlay"
     @ended="onEnded"
     @timeupdate="onTimeUpdate"
+    @waiting="onWaiting"
+    @stalled="onStalled"
     @error="onError"
   />
 
@@ -37,7 +39,10 @@
       <div v-if="isExpanded" class="controls">
         <!-- 歌曲信息 -->
         <div class="song-info" @click="toggleExpand">
-          <span class="song-name">{{ store.currentSong?.name }}</span>
+          <span class="song-name">
+            {{ store.currentSong?.name }}
+            <span v-if="isBuffering" class="buffering-indicator">缓冲中...</span>
+          </span>
           <span class="artist-name">{{ store.currentSong?.artist }}</span>
         </div>
 
@@ -128,6 +133,7 @@ const isExpanded = ref(false)
 const currentTime = ref(0)
 const duration = ref(0)
 const progress = ref(0)
+const isBuffering = ref(false) // 缓冲中状态
 
 // ─── 歌曲切换时重新加载并播放 ──────────────────────────────
 watch(
@@ -148,6 +154,7 @@ watch(
 // ─── Audio 事件 ────────────────────────────────────────────
 function onCanPlay() {
   audioReady.value = true
+  isBuffering.value = false // 数据到达，停止缓冲提示
   duration.value = audioRef.value?.duration || 0
   if (store.isPlaying) {
     audioRef.value?.play().catch(() => store.setPlaying(false))
@@ -175,7 +182,25 @@ function onTimeUpdate() {
 
 function onError() {
   audioReady.value = false
+  isBuffering.value = false
   store.setPlaying(false)
+}
+
+// ─── 缓冲状态处理 ────────────────────────────────────────────
+function onWaiting() {
+  // 浏览器等待更多数据时触发
+  isBuffering.value = true
+}
+
+function onStalled() {
+  // 数据加载停止且播放可能无法继续时触发
+  isBuffering.value = true
+  // 尝试自动恢复播放
+  setTimeout(() => {
+    if (audioRef.value && !audioRef.value.paused && audioRef.value.readyState >= 3) {
+      audioRef.value.play().catch(() => {})
+    }
+  }, 500)
 }
 
 // ─── 播放控制 ──────────────────────────────────────────────
@@ -329,6 +354,20 @@ function formatTime(sec: number): string {
   font-size: 11px;
   color: #a08080;
   margin-top: 2px;
+}
+
+/* 缓冲中提示样式 */
+.buffering-indicator {
+  display: inline-block;
+  font-size: 10px;
+  color: #c27878;
+  margin-left: 6px;
+  animation: buffering-pulse 1s ease-in-out infinite;
+}
+
+@keyframes buffering-pulse {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
 }
 
 /* ── 进度条 ── */
