@@ -122,7 +122,7 @@ const showViewModal = ref(false)
 const selectedCapsule = ref<Capsule | null>(null)
 
 const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
-  password: '2025',
+  password: '202505174everZHZY',
 })
 
 // 保存状态
@@ -149,7 +149,7 @@ const openCapsule = (capsule: Capsule) => {
     showViewModal.value = true
     if (!capsule.isOpened) {
       capsule.isOpened = true
-      triggerDebouncedSave(() => store.saveCapsules('2025'))
+      triggerDebouncedSave(() => store.saveCapsules('202505174everZHZY'))
     }
   }
 }
@@ -168,13 +168,13 @@ const createCapsule = () => {
 
   showCreateModal.value = false
   newCapsule.value = { title: '', content: '', openDate: '' }
-  triggerDebouncedSave(() => store.saveCapsules('2025'))
+  triggerDebouncedSave(() => store.saveCapsules('202505174everZHZY'))
 }
 
 function deleteCapsule(id: string) {
   if (!confirm('确定要删除这个时间胶囊吗？')) return
   store.capsules = store.capsules.filter(c => c.id !== id)
-  triggerDebouncedSave(() => store.saveCapsules('2025'))
+  triggerDebouncedSave(() => store.saveCapsules('202505174everZHZY'))
 }
 
 onMounted(() => {
@@ -200,7 +200,7 @@ onMounted(() => {
             isOpened: false
           }
         ]
-        store.saveCapsules('2025')
+        store.saveCapsules('202505174everZHZY')
       }
     })
   }
