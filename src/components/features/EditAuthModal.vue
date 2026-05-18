@@ -40,7 +40,7 @@ import { ref, watch, nextTick } from 'vue'
 import Modal from '@/components/common/Modal.vue'
 import Button from '@/components/common/Button.vue'
 
-const EDIT_PASSWORD = '2025'
+const EDIT_PASSWORD = '202505174everZHZY'
 
 const visible = defineModel<boolean>('visible', { default: false })
 
