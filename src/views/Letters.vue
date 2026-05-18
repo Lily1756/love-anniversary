@@ -192,7 +192,7 @@ const selectedDate = ref<string | null>(null)
 const searchQuery = ref('')
 
 const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
-  password: '2025',
+  password: '202505174everZHZY',
 })
 
 const { saveStatus, saveMessage, triggerDebouncedSave } = useDebouncedSave()
@@ -311,7 +311,7 @@ function deleteLetter(id: string) {
 }
 
 async function autoSave() {
-  triggerDebouncedSave(() => store.saveLetters('2025'))
+  triggerDebouncedSave(() => store.saveLetters('202505174everZHZY'))
 }
 
 /* ---------- 词云数据（响应式筛选） ---------- */
