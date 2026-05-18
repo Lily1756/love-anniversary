@@ -172,7 +172,7 @@ let clickMarker: any = null
 
 const mapClickHint = ref(false)
 const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
-  password: '2025',
+  password: '202505174everZHZY',
   onEnterEditMode: () => {
     mapClickHint.value = true
   },
@@ -413,7 +413,7 @@ function deleteFootprint(id: string) {
 }
 
 async function autoSave() {
-  triggerDebouncedSave(() => store.saveFootprints('2025'))
+  triggerDebouncedSave(() => store.saveFootprints('202505174everZHZY'))
 }
 
 /* ---------- 监听足迹变化 ---------- */
