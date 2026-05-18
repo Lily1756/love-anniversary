@@ -31,7 +31,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 
-const CORRECT_PASSWORD = '2025'
+const CORRECT_PASSWORD = '202505174everZHZY'
 const STORAGE_KEY = 'love_site_unlocked'
 
 const password = ref('')
