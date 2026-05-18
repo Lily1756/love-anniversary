@@ -138,7 +138,7 @@ const store = useAppStore()
 const selectedCategory = ref('all')
 
 const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
-  password: '2025',
+  password: '202505174everZHZY',
 })
 
 /* ---------- 保存状态 ---------- */
@@ -159,13 +159,13 @@ function addWish() {
   })
   newWish.value = { title: '', category: '旅行' }
   showWishModal.value = false
-  triggerDebouncedSave(() => store.saveWishes('2025'))
+  triggerDebouncedSave(() => store.saveWishes('202505174everZHZY'))
 }
 
 function deleteWish(id: string) {
   if (!confirm('确定要删除这个愿望吗？')) return
   store.wishes = store.wishes.filter(w => w.id !== id)
-  triggerDebouncedSave(() => store.saveWishes('2025'))
+  triggerDebouncedSave(() => store.saveWishes('202505174everZHZY'))
 }
 
 const catLabel = (cat: string) => {
@@ -198,7 +198,7 @@ const toggleWish = (id: string) => {
   const wish = store.wishes.find(w => w.id === id)
   if (wish) {
     wish.completed = !wish.completed
-    triggerDebouncedSave(() => store.saveWishes('2025'))
+    triggerDebouncedSave(() => store.saveWishes('202505174everZHZY'))
   }
 }
 
