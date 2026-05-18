@@ -507,7 +507,7 @@ function getTagLabel(tag: string | undefined): string {
 
 // ==================== 编辑认证 ====================
 const { isEditMode, showAuth, authPassword, authError, openAuthModal, verifyAuth, exitEditMode } = useEditAuth({
-  password: '2025',
+  password: '202505174everZHZY',
 })
 
 // ==================== 保存状态 ====================
@@ -528,7 +528,7 @@ async function autoSave() {
   setSaveState('saving', '正在保存...')
 
   try {
-    const result = await store.saveAlbums('2025')
+    const result = await store.saveAlbums('202505174everZHZY')
 
     if (result.success) {
       setSaveState('saved', '保存成功 ✓')
