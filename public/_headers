@@ -21,6 +21,14 @@
   Pragma: no-cache
   Expires: 0
 
+# 音乐文件：支持断点续传、大缓存、预加载
+/music/*
+  Content-Type: audio/mpeg
+  Accept-Ranges: bytes
+  Cache-Control: public, max-age=31536000, immutable
+  Cross-Origin-Resource-Policy: cross-origin
+  Cross-Origin-Embedder-Policy: require-corp
+
 # 数据文件：绝对禁止缓存（跨设备同步的核心）
 /data/*
   Cache-Control: no-cache, no-store, must-revalidate
