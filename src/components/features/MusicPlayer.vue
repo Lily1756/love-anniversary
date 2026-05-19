@@ -5,10 +5,16 @@
     :src="store.currentSong?.url"
     :loop="store.loopMode === 'one'"
     preload="auto"
+    crossorigin="anonymous"
     @canplay="onCanPlay"
+    @canplaythrough="onCanPlayThrough"
     @ended="onEnded"
     @timeupdate="onTimeUpdate"
     @error="onError"
+    @waiting="onWaiting"
+    @stalled="onStalled"
+    @suspend="onSuspend"
+    @progress="onProgress"
   />
 
   <!-- 播放器浮动卡片 -->
@@ -135,6 +141,7 @@ watch(
   async (newUrl) => {
     if (!newUrl) return
     audioReady.value = false
+    lastBufferCheckTime.value = 0
     await nextTick()
     if (audioRef.value) {
       audioRef.value.load()
@@ -145,12 +152,53 @@ watch(
   }
 )
 
-// ─── Audio 事件 ────────────────────────────────────────────
+// ─── 缓冲状态追踪 ────────────────────────────────────────
+const lastBufferCheckTime = ref(0)
+
+function logBufferStatus(prefix: string = '') {
+  if (!audioRef.value) return
+  const audio = audioRef.value
+  const buffered = audio.buffered
+  if (buffered.length > 0) {
+    const bufferedEnd = buffered.end(buffered.length - 1)
+    const bufferRemaining = bufferedEnd - audio.currentTime
+    console.log(`${prefix} 缓冲: 当前位置 ${audio.currentTime.toFixed(1)}s, 已缓冲至 ${bufferedEnd.toFixed(1)}s, 剩余缓冲 ${bufferRemaining.toFixed(1)}s`)
+  }
+}
+
 function onCanPlay() {
   audioReady.value = true
   duration.value = audioRef.value?.duration || 0
+  logBufferStatus('✅ onCanPlay')
   if (store.isPlaying) {
     audioRef.value?.play().catch(() => store.setPlaying(false))
+  }
+}
+
+function onCanPlayThrough() {
+  console.log('🎵 onCanPlayThrough - 可以流畅播放')
+}
+
+function onWaiting() {
+  console.warn('🔴 onWaiting - 播放器等待数据，可能即将卡顿')
+  logBufferStatus('🔴 waiting')
+}
+
+function onStalled() {
+  console.warn('🛑 onStalled - 数据传输中断')
+  logBufferStatus('🛑 stalled')
+}
+
+function onSuspend() {
+  console.log('💤 onSuspend - 播放器暂停加载')
+}
+
+function onProgress() {
+  // 节流：每 3 秒检查一次缓冲状态
+  const now = Date.now()
+  if (now - lastBufferCheckTime.value > 3000) {
+    lastBufferCheckTime.value = now
+    logBufferStatus('📊 progress')
   }
 }
 
@@ -167,9 +215,16 @@ function onTimeUpdate() {
   if (duration.value > 0) {
     progress.value = (currentTime.value / duration.value) * 100
   }
-  // 每 5 秒保存一次进度（节流）
-  if (Math.floor(currentTime.value) % 5 === 0) {
-    store.setPlaying(store.isPlaying)
+
+  // 智能缓冲检查：当缓冲不足时发出警告
+  const buffered = audioRef.value.buffered
+  if (buffered.length > 0) {
+    const bufferedEnd = buffered.end(buffered.length - 1)
+    const bufferRemaining = bufferedEnd - audioRef.value.currentTime
+    // 如果剩余缓冲 < 2 秒，说明可能即将卡顿
+    if (bufferRemaining < 2 && bufferRemaining > 0) {
+      console.warn(`⚠️ 缓冲不足警告: 剩余缓冲 ${bufferRemaining.toFixed(1)}s，可能即将卡顿`)
+    }
   }
 }
 
