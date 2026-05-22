@@ -123,7 +123,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, nextTick } from 'vue'
+import { ref, watch, nextTick, onUnmounted } from 'vue'
 import { useMusicStore } from '@/stores/musicStore'
 
 const store = useMusicStore()
@@ -154,6 +154,7 @@ watch(
 
 // ─── 缓冲状态追踪 ────────────────────────────────────────
 const lastBufferCheckTime = ref(0)
+let bufferMonitorTimer: ReturnType<typeof setInterval> | null = null
 
 function logBufferStatus(prefix: string = '') {
   if (!audioRef.value) return
@@ -166,12 +167,40 @@ function logBufferStatus(prefix: string = '') {
   }
 }
 
+// ─── setInterval 定期缓冲监控 ─────────────────────────────
+function startBufferMonitor() {
+  stopBufferMonitor()
+  bufferMonitorTimer = setInterval(() => {
+    if (!audioRef.value || audioRef.value.paused) return
+    const buffered = audioRef.value.buffered
+    if (buffered.length === 0) return
+    const currentTime = audioRef.value.currentTime
+    const bufferedEnd = buffered.end(buffered.length - 1)
+    const bufferLeft = bufferedEnd - currentTime
+    if (bufferLeft < 3) {
+      console.warn(`⚠️ 缓冲监控: 剩余 ${bufferLeft.toFixed(1)}s，触发预加载检查`)
+    }
+  }, 2000)
+}
+
+function stopBufferMonitor() {
+  if (bufferMonitorTimer !== null) {
+    clearInterval(bufferMonitorTimer)
+    bufferMonitorTimer = null
+  }
+}
+
+onUnmounted(() => {
+  stopBufferMonitor()
+})
+
 function onCanPlay() {
   audioReady.value = true
   duration.value = audioRef.value?.duration || 0
   logBufferStatus('✅ onCanPlay')
   if (store.isPlaying) {
     audioRef.value?.play().catch(() => store.setPlaying(false))
+    startBufferMonitor()
   }
 }
 
@@ -243,9 +272,13 @@ function togglePlay() {
   if (store.isPlaying) {
     audioRef.value.pause()
     store.setPlaying(false)
+    stopBufferMonitor()
   } else {
     audioRef.value.play()
-      .then(() => store.setPlaying(true))
+      .then(() => {
+        store.setPlaying(true)
+        startBufferMonitor()
+      })
       .catch(() => store.setPlaying(false))
   }
 }
