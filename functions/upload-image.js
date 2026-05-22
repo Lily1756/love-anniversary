@@ -10,7 +10,7 @@ const CORS_HEADERS = {
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-const SITE_PASSWORD = '2025';
+const SITE_PASSWORD = '202505174everZHZY';
 const CLOUDINARY_CLOUD_NAME = 'dcpzdsdxc';
 const CLOUDINARY_UPLOAD_PRESET = 'love_site_preset';
 
