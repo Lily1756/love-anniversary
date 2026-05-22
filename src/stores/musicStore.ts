@@ -17,10 +17,10 @@ export interface Song {
   url: string
 }
 
-// 播放列表（以中文命名文件为准，去掉 once.mp3 重复条目）
+// 播放列表（AAC M4A 128kbps，文件约 4MB，比 320kbps MP3 的 11MB 小 60%）
 const PLAYLIST: Song[] = [
-  { id: 1, name: '一次就好', artist: '杨宗纬', url: '/music/一次就好.mp3' },
-  { id: 2, name: '三生三幸', artist: '海来阿木', url: '/music/三生三幸-海来阿木.mp3' },
+  { id: 1, name: '一次就好', artist: '杨宗纬', url: '/music/一次就好.m4a' },
+  { id: 2, name: '三生三幸', artist: '海来阿木', url: '/music/三生三幸-海来阿木.m4a' },
   { id: 3, name: '50年以后', artist: '海来阿木', url: '/music/海来阿木-50年以后.mp3' },
 ]
 
