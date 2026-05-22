@@ -7,10 +7,15 @@ import vue from '@vitejs/plugin-vue'
 export default defineConfig(async ({ mode }) => {
   const plugins: any[] = [vue()]
 
-  // vueDevTools 仅在开发模式加载，生产构建时排除以消除 peer dependency 冲突
+  // vueDevTools 仅在开发模式加载（可选依赖，不存在时静默跳过）
   if (mode === 'development') {
-    const vueDevTools = (await import('vite-plugin-vue-devtools')).default
-    plugins.push(vueDevTools())
+    try {
+      // @ts-expect-error - vite-plugin-vue-devtools 是可选依赖，未安装时跳过
+      const vueDevTools = (await import('vite-plugin-vue-devtools')).default
+      plugins.push(vueDevTools())
+    } catch {
+      // vue-devtools 未安装时静默跳过
+    }
   }
 
   return {
